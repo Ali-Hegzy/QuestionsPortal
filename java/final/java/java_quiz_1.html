@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java OOP Interactive Quiz — CS Level 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f1a;
+  --bg2: #13162a;
+  --bg3: #1a1e35;
+  --card: #1e2340;
+  --card2: #252b4a;
+  --border: #2d3460;
+  --text: #e8eaf6;
+  --muted: #8890b8;
+  --accent: #6c63ff;
+  --accent2: #ff6b9d;
+  --green: #4ade80;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --cyan: #22d3ee;
+  --easy: #4ade80;
+  --medium: #fbbf24;
+  --hard: #f87171;
+  --radius: 14px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* ─── NOISE TEXTURE ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0;
+}
+
+/* ─── HEADER ─── */
+header {
+  background: linear-gradient(135deg, #0d0f1a 0%, #1a1040 50%, #0d1a2a 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 2rem 1.5rem;
+  position: relative; overflow: hidden;
+}
+header::after {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.header-inner { max-width: 1200px; margin: 0 auto; }
+.header-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3);
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #a78bfa; margin-bottom: 1rem;
+}
+h1 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 700; line-height: 1.2;
+  background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #22d3ee 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header-sub { color: var(--muted); margin-top: 0.5rem; font-size: 0.95rem; }
+.header-stats {
+  display: flex; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap;
+}
+.stat-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+}
+.stat-pill span:first-child { color: var(--accent); font-weight: 600; }
+
+/* ─── LAYOUT ─── */
+.app { display: flex; min-height: calc(100vh - 160px); }
+
+/* ─── SIDEBAR ─── */
+aside {
+  width: 280px; min-width: 260px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  position: sticky; top: 0; height: calc(100vh - 160px);
+  overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+.sidebar-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--muted); padding: 0 1.5rem; margin-bottom: 0.75rem;
+}
+.lec-btn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; padding: 0.75rem 1.5rem;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-family: inherit; font-size: 0.9rem;
+  transition: all 0.2s; text-align: left;
+  border-left: 3px solid transparent;
+  position: relative;
+}
+.lec-btn:hover { background: var(--bg3); color: var(--text); }
+.lec-btn.active {
+  background: var(--bg3); color: var(--text);
+  border-left-color: var(--lec-color, var(--accent));
+}
+.lec-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+  background: var(--lec-bg, rgba(108,99,255,0.15));
+}
+.lec-btn-info { flex: 1; overflow: hidden; }
+.lec-btn-title { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lec-btn-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+.lec-score-badge {
+  font-size: 0.72rem; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px; background: var(--bg);
+  color: var(--muted); border: 1px solid var(--border);
+  display: none;
+}
+.lec-score-badge.has-score { display: block; color: var(--green); border-color: var(--green); }
+
+/* ─── MAIN ─── */
+main { flex: 1; padding: 2rem; overflow-y: auto; }
+.main-inner { max-width: 860px; margin: 0 auto; }
+
+/* ─── OVERVIEW SCREEN ─── */
+#overview { display: block; }
+.overview-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;
+  margin-top: 1.5rem;
+}
+.overview-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+}
+.overview-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--lec-color); }
+.overview-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--lec-color);
+}
+.ov-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+.ov-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; }
+.ov-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+.ov-counts { display: flex; gap: 8px; flex-wrap: wrap; }
+.ov-tag {
+  font-size: 0.7rem; padding: 2px 8px; border-radius: 6px;
+  background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+}
+
+/* ─── QUIZ SCREEN ─── */
+#quiz-screen { display: none; }
+.quiz-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+}
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 14px; border-radius: 8px;
+  cursor: pointer; font-family: inherit; font-size: 0.85rem;
+  transition: all 0.2s;
+}
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.quiz-title-bar { flex: 1; }
+.quiz-lec-title { font-size: 1.2rem; font-weight: 700; }
+.quiz-lec-sub { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+/* TYPE TABS */
+.type-tabs {
+  display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;
+}
+.type-tab {
+  padding: 8px 18px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--muted); font-family: inherit; font-size: 0.85rem; font-weight: 500;
+  transition: all 0.2s;
+}
+.type-tab:hover { border-color: var(--accent); color: var(--text); }
+.type-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.type-tab .tab-count {
+  display: inline-block; margin-left: 6px; background: rgba(255,255,255,0.2);
+  padding: 1px 6px; border-radius: 10px; font-size: 0.72rem;
+}
+
+/* DIFFICULTY FILTER */
+.diff-filter { display: flex; gap: 6px; margin-bottom: 1.5rem; align-items: center; }
+.diff-label { font-size: 0.8rem; color: var(--muted); margin-right: 4px; }
+.diff-btn {
+  padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.78rem;
+  border: 1px solid var(--border); background: var(--card); color: var(--muted);
+  font-family: inherit; transition: all 0.15s;
+}
+.diff-btn[data-diff="all"].active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.diff-btn[data-diff="easy"].active { background: rgba(74,222,128,0.2); border-color: var(--easy); color: var(--easy); }
+.diff-btn[data-diff="medium"].active { background: rgba(251,191,36,0.2); border-color: var(--medium); color: var(--medium); }
+.diff-btn[data-diff="hard"].active { background: rgba(248,113,113,0.2); border-color: var(--hard); color: var(--hard); }
+
+/* PROGRESS */
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 1.5rem; }
+.progress-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s; }
+
+/* ─── QUESTION CARDS ─── */
+.q-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem;
+  margin-bottom: 1rem; transition: all 0.25s;
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.q-card.correct { border-color: var(--green); background: rgba(74,222,128,0.05); }
+.q-card.wrong { border-color: var(--red); background: rgba(248,113,113,0.05); }
+.q-card.revealed { border-color: var(--cyan); }
+.q-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1.25rem; }
+.q-num {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--muted); background: var(--bg); padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--border); white-space: nowrap;
+}
+.diff-tag {
+  font-size: 0.7rem; font-weight: 600; padding: 3px 9px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.diff-tag.easy { background: rgba(74,222,128,0.15); color: var(--easy); }
+.diff-tag.medium { background: rgba(251,191,36,0.15); color: var(--medium); }
+.diff-tag.hard { background: rgba(248,113,113,0.15); color: var(--hard); }
+.q-text { flex: 1; font-size: 0.95rem; line-height: 1.6; font-weight: 500; }
+
+/* MCQ Options */
+.mcq-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); cursor: pointer; font-family: inherit; font-size: 0.88rem;
+  transition: all 0.18s; text-align: left;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(108,99,255,0.1); }
+.opt-btn .opt-letter {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--border); display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 0.78rem;
+  flex-shrink: 0; transition: all 0.18s;
+}
+.opt-btn.selected { border-color: var(--accent); background: rgba(108,99,255,0.12); }
+.opt-btn.selected .opt-letter { background: var(--accent); color: #fff; }
+.opt-btn.correct-opt { border-color: var(--green); background: rgba(74,222,128,0.1); }
+.opt-btn.correct-opt .opt-letter { background: var(--green); color: #000; }
+.opt-btn.wrong-opt { border-color: var(--red); background: rgba(248,113,113,0.1); }
+.opt-btn.wrong-opt .opt-letter { background: var(--red); color: #fff; }
+.opt-btn:disabled { cursor: default; }
+
+/* TF buttons */
+.tf-buttons { display: flex; gap: 10px; }
+.tf-btn {
+  flex: 1; padding: 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); cursor: pointer; font-family: inherit; font-size: 0.95rem; font-weight: 600;
+  transition: all 0.18s;
+}
+.tf-btn:hover:not(:disabled) { border-color: var(--accent); }
+.tf-btn.selected { border-color: var(--accent); background: rgba(108,99,255,0.15); }
+.tf-btn.correct-tf { border-color: var(--green); background: rgba(74,222,128,0.15); color: var(--green); }
+.tf-btn.wrong-tf { border-color: var(--red); background: rgba(248,113,113,0.15); color: var(--red); }
+.tf-btn:disabled { cursor: default; }
+
+/* Essay / Coding */
+.essay-area {
+  width: 100%; min-height: 120px; padding: 12px; resize: vertical;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem;
+  line-height: 1.6; transition: border-color 0.2s; margin-bottom: 10px;
+}
+.code-area {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+  min-height: 140px;
+}
+.essay-area:focus, .code-area:focus { outline: none; border-color: var(--accent); }
+
+/* Answer reveal */
+.answer-reveal {
+  margin-top: 12px; padding: 14px;
+  background: rgba(34,211,238,0.07); border: 1px solid rgba(34,211,238,0.25);
+  border-radius: 10px; display: none;
+}
+.answer-reveal.visible { display: block; animation: fadeUp 0.25s ease; }
+.answer-reveal-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--cyan); margin-bottom: 8px; font-weight: 600;
+}
+.answer-reveal pre {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+  white-space: pre-wrap; line-height: 1.6; color: #e2f5ff;
+}
+.answer-reveal p { font-size: 0.88rem; line-height: 1.6; color: var(--text); }
+
+/* Feedback banners */
+.feedback {
+  display: none; align-items: center; gap: 8px; margin-top: 12px;
+  padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; font-weight: 500;
+}
+.feedback.show { display: flex; animation: fadeUp 0.2s ease; }
+.feedback.ok { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+.feedback.no { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+
+/* Q actions */
+.q-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.q-btn {
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 0.84rem; font-weight: 500; transition: all 0.18s;
+  border: 1px solid;
+}
+.q-btn-submit { background: var(--accent); border-color: var(--accent); color: #fff; }
+.q-btn-submit:hover { background: #5b52e0; }
+.q-btn-reveal { background: transparent; border-color: var(--cyan); color: var(--cyan); }
+.q-btn-reveal:hover { background: rgba(34,211,238,0.1); }
+.q-btn-reset { background: transparent; border-color: var(--border); color: var(--muted); }
+.q-btn-reset:hover { border-color: var(--muted); color: var(--text); }
+
+/* ─── SCORE PANEL ─── */
+.score-panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
+  display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center;
+}
+.score-circle {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: conic-gradient(var(--accent) 0deg, var(--border) 0deg);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  position: relative;
+}
+.score-circle::before {
+  content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--card);
+}
+.score-num { position: relative; font-size: 1.2rem; font-weight: 700; }
+.score-details { flex: 1; }
+.score-title { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+.score-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.score-item { font-size: 0.85rem; }
+.score-item span:first-child { color: var(--muted); }
+.score-item span:last-child { font-weight: 600; margin-left: 6px; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 4rem 2rem; color: var(--muted);
+}
+.empty-state .es-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state p { font-size: 0.95rem; }
+
+/* Results screen */
+#results-screen { display: none; }
+.results-hero {
+  text-align: center; padding: 3rem 1rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 1.5rem;
+}
+.results-emoji { font-size: 4rem; margin-bottom: 1rem; }
+.results-score { font-size: 3rem; font-weight: 700; }
+.results-label { color: var(--muted); margin-top: 0.5rem; }
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.result-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem; text-align: center;
+}
+.result-card .rc-val { font-size: 1.8rem; font-weight: 700; margin-bottom: 4px; }
+.result-card .rc-label { font-size: 0.8rem; color: var(--muted); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+  aside { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem 0; overflow-x: auto; white-space: nowrap; display: flex; }
+  .sidebar-label { display: none; }
+  .lec-btn { display: inline-flex; padding: 0.6rem 1rem; min-width: 160px; border-left: none; border-bottom: 3px solid transparent; }
+  .lec-btn.active { border-bottom-color: var(--lec-color, var(--accent)); border-left-color: transparent; }
+  main { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge">🎓 CS Faculty — Level 2</div>
+    <h1>Java OOP Interactive Quiz</h1>
+    <p class="header-sub">9 Lectures · 4 Question Types · 3 Difficulty Levels · Practice with instant feedback</p>
+    <div class="header-stats">
+      <div class="stat-pill"><span id="total-q-count">0</span><span>Total Questions</span></div>
+      <div class="stat-pill"><span id="answered-count">0</span><span>Answered</span></div>
+      <div class="stat-pill"><span id="correct-count">0</span><span>Correct</span></div>
+      <div class="stat-pill"><span id="global-pct">0%</span><span>Score</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar"></aside>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="main-inner">
+
+      <!-- OVERVIEW -->
+      <div id="overview">
+        <div style="font-size:1.05rem; font-weight:600; margin-bottom:0.5rem;">Choose a Lecture to Begin</div>
+        <div style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Each lecture contains MCQ, True/False, Essay, and Coding questions at Easy, Medium, and Hard levels.</div>
+        <div class="overview-grid" id="overview-grid"></div>
+      </div>
+
+      <!-- QUIZ SCREEN -->
+      <div id="quiz-screen">
+        <div class="quiz-nav">
+          <button class="back-btn" onclick="showOverview()">← Back</button>
+          <div class="quiz-title-bar">
+            <div class="quiz-lec-title" id="quiz-lec-title"></div>
+            <div class="quiz-lec-sub" id="quiz-lec-sub"></div>
+          </div>
+        </div>
+
+        <!-- Score Panel -->
+        <div class="score-panel" id="score-panel">
+          <div class="score-circle" id="score-circle">
+            <span class="score-num" id="score-pct">0%</span>
+          </div>
+          <div class="score-details">
+            <div class="score-title">Session Progress</div>
+            <div class="score-row">
+              <div class="score-item"><span>Answered</span><span id="sp-answered">0</span></div>
+              <div class="score-item"><span>Correct</span><span id="sp-correct" style="color:var(--green)">0</span></div>
+              <div class="score-item"><span>Wrong</span><span id="sp-wrong" style="color:var(--red)">0</span></div>
+              <div class="score-item"><span>Total</span><span id="sp-total">0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+        <!-- Type Tabs -->
+        <div class="type-tabs" id="type-tabs"></div>
+
+        <!-- Difficulty Filter -->
+        <div class="diff-filter">
+          <span class="diff-label">Difficulty:</span>
+          <button class="diff-btn active" data-diff="all" onclick="filterDiff('all')">All</button>
+          <button class="diff-btn" data-diff="easy" onclick="filterDiff('easy')">Easy</button>
+          <button class="diff-btn" data-diff="medium" onclick="filterDiff('medium')">Medium</button>
+          <button class="diff-btn" data-diff="hard" onclick="filterDiff('hard')">Hard</button>
+        </div>
+
+        <!-- Questions -->
+        <div id="questions-container"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  QUIZ DATA
+// ═══════════════════════════════════════════════
+const quizData = {lectures:[{id:"lec1",title:"Classes & Objects",icon:"🧱",color:"#4F46E5",description:"Blueprints, fields, methods, accessors & mutators",questions:{mcq:[{level:"easy",q:"Which of the following best describes a class in Java?",options:["A running instance of a program","A blueprint for creating objects","A method that returns an object","A primitive data type"],answer:1},{level:"easy",q:"Which keyword is used to create an object from a class?",options:["class","static","new","this"],answer:2},{level:"easy",q:"A method that returns the value of a private field is called a:",options:["Mutator","Constructor","Accessor","Modifier"],answer:2},{level:"medium",q:"What is the correct way to declare a private field named 'width' of type double?",options:["double width;","public double width;","private double width;","protected width double;"],answer:2},{level:"medium",q:"A method that changes the value of a private field is called a:",options:["Getter","Accessor","Constructor","Mutator"],answer:3},{level:"hard",q:"What will happen when the following is compiled?  Rectangle box;",options:["A Rectangle object is created","An uninitialized reference variable is declared","A compiler error occurs immediately","box is initialized to null automatically"],answer:1},{level:"hard",q:"What is the output of getArea() in a Rectangle with length=5.0 and width=3.0?",options:["8.0","15.0","16.0","53.0"],answer:1}],tf:[{level:"easy",q:"A class is a blueprint for creating objects.",answer:true},{level:"easy",q:"Accessor methods modify the value of a field.",answer:false,explanation:"Accessors RETURN the value; mutators MODIFY it."},{level:"medium",q:"Private fields can be accessed directly from outside the class.",answer:false,explanation:"Private fields can only be accessed through public methods."},{level:"medium",q:"The 'this' keyword refers to the current object of the class.",answer:true},{level:"hard",q:"Making a field public and providing accessor/mutator methods are equivalent in terms of encapsulation.",answer:false,explanation:"Mutators can validate data before setting; public fields allow unrestricted access."}],essay:[{level:"medium",q:"Explain encapsulation in Java and why it is important. Give an example using a BankAccount class.",answer:"Encapsulation is the principle of hiding internal state and requiring all interaction to happen through methods.\n\nIn Java: declare fields as private, provide public getters/setters.\n\nprivate double balance;\npublic double getBalance() { return balance; }\npublic void setBalance(double b) { if(b>=0) balance=b; }\n\nImportance:\n1. Prevents unauthorized access\n2. Allows validation in setters\n3. Makes code easier to maintain"},{level:"hard",q:"Describe the difference between a class and an object. Write a Rectangle class with fields, a constructor, getArea() and getPerimeter() methods.",answer:"A CLASS is a template/blueprint.\nAn OBJECT is a concrete instance of that class in memory.\n\npublic class Rectangle {\n  private double length, width;\n  public Rectangle(double l,double w){length=l;width=w;}\n  public double getArea(){return length*width;}\n  public double getPerimeter(){return 2*(length+width);}\n}"}],coding:[{level:"easy",q:"Write a Java statement to create a Rectangle object with length=10 and width=5.",answer:"Rectangle r = new Rectangle(10, 5);"},{level:"medium",q:"Write a complete Java class 'Circle' with a private radius field, a constructor, and a getArea() method.",answer:"public class Circle {\n  private double radius;\n  public Circle(double r){this.radius=r;}\n  public double getArea(){return Math.PI*radius*radius;}\n}"},{level:"hard",q:"Trace this code and write the output:\nRectangle r1=new Rectangle(4,6);\nRectangle r2=r1;\nr2=new Rectangle(2,3);\nSystem.out.println(r1.getArea());\nSystem.out.println(r2.getArea());",answer:"Output:\n24.0\n6.0\n\nExplanation: r2=r1 makes both reference same object. But r2=new Rectangle(2,3) makes r2 point to a NEW object. r1 still points to the original 4×6 rectangle."}]}},{id:"lec2",title:"Constructors",icon:"🔧",color:"#0891B2",description:"Default, overloaded, no-arg constructors & chaining",questions:{mcq:[{level:"easy",q:"Which of the following is NOT true about constructors?",options:["They have the same name as the class","They can have a return type of void","They are called when an object is created","They can be overloaded"],answer:1},{level:"easy",q:"What is a no-arg constructor?",options:["A constructor with no class name","A constructor that accepts no arguments","A constructor that returns nothing","A constructor that cannot be overloaded"],answer:1},{level:"medium",q:"When is the default constructor NOT provided by Java?",options:["When the class is abstract","When the class has only private fields","When at least one constructor is already written","When the class implements an interface"],answer:2},{level:"medium",q:"Constructor chaining in Java refers to:",options:["Calling a parent class method from a child class","Calling one constructor from within another constructor","Chaining multiple method calls","Overriding constructors in a subclass"],answer:1},{level:"hard",q:"What does the default constructor do to numeric fields?",options:["Sets them to null","Sets them to 1","Sets them to 0","Leaves them undefined"],answer:2},{level:"hard",q:"Method overloading means:",options:["Two methods in different classes with the same name","Two methods with same name and different parameters in same class","A subclass method replacing a superclass method","Using the 'final' keyword on a method"],answer:1}],tf:[{level:"easy",q:"A constructor must have the same name as the class it belongs to.",answer:true},{level:"easy",q:"Constructors can have a return type of void.",answer:false,explanation:"Constructors have NO return type at all, not even void."},{level:"medium",q:"Java always provides a default constructor, even if you define your own.",answer:false,explanation:"Java only provides a default constructor when NO constructor is written."},{level:"medium",q:"Constructor chaining uses the 'this(...)' keyword.",answer:true},{level:"hard",q:"A class can have only one constructor.",answer:false,explanation:"Constructors can be overloaded — multiple constructors with different parameter lists."}],essay:[{level:"medium",q:"Explain constructor overloading. Why is it useful? Give a BankAccount example.",answer:"Constructor overloading: multiple constructors with same name but different parameters.\n\npublic BankAccount() { balance=0; }\npublic BankAccount(double b) { balance=b; }\npublic BankAccount(double b,String name) { balance=b; this.name=name; }\n\nUsefulness: Flexibility when creating objects with different levels of detail."},{level:"hard",q:"Explain constructor chaining and write a Stock class using it with fields: symbol, sharePrice, totalShares.",answer:"Constructor chaining uses this(...) to call another constructor, reducing code duplication.\n\npublic class Stock {\n  private String symbol;\n  private double sharePrice;\n  private int totalShares;\n  public Stock(){this(\"NONE\",0.0,0);}\n  public Stock(String sym){this(sym,0.0,0);}\n  public Stock(String sym,double price,int shares){\n    symbol=sym; sharePrice=price; totalShares=shares;\n  }\n}"}],coding:[{level:"easy",q:"Write a constructor for class 'Person' that initializes name and age.",answer:"public Person(String name,int age){\n  this.name=name;\n  this.age=age;\n}"},{level:"medium",q:"Write two overloaded constructors for Rectangle: one no-arg (defaults 1.0) and one accepting length and width.",answer:"public Rectangle(){length=1.0;width=1.0;}\npublic Rectangle(double l,double w){length=l;width=w;}"},{level:"hard",q:"Trace and find the output:\nclass Box{\n  int x;\n  Box(){this(5);System.out.println(\"A\");}\n  Box(int n){x=n;System.out.println(\"B\");}\n}\nnew Box();",answer:"Output:\nB\nA\n\nExplanation: Box() calls this(5) → Box(int) runs first printing B, then returns to Box() which prints A."}]}},{id:"lec3",title:"Static Members",icon:"⚡",color:"#D97706",description:"Static fields, static methods & utility classes",questions:{mcq:[{level:"easy",q:"A static field in Java belongs to:",options:["Each individual object","The class itself, shared among all objects","Only the first object created","The subclass only"],answer:1},{level:"easy",q:"Which Java class is an example of a utility class with static methods?",options:["Scanner","String","Math","ArrayList"],answer:2},{level:"medium",q:"How do you correctly call a static method 'getCount' in class 'Counter'?",options:["new Counter().getCount()","Counter.getCount()","this.getCount()","super.getCount()"],answer:1},{level:"medium",q:"Which of the following is true about static methods?",options:["They can access instance fields directly","They require an object to be called","They can only access static fields and methods","They must return void"],answer:2},{level:"hard",q:"What is the initial value of a static int field if not explicitly initialized?",options:["null","1","undefined","0"],answer:3},{level:"hard",q:"Why can a static method NOT access instance fields?",options:["Because static methods are faster","Because no specific object may exist when a static method is called","Because instance fields are always private","Because Java does not allow it syntactically"],answer:1}],tf:[{level:"easy",q:"Static methods can be called without creating an object.",answer:true},{level:"easy",q:"Static fields are initialized each time a new object is created.",answer:false,explanation:"Static fields are initialized ONCE and shared among all instances."},{level:"medium",q:"Static methods can access instance (non-static) variables directly.",answer:false,explanation:"Static methods can only access static members directly."},{level:"medium",q:"A class can have both static and non-static methods.",answer:true},{level:"hard",q:"Two objects of the same class always share the same static field value.",answer:true,explanation:"Static fields belong to the class, not individual objects."}],essay:[{level:"medium",q:"Explain the difference between static and instance fields. When should each be used?",answer:"Instance fields: Each object has its own copy.\nUsed for: data unique to each object (e.g., name, balance).\n\nStatic fields: Shared by ALL objects of the class.\nUsed for: data common to all instances (e.g., count, constants, tax rate).\n\nExample: BankAccount has static interestRate (same for all) but instance balance (unique per account)."},{level:"hard",q:"Write a class 'Student' that tracks how many Student objects have been created using a static field.",answer:"public class Student {\n  private String name;\n  private static int count=0;\n  public Student(String n){\n    name=n; count++;\n  }\n  public static int getCount(){return count;}\n  public String getName(){return name;}\n}"}],coding:[{level:"easy",q:"Write a call to Math.sqrt() to find the square root of 144.",answer:"double result = Math.sqrt(144);\n// result = 12.0"},{level:"medium",q:"Trace and find the output:\nclass Counter{\n  static int x=0;\n  Counter(){x++;}\n}\nCounter c1=new Counter();\nCounter c2=new Counter();\nSystem.out.println(Counter.x);",answer:"Output: 2\n\nBecause x is static and shared. c1 increments it to 1, c2 to 2."},{level:"hard",q:"Write a utility class 'MathHelper' with a static method isPrime(int n) that returns true if n is prime.",answer:"public class MathHelper{\n  public static boolean isPrime(int n){\n    if(n<2) return false;\n    for(int i=2;i<=Math.sqrt(n);i++)\n      if(n%i==0) return false;\n    return true;\n  }\n}"}]}},{id:"lec4",title:"Inheritance",icon:"🌳",color:"#059669",description:"Superclass, subclass, extends, super keyword",questions:{mcq:[{level:"easy",q:"Which keyword is used to inherit from a superclass in Java?",options:["implements","inherits","extends","super"],answer:2},{level:"easy",q:"Which represents the 'is-a' relationship?",options:["A Car has an Engine","A Student has a Name","A Dog is an Animal","A Rectangle has a Width"],answer:2},{level:"medium",q:"When a subclass is instantiated, which constructor runs first?",options:["The subclass constructor","The static initializer","The superclass constructor","The interface default method"],answer:2},{level:"medium",q:"Private members of a superclass in an inherited subclass:",options:["Are directly accessible in the subclass","Are not inherited at all","Exist in memory but accessible only via superclass methods","Become public in the subclass"],answer:2},{level:"hard",q:"What is the 'protected' access modifier?",options:["Only within the same class","Anywhere","Subclasses and classes in the same package","Only within the same package"],answer:2},{level:"hard",q:"Constructors are ________ by subclasses.",options:["Always inherited","Not inherited","Overridden","Overloaded automatically"],answer:1}],tf:[{level:"easy",q:"A subclass inherits all public and protected members of its superclass.",answer:true},{level:"easy",q:"A subclass is also called a parent class.",answer:false,explanation:"A subclass is a DERIVED/CHILD class. The superclass is the parent."},{level:"medium",q:"A subclass inherits constructors from its superclass.",answer:false,explanation:"Constructors are NOT inherited."},{level:"medium",q:"Private fields of a superclass exist in the subclass object's memory.",answer:true,explanation:"They exist but cannot be accessed directly — only through public/protected methods."},{level:"hard",q:"A subclass can override a final method of its superclass.",answer:false,explanation:"Final methods cannot be overridden."}],essay:[{level:"medium",q:"Explain what the 'super' keyword does in Java. Give two examples: (1) calling a superclass constructor, (2) calling a superclass method.",answer:"The super keyword refers to the superclass.\n\n1. Calling superclass constructor:\npublic Dog(String name){\n  super(name); // calls Animal(String name)\n}\n\n2. Calling superclass method:\n@Override\npublic String toString(){\n  return super.toString()+\" (Dog)\";\n}"},{level:"hard",q:"Design a class hierarchy: Animal (name, sound) → Dog (breed) → GuideDog (owner). Write all three classes with constructors.",answer:"class Animal{\n  String name,sound;\n  Animal(String n,String s){name=n;sound=s;}\n}\nclass Dog extends Animal{\n  String breed;\n  Dog(String n,String b){super(n,\"Woof\");breed=b;}\n}\nclass GuideDog extends Dog{\n  String owner;\n  GuideDog(String n,String b,String o){\n    super(n,b); owner=o;\n  }\n}"}],coding:[{level:"easy",q:"Write a class 'Car' that extends 'Vehicle'. Vehicle has a field 'speed'. Car adds a field 'brand'.",answer:"class Vehicle{int speed;}\nclass Car extends Vehicle{\n  String brand;\n  Car(String b,int s){brand=b;speed=s;}\n}"},{level:"medium",q:"Trace: What is printed?\nclass A{A(){System.out.println(\"A\");}}\nclass B extends A{B(){System.out.println(\"B\");}}\nnew B();",answer:"Output:\nA\nB\n\nBecause the superclass constructor (A) always runs before the subclass constructor (B)."},{level:"hard",q:"Write Employee (name, salary) and Manager extending Employee with bonus and overridden getAnnualSalary().",answer:"class Employee{\n  String name; double salary;\n  Employee(String n,double s){name=n;salary=s;}\n  double getAnnualSalary(){return salary*12;}\n}\nclass Manager extends Employee{\n  double bonus;\n  Manager(String n,double s,double b){\n    super(n,s); bonus=b;\n  }\n  @Override\n  double getAnnualSalary(){\n    return super.getAnnualSalary()+bonus;\n  }\n}"}]}},{id:"lec5",title:"Polymorphism & Overriding",icon:"🦋",color:"#7C3AED",description:"Method overriding, @Override, runtime polymorphism",questions:{mcq:[{level:"easy",q:"What is polymorphism in Java?",options:["Having multiple constructors","The ability of a variable to hold objects of different types","Overloading methods in a class","Using interfaces only"],answer:1},{level:"easy",q:"Method overriding requires the subclass method to have:",options:["A different name","The same signature as the superclass method","The static keyword","No return type"],answer:1},{level:"medium",q:"Which annotation should be used before an overriding method?",options:["@Static","@Override","@Inherited","@Super"],answer:1},{level:"medium",q:"A superclass reference variable can hold a reference to:",options:["Only superclass objects","Subclass objects","Interface objects directly","Static objects only"],answer:1},{level:"hard",q:"What is the difference between overloading and overriding?",options:["Overloading changes return type; overriding changes parameters","Overloading: same name/different params in same class; overriding: same signature in subclass","They are the same concept","Overriding can only happen in the same class"],answer:1},{level:"hard",q:"Which calls the superclass's version of overridden method display()?",options:["this.display()","super.display()","parent.display()","base.display()"],answer:1}],tf:[{level:"easy",q:"Method overriding can occur within the same class without any inheritance.",answer:false,explanation:"Overriding requires an inheritance relationship."},{level:"easy",q:"The @Override annotation helps the compiler catch errors in method signatures.",answer:true},{level:"medium",q:"A superclass reference can call a subclass-only method directly.",answer:false,explanation:"Through a superclass reference, only methods defined in the superclass are accessible."},{level:"medium",q:"Runtime polymorphism means the method to be called is determined at runtime.",answer:true},{level:"hard",q:"A method declared as 'final' can be overridden in a subclass.",answer:false,explanation:"Final methods cannot be overridden."}],essay:[{level:"medium",q:"Trace the following code and explain why Dog's speak() is called, not Animal's:\nAnimal a = new Dog(\"Rex\");\na.speak();",answer:"Runtime polymorphism (dynamic dispatch): Even though 'a' is declared as Animal, it holds a Dog object at runtime. Java calls Dog's overridden speak().\n\nOutput: Rex barks.\n\nThis is the essence of polymorphism — behavior changes based on the ACTUAL object, not the reference type."},{level:"hard",q:"Write Animal, Dog, and Cat classes demonstrating polymorphism. Create an Animal array holding both and call speak() on each.",answer:"class Animal{\n  String name;\n  Animal(String n){name=n;}\n  void speak(){System.out.println(name+\" makes a sound.\");}\n}\nclass Dog extends Animal{\n  Dog(String n){super(n);}\n  @Override void speak(){System.out.println(name+\" barks.\");}\n}\nclass Cat extends Animal{\n  Cat(String n){super(n);}\n  @Override void speak(){System.out.println(name+\" meows.\");}\n}\n// In main:\nAnimal[] a={new Dog(\"Rex\"),new Cat(\"Luna\")};\nfor(Animal x:a) x.speak();\n// Rex barks.\n// Luna meows."}],coding:[{level:"easy",q:"Write a speak() method override in class Dog that extends Animal. Animal's speak() prints 'The animal speaks.'",answer:"@Override\npublic void speak(){\n  System.out.println(\"The dog barks.\");\n}"},{level:"medium",q:"What is printed?\nclass Shape{String name(){return \"Shape\";}}\nclass Circle extends Shape{String name(){return \"Circle\";}}\nShape s=new Circle();\nSystem.out.println(s.name());",answer:"Output: Circle\n\nPolymorphism: s holds a Circle, so Circle's name() is called at runtime."},{level:"hard",q:"Write SalariedEmployee and HourlyEmployee extending Employee. Override getWeeklyPay():\n- Salaried: annual salary / 52\n- Hourly: hours × rate",answer:"class Employee{String name;}\nclass SalariedEmployee extends Employee{\n  double salary;\n  SalariedEmployee(String n,double s){name=n;salary=s;}\n  double getWeeklyPay(){return salary/52;}\n}\nclass HourlyEmployee extends Employee{\n  double rate;int hours;\n  HourlyEmployee(String n,double r,int h){name=n;rate=r;hours=h;}\n  @Override\n  double getWeeklyPay(){return rate*hours;}\n}"}]}},{id:"lec6",title:"Abstract & Interfaces",icon:"📐",color:"#DC2626",description:"abstract keyword, interface, implements, contracts",questions:{mcq:[{level:"easy",q:"An abstract class in Java:",options:["Can be instantiated directly","Cannot be instantiated and serves as a superclass","Must implement all methods","Cannot have constructors"],answer:1},{level:"easy",q:"Which keyword is used to implement an interface?",options:["extends","implements","interface","abstract"],answer:1},{level:"medium",q:"Fields declared in an interface are automatically:",options:["private and non-static","public, final, and static","protected and mutable","instance fields"],answer:1},{level:"medium",q:"A class in Java can implement:",options:["Only one interface","Multiple interfaces","Only one interface and one class","No interfaces if it extends a class"],answer:1},{level:"hard",q:"What is the main difference between an abstract class and an interface?",options:["Abstract classes can have method implementations; interfaces traditionally cannot (pre-Java 8)","Interfaces can be instantiated; abstract classes cannot","Abstract classes support multiple inheritance","There is no difference"],answer:0},{level:"hard",q:"What happens if a subclass fails to override an abstract method?",options:["The method runs with default behavior","A runtime error occurs","A compiler error occurs","The method is ignored"],answer:2}],tf:[{level:"easy",q:"An abstract class can be instantiated directly using the 'new' keyword.",answer:false,explanation:"Abstract classes cannot be instantiated."},{level:"easy",q:"All methods in an interface must be implemented by any implementing class (before Java 8).",answer:true},{level:"medium",q:"You can create an instance of an interface directly using the 'new' keyword.",answer:false,explanation:"Interfaces cannot be instantiated."},{level:"medium",q:"A class can extend one abstract class AND implement multiple interfaces.",answer:true},{level:"hard",q:"Default methods in interfaces (Java 8+) have a method body.",answer:true,explanation:"Java 8 introduced default methods with implementations in interfaces."}],essay:[{level:"medium",q:"What is the difference between an abstract class and an interface? When would you use each?",answer:"Abstract Class:\n- Can have abstract + concrete methods\n- Can have instance variables and constructors\n- A class can extend ONLY ONE abstract class\n\nInterface:\n- All methods abstract by default (pre-Java 8)\n- Fields: public, static, final\n- A class can implement MULTIPLE interfaces\n\nUse abstract class: When classes share common code/state.\nUse interface: When unrelated classes must fulfill a contract."},{level:"hard",q:"Define a Shape interface with getArea() and getPerimeter(). Implement in both Circle and Rectangle.",answer:"interface Shape{\n  double getArea();\n  double getPerimeter();\n}\nclass Circle implements Shape{\n  double r;\n  Circle(double r){this.r=r;}\n  public double getArea(){return Math.PI*r*r;}\n  public double getPerimeter(){return 2*Math.PI*r;}\n}\nclass Rectangle implements Shape{\n  double l,w;\n  Rectangle(double l,double w){this.l=l;this.w=w;}\n  public double getArea(){return l*w;}\n  public double getPerimeter(){return 2*(l+w);}\n}"}],coding:[{level:"easy",q:"Write an interface 'Printable' with one method: void print();",answer:"public interface Printable{\n  void print();\n}"},{level:"medium",q:"Write an abstract class 'Vehicle' with abstract method getFuelType() and concrete method describe().",answer:"public abstract class Vehicle{\n  String model;\n  public abstract String getFuelType();\n  public void describe(){\n    System.out.println(model+\" runs on \"+getFuelType());\n  }\n}"},{level:"hard",q:"What is wrong with this code? Fix it.\ninterface Flyable{void fly();}\nclass Bird implements Flyable{}\nBird b=new Bird();",answer:"ERROR: Bird does not implement fly() from Flyable.\n\nFix:\nclass Bird implements Flyable{\n  public void fly(){\n    System.out.println(\"Bird is flying!\");\n  }\n}"}]}},{id:"lec7",title:"Enumerations",icon:"🎯",color:"#0F766E",description:"enum keyword, ordinal(), compareTo(), toString()",questions:{mcq:[{level:"easy",q:"Which keyword is used to define an enumerated type in Java?",options:["enum","Enum","enumerate","const"],answer:0},{level:"easy",q:"What does the ordinal() method of an enum return?",options:["The name of the constant","The zero-based position of the constant","The hash code","The string value"],answer:1},{level:"medium",q:"Given: enum Day{SUNDAY,MONDAY,TUESDAY,WEDNESDAY} — what is the ordinal of TUESDAY?",options:["1","2","3","0"],answer:1},{level:"medium",q:"An enum in Java is a:",options:["Simple primitive type","Specialized class","Special type of array","Type of interface"],answer:1},{level:"hard",q:"Which enum method compares two enum constants by their ordinal values?",options:["equals()","toString()","compareTo()","ordinal()"],answer:2},{level:"hard",q:"The ordinal of the first constant in an enum is:",options:["1","-1","0","Depends on the enum"],answer:2}],tf:[{level:"easy",q:"The ordinal of the first constant in an enum is 1.",answer:false,explanation:"Ordinals start at 0."},{level:"easy",q:"Enum constants are implicitly public, static, and final.",answer:true},{level:"medium",q:"You can use enum constants in switch statements.",answer:true},{level:"medium",q:"Enums in Java cannot have methods or fields.",answer:false,explanation:"Enums can have constructors, fields, and methods."},{level:"hard",q:"Two enum constants with the same name in different enums will cause a compilation error.",answer:false,explanation:"Each enum is its own type/namespace, so the same name in different enums is fine."}],essay:[{level:"medium",q:"What is an enumerated type (enum) in Java? What are its advantages over using plain int constants?",answer:"An enum is a special class representing a group of named constants.\n\nExample: enum Season{SPRING,SUMMER,FALL,WINTER}\n\nAdvantages over int constants:\n1. Type safety — cannot accidentally assign invalid values\n2. Self-documenting — code reads naturally (if(day==Day.MONDAY))\n3. Built-in methods: ordinal(), name(), compareTo()\n4. Can be used in switch statements"},{level:"hard",q:"Write an enum 'Planet' with mass and radius fields, a constructor, and a surfaceGravity() method.",answer:"enum Planet{\n  MERCURY(3.303e+23,2.4397e6),\n  EARTH(5.976e+24,6.37814e6);\n  final double mass,radius;\n  Planet(double m,double r){mass=m;radius=r;}\n  double surfaceGravity(){\n    final double G=6.67300E-11;\n    return G*mass/(radius*radius);\n  }\n}\n// Usage:\nSystem.out.println(Planet.EARTH.surfaceGravity());"}],coding:[{level:"easy",q:"Declare an enum 'Season' with four seasons.",answer:"enum Season{SPRING,SUMMER,FALL,WINTER}"},{level:"medium",q:"Write code to print the ordinal and name of each constant in enum Day{MON,TUE,WED}.",answer:"for(Day d:Day.values()){\n  System.out.println(d.name()+\": \"+d.ordinal());\n}\n// MON: 0\n// TUE: 1\n// WED: 2"},{level:"hard",q:"Write a switch statement using enum Season that prints a different message for each season.",answer:"Season s=Season.SUMMER;\nswitch(s){\n  case SPRING: System.out.println(\"Flowers bloom.\"); break;\n  case SUMMER: System.out.println(\"Stay cool!\"); break;\n  case FALL:   System.out.println(\"Leaves fall.\"); break;\n  case WINTER: System.out.println(\"Bundle up!\"); break;\n}"}]}},{id:"lec8",title:"Exception Handling",icon:"🚨",color:"#B91C1C",description:"try-catch-finally, throw, custom exceptions",questions:{mcq:[{level:"easy",q:"Which keyword is used to manually throw an exception?",options:["raise","throws","throw","error"],answer:2},{level:"easy",q:"The finally block in exception handling:",options:["Executes only when no exception is thrown","Executes only when an exception is thrown","Always executes whether exception occurs or not","Executes only on RuntimeException"],answer:2},{level:"medium",q:"What exception is thrown when dividing an integer by zero?",options:["NullPointerException","IllegalArgumentException","ArithmeticException","ArrayIndexOutOfBoundsException"],answer:2},{level:"medium",q:"What is the correct order for catch clauses?",options:["Most general to most specific","Most specific to most general","Alphabetical by exception name","Order does not matter"],answer:1},{level:"hard",q:"Which exception is thrown by Integer.parseInt() with invalid input?",options:["ArithmeticException","IllegalStateException","NullPointerException","NumberFormatException"],answer:3},{level:"hard",q:"All exception classes in Java are derived from:",options:["Exception","Error","Throwable","RuntimeException"],answer:2}],tf:[{level:"easy",q:"The 'finally' block only executes when an exception is thrown.",answer:false,explanation:"finally always executes, regardless of whether an exception occurred."},{level:"easy",q:"The 'throw' keyword is used to manually generate an exception.",answer:true},{level:"medium",q:"Having two catch clauses for the same exception type causes a compiler error.",answer:true},{level:"medium",q:"A catch block for a more general exception must come before a more specific one.",answer:false,explanation:"Specific exceptions must come BEFORE general ones."},{level:"hard",q:"FileNotFoundException is a subclass of IOException.",answer:true}],essay:[{level:"medium",q:"Explain Java exception handling. What is the role of try, catch, and finally?",answer:"try: Contains code that might throw an exception.\ncatch: Handles a specific type of exception if thrown.\nfinally: Always runs — used for cleanup.\n\ntry{\n  // risky code\n}catch(ArithmeticException e){\n  System.out.println(e.getMessage());\n}finally{\n  System.out.println(\"Always runs\");\n}"},{level:"hard",q:"Write a custom exception 'InsufficientFundsException' and use it in a BankAccount withdraw() method.",answer:"class InsufficientFundsException extends Exception{\n  public InsufficientFundsException(double amount){\n    super(\"Need $\"+amount+\" more.\");\n  }\n}\nclass BankAccount{\n  double balance;\n  void withdraw(double amt) throws InsufficientFundsException{\n    if(amt>balance)\n      throw new InsufficientFundsException(amt-balance);\n    balance-=amt;\n  }\n}"}],coding:[{level:"easy",q:"Write a try-catch block that catches ArithmeticException when dividing by zero.",answer:"try{\n  int result=10/0;\n}catch(ArithmeticException e){\n  System.out.println(\"Cannot divide by zero: \"+e.getMessage());\n}"},{level:"medium",q:"What is printed?\ntry{\n  int[] arr=new int[3];\n  arr[5]=10;\n}catch(ArrayIndexOutOfBoundsException e){\n  System.out.println(\"Index error\");\n}finally{\n  System.out.println(\"Done\");\n}",answer:"Output:\nIndex error\nDone\n\nExplanation: arr[5] throws ArrayIndexOutOfBoundsException (array size=3). catch handles it, then finally always runs."},{level:"hard",q:"Write code that handles both NumberFormatException and ArithmeticException when parsing and dividing user input.",answer:"try{\n  Scanner sc=new Scanner(System.in);\n  int x=Integer.parseInt(sc.next());\n  int y=Integer.parseInt(sc.next());\n  System.out.println(x/y);\n}catch(NumberFormatException e){\n  System.out.println(\"Please enter integers only.\");\n}catch(ArithmeticException e){\n  System.out.println(\"Cannot divide by zero.\");\n}finally{\n  System.out.println(\"Program ended.\");\n}"}]}},{id:"lec9",title:"ArrayList",icon:"📋",color:"#1D4ED8",description:"Dynamic arrays, add, remove, get, set, size",questions:{mcq:[{level:"easy",q:"Which import statement is needed to use ArrayList?",options:["import java.util.List","import java.util.ArrayList","import java.io.ArrayList","import java.lang.ArrayList"],answer:1},{level:"easy",q:"Which method returns the number of elements in an ArrayList?",options:["length()","count()","capacity()","size()"],answer:3},{level:"medium",q:"Which method is used to retrieve an element at a specific index?",options:["fetch()","retrieve()","get()","element()"],answer:2},{level:"medium",q:"Which ArrayList method replaces an existing element at a given index?",options:["add()","replace()","update()","set()"],answer:3},{level:"hard",q:"After: list.add(\"A\"); list.add(\"B\"); list.remove(0); — what does list.get(0) return?",options:["\"A\"","null","\"B\"","IndexOutOfBoundsException"],answer:2},{level:"hard",q:"To insert an element at index 2 in ArrayList 'list', you write:",options:["list.set(2,\"X\")","list.insert(2,\"X\")","list.add(2,\"X\")","list.put(2,\"X\")"],answer:2}],tf:[{level:"easy",q:"An ArrayList automatically resizes as elements are added or removed.",answer:true},{level:"easy",q:"ArrayList can store primitive types like int directly.",answer:false,explanation:"ArrayLists store objects. Use Integer, Double (wrapper classes) instead of primitives."},{level:"medium",q:"The ArrayList's get(index) method is used to retrieve an element by its index.",answer:true},{level:"medium",q:"ArrayList's remove(int index) removes the element at that index.",answer:true},{level:"hard",q:"The default initial capacity of an ArrayList is 5.",answer:false,explanation:"The default initial capacity is 10."}],essay:[{level:"medium",q:"Compare ArrayList with regular arrays. What are the advantages of ArrayList?",answer:"Arrays:\n- Fixed size set at creation\n- Can store primitives\n- Faster performance\n\nArrayList:\n- Dynamic — automatically resizes\n- Rich methods: add(), remove(), contains(), size()\n- Can only store objects (use wrappers for primitives)\n- Easier to insert/delete elements\n\nUse ArrayList when size is unknown or changes frequently."},{level:"hard",q:"Trace this ArrayList code and write the list contents after each step:\nlist.add(\"A\");list.add(\"B\");list.add(\"C\");\nlist.remove(1);\nlist.add(1,\"D\");\nlist.set(0,\"Z\");\nSystem.out.println(list);",answer:"After add A:      [A]\nAfter add B:      [A,B]\nAfter add C:      [A,B,C]\nAfter remove(1):  [A,C]  ← B removed\nAfter add(1,D):   [A,D,C]  ← D inserted at index 1\nAfter set(0,Z):   [Z,D,C]  ← A replaced by Z\nOutput: [Z, D, C]"}],coding:[{level:"easy",q:"Write code to create an ArrayList of Strings and add three names to it.",answer:"ArrayList<String> names=new ArrayList<>();\nnames.add(\"Alice\");\nnames.add(\"Bob\");\nnames.add(\"Charlie\");"},{level:"medium",q:"Write code to iterate through an ArrayList of integers and print only the even numbers.",answer:"ArrayList<Integer> nums=new ArrayList<>();\n// (assume nums is populated)\nfor(int n:nums){\n  if(n%2==0)\n    System.out.println(n);\n}"},{level:"hard",q:"Write a method that takes an ArrayList<Integer> and returns a new ArrayList containing only the positive numbers.",answer:"public static ArrayList<Integer> positiveOnly(ArrayList<Integer> list){\n  ArrayList<Integer> result=new ArrayList<>();\n  for(int n:list)\n    if(n>0) result.add(n);\n  return result;\n}"}]}}]};
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+let currentLec = null;
+let currentType = 'mcq';
+let currentDiff = 'all';
+let answers = {}; // key: "lecId-type-qIdx", val: {answered, correct, userAnswer}
+let globalStats = { answered: 0, correct: 0, total: 0 };
+
+function getKey(lecId, type, idx) { return `${lecId}-${type}-${idx}`; }
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  // Count total questions
+  let total = 0;
+  quizData.lectures.forEach(l => {
+    Object.values(l.questions).forEach(arr => total += arr.length);
+  });
+  document.getElementById('total-q-count').textContent = total;
+  globalStats.total = total;
+  buildSidebar();
+  buildOverview();
+}
+
+// ═══════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="sidebar-label">Lectures</div>`;
+  quizData.lectures.forEach(lec => {
+    const btn = document.createElement('button');
+    btn.className = 'lec-btn';
+    btn.id = `sb-${lec.id}`;
+    btn.style.setProperty('--lec-color', lec.color);
+    btn.style.setProperty('--lec-bg', hexToRgba(lec.color, 0.15));
+    const qCount = Object.values(lec.questions).reduce((s,a) => s+a.length, 0);
+    btn.innerHTML = `
+      <div class="lec-icon">${lec.icon}</div>
+      <div class="lec-btn-info">
+        <div class="lec-btn-title">${lec.title}</div>
+        <div class="lec-btn-sub">${qCount} questions</div>
+      </div>
+      <div class="lec-score-badge" id="score-badge-${lec.id}">—</div>`;
+    btn.onclick = () => openLecture(lec.id);
+    sb.appendChild(btn);
+  });
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ═══════════════════════════════════════════════
+//  OVERVIEW
+// ═══════════════════════════════════════════════
+function buildOverview() {
+  const grid = document.getElementById('overview-grid');
+  grid.innerHTML = '';
+  quizData.lectures.forEach(lec => {
+    const card = document.createElement('div');
+    card.className = 'overview-card';
+    card.style.setProperty('--lec-color', lec.color);
+    const counts = Object.entries(lec.questions).map(([k,v]) => `<span class="ov-tag">${k.toUpperCase()} ×${v.length}</span>`).join('');
+    card.innerHTML = `
+      <div class="ov-icon">${lec.icon}</div>
+      <div class="ov-title">${lec.title}</div>
+      <div class="ov-desc">${lec.description}</div>
+      <div class="ov-counts">${counts}</div>`;
+    card.onclick = () => openLecture(lec.id);
+    grid.appendChild(card);
+  });
+}
+
+function showOverview() {
+  document.getElementById('overview').style.display = 'block';
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.querySelectorAll('.lec-btn').forEach(b => b.classList.remove('active'));
+  currentLec = null;
+}
+
+// ═══════════════════════════════════════════════
+//  OPEN LECTURE
+// ═══════════════════════════════════════════════
+function openLecture(lecId) {
+  currentLec = quizData.lectures.find(l => l.id === lecId);
+  currentType = 'mcq';
+  currentDiff = 'all';
+  document.getElementById('overview').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  document.querySelectorAll('.lec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`sb-${lecId}`);
+  if (btn) btn.classList.add('active');
+  document.getElementById('quiz-lec-title').textContent = `${currentLec.icon} ${currentLec.title}`;
+  document.getElementById('quiz-lec-sub').textContent = currentLec.description;
+  buildTypeTabs();
+  renderQuestions();
+  updateScorePanel();
+}
+
+// ═══════════════════════════════════════════════
+//  TYPE TABS
+// ═══════════════════════════════════════════════
+const typeLabels = { mcq: 'MCQ', tf: 'True / False', essay: 'Essay', coding: 'Coding' };
+function buildTypeTabs() {
+  const tabs = document.getElementById('type-tabs');
+  tabs.innerHTML = '';
+  Object.entries(currentLec.questions).forEach(([type, arr]) => {
+    const btn = document.createElement('button');
+    btn.className = 'type-tab' + (type === currentType ? ' active' : '');
+    btn.innerHTML = `${typeLabels[type]} <span class="tab-count">${arr.length}</span>`;
+    btn.onclick = () => { currentType = type; currentDiff = 'all'; document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === 'all')); buildTypeTabs(); renderQuestions(); };
+    tabs.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  DIFFICULTY FILTER
+// ═══════════════════════════════════════════════
+function filterDiff(diff) {
+  currentDiff = diff;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === diff));
+  renderQuestions();
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER QUESTIONS
+// ═══════════════════════════════════════════════
+function renderQuestions() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  const qs = currentLec.questions[currentType] || [];
+  const filtered = qs.filter(q => currentDiff === 'all' || q.level === currentDiff);
+  updateProgress(filtered.length);
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="es-icon">🔍</div><p>No ${currentDiff} ${typeLabels[currentType]} questions for this lecture.</p></div>`;
+    return;
+  }
+  filtered.forEach((q, i) => {
+    const origIdx = qs.indexOf(q);
+    const key = getKey(currentLec.id, currentType, origIdx);
+    const state = answers[key] || {};
+    const card = buildQuestionCard(q, i, origIdx, key, state);
+    container.appendChild(card);
+    // stagger animation
+    card.style.animationDelay = `${i * 0.04}s`;
+  });
+}
+
+function updateProgress(shown) {
+  const qs = currentLec.questions[currentType] || [];
+  const answered = qs.filter((_, i) => answers[getKey(currentLec.id, currentType, i)]?.answered).length;
+  const pct = qs.length ? Math.round(answered / qs.length * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════════
+//  BUILD QUESTION CARD
+// ═══════════════════════════════════════════════
+function buildQuestionCard(q, displayIdx, origIdx, key, state) {
+  const card = document.createElement('div');
+  card.className = 'q-card' + (state.answered ? (state.correct ? ' correct' : ' wrong') : '');
+  card.id = `card-${key}`;
+
+  const diffTag = `<span class="diff-tag ${q.level}">${q.level}</span>`;
+  const header = `<div class="q-header"><span class="q-num">Q${displayIdx+1}</span>${diffTag}<div class="q-text">${q.q.replace(/\n/g,'<br>')}</div></div>`;
+  card.innerHTML = header;
+
+  if (currentType === 'mcq') {
+    const opts = document.createElement('div');
+    opts.className = 'mcq-options';
+    const letters = ['A','B','C','D'];
+    q.options.forEach((opt, oi) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      if (state.answered) {
+        btn.disabled = true;
+        if (oi === q.answer) btn.classList.add('correct-opt');
+        else if (oi === state.userAnswer) btn.classList.add('wrong-opt');
+      }
+      btn.innerHTML = `<span class="opt-letter">${letters[oi]}</span>${opt}`;
+      btn.onclick = () => submitMCQ(key, origIdx, oi, q.answer, q);
+      opts.appendChild(btn);
+    });
+    card.appendChild(opts);
+    if (state.answered) {
+      const fb = buildFeedback(state.correct, state.correct ? 'Correct! ✓' : `Wrong. Correct answer: ${letters[q.answer]}. ${q.options[q.answer]}`);
+      card.appendChild(fb);
+    }
+
+  } else if (currentType === 'tf') {
+    const wrap = document.createElement('div');
+    wrap.className = 'tf-buttons';
+    ['TRUE','FALSE'].forEach((label, li) => {
+      const btn = document.createElement('button');
+      btn.className = 'tf-btn';
+      if (state.answered) {
+        btn.disabled = true;
+        const userTrue = state.userAnswer;
+        const correct = q.answer;
+        if ((li === 0) === correct) btn.classList.add('correct-tf');
+        else if ((li === 0) === userTrue) btn.classList.add('wrong-tf');
+      }
+      btn.textContent = label;
+      btn.onclick = () => submitTF(key, origIdx, li === 0, q);
+      wrap.appendChild(btn);
+    });
+    card.appendChild(wrap);
+    if (state.answered) {
+      const msg = state.correct ? 'Correct! ✓' : `Wrong. Answer is: ${q.answer ? 'TRUE' : 'FALSE'}. ${q.explanation || ''}`;
+      card.appendChild(buildFeedback(state.correct, msg));
+    }
+
+  } else {
+    // Essay / Coding
+    const isCode = currentType === 'coding';
+    const ta = document.createElement('textarea');
+    ta.className = 'essay-area' + (isCode ? ' code-area' : '');
+    ta.placeholder = isCode ? 'Write your Java code here...' : 'Write your answer here...';
+    ta.spellcheck = !isCode;
+    if (state.userAnswer) ta.value = state.userAnswer;
+    ta.oninput = () => { answers[key] = answers[key] || {}; answers[key].userAnswer = ta.value; };
+    card.appendChild(ta);
+
+    const reveal = document.createElement('div');
+    reveal.className = 'answer-reveal' + (state.revealed ? ' visible' : '');
+    reveal.innerHTML = `<div class="answer-reveal-label">📖 Model Answer</div><pre>${q.answer}</pre>`;
+    card.appendChild(reveal);
+
+    const actions = document.createElement('div');
+    actions.className = 'q-actions';
+    const revBtn = document.createElement('button');
+    revBtn.className = 'q-btn q-btn-reveal';
+    revBtn.textContent = state.revealed ? 'Hide Answer' : 'Show Model Answer';
+    revBtn.onclick = () => toggleReveal(key, origIdx, reveal, revBtn, q);
+    actions.appendChild(revBtn);
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'q-btn q-btn-reset';
+    resetBtn.textContent = 'Clear';
+    resetBtn.onclick = () => { ta.value = ''; answers[key] = {}; reveal.classList.remove('visible'); revBtn.textContent = 'Show Model Answer'; };
+    actions.appendChild(resetBtn);
+    card.appendChild(actions);
+  }
+
+  return card;
+}
+
+function buildFeedback(correct, msg) {
+  const fb = document.createElement('div');
+  fb.className = `feedback show ${correct ? 'ok' : 'no'}`;
+  fb.innerHTML = `${correct ? '✓' : '✗'} ${msg}`;
+  return fb;
+}
+
+// ═══════════════════════════════════════════════
+//  SUBMIT ANSWERS
+// ═══════════════════════════════════════════════
+function submitMCQ(key, origIdx, chosen, correct, q) {
+  if (answers[key]?.answered) return;
+  const isCorrect = chosen === correct;
+  answers[key] = { answered: true, correct: isCorrect, userAnswer: chosen };
+  recordStat(isCorrect);
+  const card = document.getElementById(`card-${key}`);
+  card.classList.add(isCorrect ? 'correct' : 'wrong');
+  // Disable all and color
+  const btns = card.querySelectorAll('.opt-btn');
+  const letters = ['A','B','C','D'];
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct-opt');
+    else if (i === chosen && !isCorrect) btn.classList.add('wrong-opt');
+    btn.querySelector('.opt-letter').textContent = letters[i];
+  });
+  const msg = isCorrect ? 'Correct! ✓' : `Wrong. Correct answer: ${letters[correct]}. ${q.options[correct]}`;
+  card.appendChild(buildFeedback(isCorrect, msg));
+  updateScorePanel();
+  updateProgress(currentLec.questions[currentType].filter(qx => currentDiff === 'all' || qx.level === currentDiff).length);
+  updateSidebarBadge();
+}
+
+function submitTF(key, origIdx, userTrue, q) {
+  if (answers[key]?.answered) return;
+  const isCorrect = userTrue === q.answer;
+  answers[key] = { answered: true, correct: isCorrect, userAnswer: userTrue };
+  recordStat(isCorrect);
+  const card = document.getElementById(`card-${key}`);
+  card.classList.add(isCorrect ? 'correct' : 'wrong');
+  const btns = card.querySelectorAll('.tf-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if ((i === 0) === q.answer) btn.classList.add('correct-tf');
+    else if ((i === 0) === userTrue && !isCorrect) btn.classList.add('wrong-tf');
+  });
+  const msg = isCorrect ? 'Correct! ✓' : `Wrong. Answer is: ${q.answer ? 'TRUE' : 'FALSE'}. ${q.explanation || ''}`;
+  card.appendChild(buildFeedback(isCorrect, msg));
+  updateScorePanel();
+  updateProgress(currentLec.questions[currentType].filter(qx => currentDiff === 'all' || qx.level === currentDiff).length);
+  updateSidebarBadge();
+}
+
+function toggleReveal(key, origIdx, revEl, btn, q) {
+  const isVisible = revEl.classList.contains('visible');
+  if (isVisible) { revEl.classList.remove('visible'); btn.textContent = 'Show Model Answer'; }
+  else { revEl.classList.add('visible'); btn.textContent = 'Hide Answer'; answers[key] = answers[key] || {}; answers[key].revealed = true; }
+}
+
+// ═══════════════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════════════
+function recordStat(correct) {
+  globalStats.answered++;
+  if (correct) globalStats.correct++;
+  updateHeader();
+}
+
+function updateHeader() {
+  document.getElementById('answered-count').textContent = globalStats.answered;
+  document.getElementById('correct-count').textContent = globalStats.correct;
+  const pct = globalStats.answered ? Math.round(globalStats.correct / globalStats.answered * 100) : 0;
+  document.getElementById('global-pct').textContent = pct + '%';
+}
+
+function updateScorePanel() {
+  if (!currentLec) return;
+  const lecKeys = Object.entries(currentLec.questions).flatMap(([type, arr]) =>
+    arr.map((_, i) => getKey(currentLec.id, type, i)));
+  const answered = lecKeys.filter(k => answers[k]?.answered);
+  const correct = answered.filter(k => answers[k]?.correct);
+  const total = lecKeys.length;
+  const pct = answered.length ? Math.round(correct.length / answered.length * 100) : 0;
+  document.getElementById('sp-answered').textContent = answered.length;
+  document.getElementById('sp-correct').textContent = correct.length;
+  document.getElementById('sp-wrong').textContent = answered.length - correct.length;
+  document.getElementById('sp-total').textContent = total;
+  document.getElementById('score-pct').textContent = pct + '%';
+  const deg = (pct / 100) * 360;
+  const color = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('score-circle').style.background = `conic-gradient(${color} ${deg}deg, var(--border) ${deg}deg)`;
+}
+
+function updateSidebarBadge() {
+  if (!currentLec) return;
+  const lecKeys = Object.entries(currentLec.questions).flatMap(([type, arr]) =>
+    arr.map((_, i) => getKey(currentLec.id, type, i)));
+  const answered = lecKeys.filter(k => answers[k]?.answered);
+  const correct = answered.filter(k => answers[k]?.correct);
+  const badge = document.getElementById(`score-badge-${currentLec.id}`);
+  if (badge && answered.length) {
+    const pct = Math.round(correct.length / answered.length * 100);
+    badge.textContent = pct + '%';
+    badge.classList.add('has-score');
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

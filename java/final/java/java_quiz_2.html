@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java OOP Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f1a;
+    --surface: #141728;
+    --surface2: #1c2038;
+    --surface3: #232843;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8eaf6;
+    --text2: #9094b8;
+    --text3: #5a5f82;
+    --accent: #7c6af7;
+    --accent2: #5e4fd4;
+    --green: #2dd4a0;
+    --red: #f06b6b;
+    --amber: #f5a623;
+    --blue: #4db8ff;
+    --easy: #2dd4a0;
+    --medium: #f5a623;
+    --hard: #f06b6b;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid pattern background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-1 { background: #7c6af7; top: -200px; left: -100px; }
+  .glow-2 { background: #2dd4a0; bottom: -200px; right: -100px; }
+
+  .app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ---- HEADER ---- */
+  header { text-align: center; padding: 3rem 0 2.5rem; }
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(124,106,247,0.12); border: 1px solid rgba(124,106,247,0.3);
+    border-radius: 100px; padding: 6px 16px; margin-bottom: 1.5rem;
+  }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(.8)} }
+  .logo-badge span { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+  header h1 { font-family: 'Space Mono', monospace; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 700; letter-spacing: -1px; margin-bottom: .5rem; }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--text2); font-size: .95rem; }
+
+  /* ---- FILTERS / HOME ---- */
+  .home-section { display: block; }
+  .section-title {
+    font-family: 'Space Mono', monospace; font-size: .7rem; font-weight: 700;
+    letter-spacing: .15em; text-transform: uppercase; color: var(--text3);
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 2rem; }
+  .filter-chip {
+    padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text2); font-size: .83rem; font-weight: 500;
+    cursor: pointer; transition: all .18s; text-align: center; user-select: none;
+    position: relative; overflow: hidden;
+  }
+  .filter-chip:hover { border-color: var(--accent); color: var(--text); background: var(--surface2); }
+  .filter-chip.active {
+    border-color: var(--accent); background: rgba(124,106,247,0.15);
+    color: var(--text); box-shadow: 0 0 0 1px var(--accent);
+  }
+  .filter-chip .chip-icon { font-size: 1.1rem; display: block; margin-bottom: 4px; }
+  .chip-cat { display: flex; align-items: center; gap: 8px; justify-content: flex-start; }
+
+  .diff-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2rem; }
+  .diff-chip {
+    padding: 7px 18px; border-radius: 100px; border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text2); font-size: .82rem; font-weight: 600;
+    cursor: pointer; transition: all .18s;
+  }
+  .diff-chip[data-diff="easy"].active { border-color: var(--easy); background: rgba(45,212,160,.12); color: var(--easy); }
+  .diff-chip[data-diff="medium"].active { border-color: var(--amber); background: rgba(245,166,35,.12); color: var(--amber); }
+  .diff-chip[data-diff="hard"].active { border-color: var(--red); background: rgba(240,107,107,.12); color: var(--red); }
+
+  .type-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .type-chip {
+    padding: 7px 18px; border-radius: 100px; border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text2); font-size: .82rem; font-weight: 500;
+    cursor: pointer; transition: all .18s;
+  }
+  .type-chip.active { border-color: var(--blue); background: rgba(77,184,255,.1); color: var(--blue); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 2.5rem; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+  }
+  .stat-card .s-label { font-size: .72rem; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+  .stat-card .s-val { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--text); }
+  .stat-card .s-sub { font-size: .75rem; color: var(--text2); margin-top: 2px; }
+
+  .start-btn {
+    width: 100%; padding: 16px; border-radius: var(--radius); border: none;
+    background: linear-gradient(135deg, var(--accent) 0%, #5e4fd4 100%);
+    color: #fff; font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: all .2s; letter-spacing: .03em;
+    position: relative; overflow: hidden;
+  }
+  .start-btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.1) 0%, transparent 100%);
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,106,247,.4); }
+  .start-btn:active { transform: translateY(0); }
+  .start-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ---- QUIZ ---- */
+  .quiz-section { display: none; }
+  .quiz-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; gap: 12px;
+  }
+  .q-meta { display: flex; align-items: center; gap: 10px; }
+  .q-num { font-family: 'Space Mono', monospace; font-size: .85rem; color: var(--text2); }
+  .diff-badge {
+    padding: 3px 10px; border-radius: 100px; font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em;
+  }
+  .diff-badge.easy { background: rgba(45,212,160,.15); color: var(--easy); }
+  .diff-badge.medium { background: rgba(245,166,35,.15); color: var(--amber); }
+  .diff-badge.hard { background: rgba(240,107,107,.15); color: var(--red); }
+  .cat-tag {
+    padding: 3px 10px; border-radius: 100px; font-size: .72rem; font-weight: 500;
+    background: rgba(124,106,247,.12); color: var(--accent); border: 1px solid rgba(124,106,247,.25);
+  }
+
+  .progress-bar-wrap { background: var(--surface2); border-radius: 100px; height: 5px; flex: 1; }
+  .progress-bar { height: 5px; border-radius: 100px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .4s ease; }
+
+  .question-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 2rem; margin-bottom: 1.2rem;
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .q-type-label {
+    font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: .8rem;
+  }
+  .q-text { font-size: 1.05rem; line-height: 1.65; color: var(--text); font-weight: 400; }
+  code, .code-block {
+    font-family: 'Space Mono', monospace; background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px 6px; font-size: .88em; color: #a8d8ff;
+  }
+  .code-block { display: block; padding: 14px 16px; margin: 1rem 0; font-size: .83rem; line-height: 1.6; white-space: pre; overflow-x: auto; }
+
+  /* MCQ Options */
+  .options-grid { display: grid; gap: 10px; margin-top: 1.5rem; }
+  .option-btn {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 18px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: var(--surface2);
+    color: var(--text); font-size: .92rem; font-family: 'Sora', sans-serif;
+    cursor: pointer; transition: all .15s; text-align: left; line-height: 1.5;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,106,247,.08); }
+  .option-letter {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--surface3); border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: .75rem; font-weight: 700;
+    color: var(--text2); transition: all .15s;
+  }
+  .option-btn.selected .option-letter { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .option-btn.selected { border-color: var(--accent); background: rgba(124,106,247,.12); }
+  .option-btn.correct { border-color: var(--green) !important; background: rgba(45,212,160,.1) !important; }
+  .option-btn.correct .option-letter { background: var(--green) !important; border-color: var(--green) !important; color: #fff !important; }
+  .option-btn.wrong { border-color: var(--red) !important; background: rgba(240,107,107,.08) !important; }
+  .option-btn.wrong .option-letter { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; }
+  .option-btn:disabled { cursor: default; }
+
+  /* True/False */
+  .tf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1.5rem; }
+  .tf-btn {
+    padding: 20px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--text); font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: all .15s; font-family: 'Sora', sans-serif;
+  }
+  .tf-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .tf-btn.true-btn:hover:not(:disabled) { border-color: var(--green); background: rgba(45,212,160,.08); }
+  .tf-btn.false-btn:hover:not(:disabled) { border-color: var(--red); background: rgba(240,107,107,.08); }
+  .tf-btn.correct { border-color: var(--green) !important; background: rgba(45,212,160,.12) !important; color: var(--green) !important; }
+  .tf-btn.wrong { border-color: var(--red) !important; background: rgba(240,107,107,.08) !important; color: var(--red) !important; }
+  .tf-btn:disabled { cursor: default; }
+
+  /* Trace / Essay */
+  .trace-area {
+    width: 100%; margin-top: 1.5rem; padding: 14px 16px;
+    background: var(--surface3); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    color: var(--text); font-family: 'Space Mono', monospace; font-size: .85rem; line-height: 1.7;
+    resize: vertical; min-height: 120px; transition: border-color .15s;
+  }
+  .trace-area:focus { outline: none; border-color: var(--accent); }
+
+  .reveal-btn {
+    margin-top: 1rem; padding: 10px 20px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: transparent;
+    color: var(--text2); font-family: 'Sora', sans-serif; font-size: .88rem; font-weight: 500;
+    cursor: pointer; transition: all .15s;
+  }
+  .reveal-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .answer-reveal {
+    display: none; margin-top: 1rem; padding: 16px;
+    background: rgba(45,212,160,.06); border: 1px solid rgba(45,212,160,.25);
+    border-radius: var(--radius-sm); font-size: .9rem; line-height: 1.65; color: var(--green);
+  }
+  .answer-reveal.show { display: block; animation: slideUp .25s ease; }
+  .answer-reveal strong { color: var(--green); }
+
+  /* Feedback */
+  .feedback-bar {
+    display: none; align-items: flex-start; gap: 14px; padding: 16px 20px;
+    border-radius: var(--radius-sm); margin-top: 1rem; animation: slideUp .25s ease;
+  }
+  .feedback-bar.show { display: flex; }
+  .feedback-bar.correct-fb { background: rgba(45,212,160,.08); border: 1px solid rgba(45,212,160,.25); }
+  .feedback-bar.wrong-fb { background: rgba(240,107,107,.06); border: 1px solid rgba(240,107,107,.2); }
+  .fb-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+  .fb-text { font-size: .88rem; line-height: 1.55; }
+  .fb-text strong { color: var(--text); display: block; margin-bottom: 4px; }
+  .feedback-bar.correct-fb .fb-text strong { color: var(--green); }
+  .feedback-bar.wrong-fb .fb-text strong { color: var(--red); }
+
+  /* Nav buttons */
+  .quiz-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 1.5rem; }
+  .nav-btn {
+    padding: 12px 28px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text); font-family: 'Sora', sans-serif;
+    font-size: .9rem; font-weight: 500; cursor: pointer; transition: all .15s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-btn.primary {
+    background: linear-gradient(135deg, var(--accent), #5e4fd4);
+    border-color: transparent; color: #fff; font-weight: 600;
+  }
+  .nav-btn.primary:hover { box-shadow: 0 8px 24px rgba(124,106,247,.35); transform: translateY(-1px); }
+  .nav-btn:disabled { opacity: .4; cursor: default; transform: none !important; box-shadow: none !important; }
+
+  /* ---- RESULTS ---- */
+  .results-section { display: none; animation: slideUp .4s ease; }
+  .score-hero {
+    text-align: center; padding: 3rem 2rem;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); margin-bottom: 1.5rem; position: relative; overflow: hidden;
+  }
+  .score-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% -20%, rgba(124,106,247,.15), transparent 70%);
+  }
+  .score-ring {
+    width: 130px; height: 130px; border-radius: 50%;
+    border: 4px solid var(--border); margin: 0 auto 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+    background: conic-gradient(var(--accent) calc(var(--pct) * 3.6deg), var(--surface3) 0deg);
+  }
+  .score-ring-inner {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: var(--surface); display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .score-pct { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--text); }
+  .score-label { font-size: .7rem; color: var(--text2); }
+  .score-title { font-family: 'Space Mono', monospace; font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; position: relative; z-index: 1; }
+  .score-msg { color: var(--text2); font-size: .9rem; position: relative; z-index: 1; }
+
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .res-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1rem 1.2rem; text-align: center;
+  }
+  .res-card .r-val { font-family: 'Space Mono', monospace; font-size: 1.6rem; font-weight: 700; }
+  .res-card .r-label { font-size: .75rem; color: var(--text2); margin-top: 4px; }
+  .res-card.green .r-val { color: var(--green); }
+  .res-card.red .r-val { color: var(--red); }
+  .res-card.amber .r-val { color: var(--amber); }
+
+  .breakdown { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .breakdown h3 { font-family: 'Space Mono', monospace; font-size: .78rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text3); margin-bottom: 1rem; }
+  .cat-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .cat-row:last-child { border-bottom: none; }
+  .cat-name { flex: 1; font-size: .88rem; color: var(--text2); }
+  .cat-bar-wrap { flex: 2; background: var(--surface3); border-radius: 100px; height: 6px; }
+  .cat-bar { height: 6px; border-radius: 100px; background: var(--accent); transition: width .5s ease; }
+  .cat-score { font-family: 'Space Mono', monospace; font-size: .8rem; color: var(--text); min-width: 40px; text-align: right; }
+
+  .results-actions { display: flex; gap: 10px; }
+  .results-actions .nav-btn { flex: 1; padding: 14px; font-size: .92rem; text-align: center; }
+
+  /* Responsive */
+  @media(max-width:520px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .tf-grid { grid-template-columns: 1fr; }
+    .results-actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="app">
+
+  <header>
+    <div class="logo-badge"><div class="logo-dot"></div><span>CS Faculty · Level 2</span></div>
+    <h1>Java <span>OOP</span> Quiz</h1>
+    <p>Object-Oriented Programming · Final Exam Practice</p>
+  </header>
+
+  <!-- HOME -->
+  <div class="home-section" id="homeSection">
+
+    <div class="section-title">Choose Topics</div>
+    <div class="filter-grid" id="catGrid"></div>
+
+    <div class="section-title">Difficulty</div>
+    <div class="diff-chips">
+      <button class="diff-chip active" data-diff="easy">🟢 Easy</button>
+      <button class="diff-chip active" data-diff="medium">🟡 Medium</button>
+      <button class="diff-chip active" data-diff="hard">🔴 Hard</button>
+    </div>
+
+    <div class="section-title">Question Type</div>
+    <div class="type-chips">
+      <button class="type-chip active" data-type="mcq">Multiple Choice</button>
+      <button class="type-chip active" data-type="tf">True / False</button>
+      <button class="type-chip active" data-type="trace">Code Trace</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="s-label">Available</div><div class="s-val" id="qCount">0</div><div class="s-sub">questions</div></div>
+      <div class="stat-card"><div class="s-label">Topics</div><div class="s-val" id="catCount">0</div><div class="s-sub">categories</div></div>
+      <div class="stat-card"><div class="s-label">Est. Time</div><div class="s-val" id="timeEst">0m</div><div class="s-sub">minutes</div></div>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startQuiz()">Start Quiz →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-section" id="quizSection">
+    <div class="quiz-header">
+      <div class="q-meta">
+        <span class="q-num" id="qNumLabel">Q1 / 20</span>
+        <span class="diff-badge" id="qDiffBadge">Easy</span>
+        <span class="cat-tag" id="qCatTag">Classes</span>
+      </div>
+      <div class="progress-bar-wrap" style="flex:1;max-width:200px">
+        <div class="progress-bar" id="progressBar" style="width:5%"></div>
+      </div>
+    </div>
+
+    <div class="question-card" id="questionCard"></div>
+
+    <div class="feedback-bar" id="feedbackBar">
+      <span class="fb-icon" id="fbIcon"></span>
+      <div class="fb-text"><strong id="fbTitle"></strong><span id="fbDetail"></span></div>
+    </div>
+
+    <div class="quiz-nav">
+      <button class="nav-btn" id="skipBtn" onclick="skipQuestion()">Skip</button>
+      <button class="nav-btn primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="resultsSection">
+    <div class="score-hero">
+      <div class="score-ring" id="scoreRing">
+        <div class="score-ring-inner">
+          <span class="score-pct" id="scorePct">0%</span>
+          <span class="score-label">Score</span>
+        </div>
+      </div>
+      <div class="score-title" id="scoreTitle">Well Done!</div>
+      <div class="score-msg" id="scoreMsg">Keep practicing to master Java OOP.</div>
+    </div>
+    <div class="results-grid">
+      <div class="res-card green"><div class="r-val" id="rCorrect">0</div><div class="r-label">Correct</div></div>
+      <div class="res-card red"><div class="r-val" id="rWrong">0</div><div class="r-label">Wrong</div></div>
+      <div class="res-card amber"><div class="r-val" id="rSkipped">0</div><div class="r-label">Skipped</div></div>
+      <div class="res-card"><div class="r-val" id="rTotal">0</div><div class="r-label">Total</div></div>
+    </div>
+    <div class="breakdown" id="catBreakdown"></div>
+    <div class="results-actions">
+      <button class="nav-btn" onclick="restartQuiz()">← Try Again</button>
+      <button class="nav-btn primary" onclick="reviewWrong()">Review Wrong ↗</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CATEGORIES = {
+  "Classes & Objects": { icon: "🏗️" },
+  "Static Members": { icon: "⚡" },
+  "Inheritance": { icon: "🧬" },
+  "Polymorphism": { icon: "🔄" },
+  "Abstract Classes": { icon: "📐" },
+  "Interfaces": { icon: "🔌" },
+  "Enums": { icon: "📋" },
+  "ArrayList": { icon: "📦" },
+  "Code Tracing": { icon: "🔍" }
+};
+
+const ALL_QUESTIONS = [
+  // ============ MCQ - Classes & Objects - Easy ============
+  { id:1, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'Which of the following best describes a <code>class</code> in Java?',
+    opts:['A running instance of a program','A blueprint for creating objects','A method that returns an object','A primitive data type'],
+    ans:1, explanation:'A class is a blueprint or template used to create objects.' },
+
+  { id:2, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'Which keyword is used to create an object from a class?',
+    opts:['class','static','new','this'],
+    ans:2, explanation:'The <code>new</code> keyword allocates memory and calls the constructor.' },
+
+  { id:3, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'What is the correct way to declare a private field named <code>width</code> of type double?',
+    opts:['double width;','public double width;','private double width;','protected width double;'],
+    ans:2, explanation:'<code>private double width;</code> correctly applies the private access modifier.' },
+
+  { id:4, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'A method that returns the value of a private field is called a:',
+    opts:['Mutator','Constructor','Accessor','Modifier'],
+    ans:2, explanation:'Accessors (getters) return field values without modifying them.' },
+
+  { id:5, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'A method that changes the value of a private field is called a:',
+    opts:['Getter','Mutator','Constructor','Accessor'],
+    ans:1, explanation:'Mutators (setters) modify field values, often with validation.' },
+
+  { id:6, type:'mcq', cat:'Classes & Objects', diff:'medium',
+    q:'What does the default constructor do to numeric fields in Java?',
+    opts:['Sets them to null','Sets them to 1','Sets them to 0','Leaves them undefined'],
+    ans:2, explanation:'Java initializes numeric fields to 0, booleans to false, and objects to null.' },
+
+  { id:7, type:'mcq', cat:'Classes & Objects', diff:'medium',
+    q:'Which of the following is NOT true about constructors?',
+    opts:['They have the same name as the class','They can have a return type of void','They are automatically called when an object is created','They can be overloaded'],
+    ans:1, explanation:'Constructors have NO return type at all — not even void.' },
+
+  { id:8, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'What is a no-arg constructor?',
+    opts:['A constructor with no class name','A constructor that accepts no arguments','A constructor that returns nothing','A constructor that cannot be overloaded'],
+    ans:1, explanation:'A no-arg constructor is simply one that takes zero parameters.' },
+
+  { id:9, type:'mcq', cat:'Classes & Objects', diff:'medium',
+    q:'Constructor chaining in Java refers to:',
+    opts:['Calling a parent class method from a child class','Calling one constructor from within another constructor','Chaining multiple method calls','Overriding constructors in a subclass'],
+    ans:1, explanation:'Constructor chaining uses <code>this()</code> or <code>super()</code> to call another constructor.' },
+
+  { id:10, type:'mcq', cat:'Classes & Objects', diff:'medium',
+    q:'When is the default constructor NOT provided by Java?',
+    opts:['When the class is abstract','When the class has only private fields','When at least one constructor is already written','When the class implements an interface'],
+    ans:2, explanation:'Java only auto-generates a default constructor when you write zero constructors.' },
+
+  { id:11, type:'mcq', cat:'Classes & Objects', diff:'hard',
+    q:'What will happen when the following is compiled? <code>Rectangle box;</code>',
+    opts:['A Rectangle object is created','An uninitialized reference variable is declared','A compiler error occurs immediately','box is initialized to null automatically'],
+    ans:1, explanation:'This only declares a reference variable; no object is created yet.' },
+
+  { id:12, type:'mcq', cat:'Classes & Objects', diff:'medium',
+    q:'Method overloading means:',
+    opts:['Two methods in different classes with the same name','Two methods with the same name and different parameter lists in the same class','A subclass method replacing a superclass method','Using the final keyword on a method'],
+    ans:1, explanation:'Overloading = same name, different signatures, within the same class.' },
+
+  { id:13, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'The <code>this</code> keyword in Java refers to:',
+    opts:['The superclass object','The current object of the class','The static field of the class','The constructor of the class'],
+    ans:1, explanation:'<code>this</code> is a reference to the current instance of the class.' },
+
+  { id:14, type:'mcq', cat:'Classes & Objects', diff:'easy',
+    q:'Which access modifier makes a member accessible everywhere?',
+    opts:['private','protected','default','public'],
+    ans:3, explanation:'<code>public</code> grants access from any class in any package.' },
+
+  // ============ MCQ - Static Members ============
+  { id:15, type:'mcq', cat:'Static Members', diff:'easy',
+    q:'A static field in Java belongs to:',
+    opts:['Each individual object of the class','The class itself, shared among all objects','Only the first object created','The subclass only'],
+    ans:1, explanation:'Static fields are class-level; all instances share one copy.' },
+
+  { id:16, type:'mcq', cat:'Static Members', diff:'easy',
+    q:'How do you correctly call a static method <code>getCount()</code> in a class <code>Counter</code>?',
+    opts:['new Counter().getCount()','Counter.getCount()','this.getCount()','super.getCount()'],
+    ans:1, explanation:'Static methods are called via <code>ClassName.method()</code>, not through objects.' },
+
+  { id:17, type:'mcq', cat:'Static Members', diff:'medium',
+    q:'Which of the following is true about static methods?',
+    opts:['They can access instance fields directly','They require an object to be called','They can only access static fields and methods','They must return void'],
+    ans:2, explanation:'Static methods have no <code>this</code> reference so they cannot access instance members.' },
+
+  { id:18, type:'mcq', cat:'Static Members', diff:'easy',
+    q:'What is the initial value of a static int field if not explicitly initialized?',
+    opts:['null','1','undefined','0'],
+    ans:3, explanation:'Static numeric fields default to 0 just like instance fields.' },
+
+  { id:19, type:'mcq', cat:'Static Members', diff:'easy',
+    q:'Which Java class is an example of a utility class that uses static methods?',
+    opts:['Scanner','String','Math','ArrayList'],
+    ans:2, explanation:'<code>Math.sqrt()</code>, <code>Math.PI</code>, etc. are all static — you never instantiate Math.' },
+
+  // ============ MCQ - Inheritance ============
+  { id:20, type:'mcq', cat:'Inheritance', diff:'easy',
+    q:'Which keyword is used to inherit from a superclass in Java?',
+    opts:['implements','inherits','extends','super'],
+    ans:2, explanation:'<code>extends</code> is the keyword for class inheritance in Java.' },
+
+  { id:21, type:'mcq', cat:'Inheritance', diff:'easy',
+    q:'Which of the following represents the "is-a" relationship?',
+    opts:['A Car has an Engine','A Student has a Name','A Dog is an Animal','A Rectangle has a Width'],
+    ans:2, explanation:'"is-a" describes inheritance. A Dog IS AN Animal.' },
+
+  { id:22, type:'mcq', cat:'Inheritance', diff:'medium',
+    q:'Private members of a superclass in an inherited subclass:',
+    opts:['Are directly accessible in the subclass','Are not inherited at all','Exist in memory but can only be accessed via public superclass methods','Become public in the subclass'],
+    ans:2, explanation:'Private members exist in the subclass object but are only reachable through public/protected methods.' },
+
+  { id:23, type:'mcq', cat:'Inheritance', diff:'medium',
+    q:'When a subclass is instantiated, which constructor runs first?',
+    opts:['The subclass constructor','The static initializer','The superclass constructor','The interface default method'],
+    ans:2, explanation:'Java always calls the superclass constructor first, either explicitly via super() or implicitly.' },
+
+  { id:24, type:'mcq', cat:'Inheritance', diff:'medium',
+    q:'What does the <code>final</code> modifier on a method prevent?',
+    opts:['The method from being called','The method from being overridden in a subclass','The method from being inherited','The method from accessing private fields'],
+    ans:1, explanation:'<code>final</code> methods cannot be overridden by any subclass.' },
+
+  { id:25, type:'mcq', cat:'Inheritance', diff:'easy',
+    q:'Constructors are ________ by subclasses.',
+    opts:['Always inherited','Not inherited','Overridden','Overloaded automatically'],
+    ans:1, explanation:'Constructors are never inherited; the subclass must define its own or use super().' },
+
+  // ============ MCQ - Polymorphism ============
+  { id:26, type:'mcq', cat:'Polymorphism', diff:'medium',
+    q:'What is polymorphism in Java?',
+    opts:['Having multiple constructors in a class','The ability of a variable to hold objects of different types','Overloading methods in a class','Using interfaces only'],
+    ans:1, explanation:'Polymorphism allows a superclass reference to point to any subclass object.' },
+
+  { id:27, type:'mcq', cat:'Polymorphism', diff:'medium',
+    q:'What is the key difference between overloading and overriding?',
+    opts:['Overloading changes return type; overriding changes parameters','Overloading is same name/different params in same class; overriding is same signature in subclass','They are the same concept','Overriding can only happen in the same class'],
+    ans:1, explanation:'Overloading = compile-time, same class. Overriding = runtime, subclass.' },
+
+  { id:28, type:'mcq', cat:'Polymorphism', diff:'easy',
+    q:'Which annotation should be placed before an overriding method?',
+    opts:['@Static','@Override','@Inherited','@Super'],
+    ans:1, explanation:'@Override tells the compiler to verify you are correctly overriding a method.' },
+
+  { id:29, type:'mcq', cat:'Polymorphism', diff:'medium',
+    q:'A superclass reference variable can hold a reference to:',
+    opts:['Only superclass objects','Subclass objects','Interface objects directly','Static objects only'],
+    ans:1, explanation:'This is the basis of polymorphism — a parent-type variable can reference a child object.' },
+
+  { id:30, type:'mcq', cat:'Polymorphism', diff:'hard',
+    q:'Method overriding requires the subclass method to have:',
+    opts:['A different name from the superclass method','The same signature as the superclass method','The static keyword','No return type'],
+    ans:1, explanation:'Overriding requires the same name, return type, and parameter list.' },
+
+  // ============ MCQ - Abstract Classes ============
+  { id:31, type:'mcq', cat:'Abstract Classes', diff:'easy',
+    q:'An abstract class in Java:',
+    opts:['Can be instantiated directly','Cannot be instantiated and serves as a superclass','Must implement all methods','Cannot have constructors'],
+    ans:1, explanation:'Abstract classes define a template; only concrete subclasses can be instantiated.' },
+
+  { id:32, type:'mcq', cat:'Abstract Classes', diff:'easy',
+    q:'An abstract method:',
+    opts:['Has a full implementation in the abstract class','Has no body and must be overridden in a subclass','Is always private','Cannot have parameters'],
+    ans:1, explanation:'Abstract methods have only a signature — no body. Subclasses must provide the implementation.' },
+
+  { id:33, type:'mcq', cat:'Abstract Classes', diff:'medium',
+    q:'What happens if a subclass fails to override an abstract method?',
+    opts:['The method runs with default behavior','A runtime error occurs','A compiler error occurs','The method is ignored'],
+    ans:2, explanation:'The compiler forces every abstract method to be implemented unless the subclass is also abstract.' },
+
+  { id:34, type:'mcq', cat:'Abstract Classes', diff:'medium',
+    q:'What is the main difference between an abstract class and an interface?',
+    opts:['Abstract classes can have method implementations; interfaces traditionally cannot (pre-Java 8)','Interfaces can be instantiated; abstract classes cannot','Abstract classes support multiple inheritance','There is no difference'],
+    ans:0, explanation:'Abstract classes can have concrete methods; pre-Java-8 interfaces could not.' },
+
+  // ============ MCQ - Interfaces ============
+  { id:35, type:'mcq', cat:'Interfaces', diff:'easy',
+    q:'An interface in Java is best described as:',
+    opts:['A class with only static methods','A contract specifying method signatures that implementing classes must define','A class that cannot be extended','A group of related classes'],
+    ans:1, explanation:'An interface is a contract — it defines what classes must do, not how.' },
+
+  { id:36, type:'mcq', cat:'Interfaces', diff:'easy',
+    q:'Which keyword is used to implement an interface?',
+    opts:['extends','implements','interface','abstract'],
+    ans:1, explanation:'<code>implements</code> is used when a class fulfills an interface contract.' },
+
+  { id:37, type:'mcq', cat:'Interfaces', diff:'medium',
+    q:'Fields declared in an interface in Java are automatically:',
+    opts:['private and non-static','public, final, and static','protected and mutable','instance fields'],
+    ans:1, explanation:'Interface fields are implicitly <code>public static final</code> — constants.' },
+
+  { id:38, type:'mcq', cat:'Interfaces', diff:'easy',
+    q:'A class in Java can implement:',
+    opts:['Only one interface','Multiple interfaces','Only one interface and one class','No interfaces if it extends a class'],
+    ans:1, explanation:'Java allows implementing multiple interfaces — this is how it achieves multiple inheritance of type.' },
+
+  { id:39, type:'mcq', cat:'Interfaces', diff:'medium',
+    q:'Which of the following cannot be done with an interface reference variable?',
+    opts:['Reference an object of a class implementing the interface','Call methods declared in the interface','Directly instantiate an interface object','Be passed as a parameter'],
+    ans:2, explanation:'You cannot use <code>new InterfaceName()</code> — interfaces cannot be instantiated.' },
+
+  { id:40, type:'mcq', cat:'Interfaces', diff:'hard',
+    q:'If a class implements multiple interfaces, which separator is used?',
+    opts:['semicolon (;)','period (.)','comma (,)','pipe (|)'],
+    ans:2, explanation:'<code>class Foo implements Bar, Baz {}</code> — comma-separated.' },
+
+  // ============ MCQ - Enums ============
+  { id:41, type:'mcq', cat:'Enums', diff:'easy',
+    q:'Which keyword is used to define an enumerated type in Java?',
+    opts:['enum','Enum','enumerate','const'],
+    ans:0, explanation:'<code>enum</code> (lowercase) defines an enumeration in Java.' },
+
+  { id:42, type:'mcq', cat:'Enums', diff:'medium',
+    q:'What does the <code>ordinal()</code> method of an enum return?',
+    opts:['The name of the constant','The zero-based position of the constant','The hash code of the constant','The string value of the constant'],
+    ans:1, explanation:'<code>ordinal()</code> returns the 0-based index position of the enum constant.' },
+
+  { id:43, type:'mcq', cat:'Enums', diff:'medium',
+    q:'Given <code>enum Day {SUNDAY, MONDAY, TUESDAY, WEDNESDAY}</code>, what is the ordinal of TUESDAY?',
+    opts:['1','2','3','0'],
+    ans:1, explanation:'SUNDAY=0, MONDAY=1, TUESDAY=2. Ordinals start at 0.' },
+
+  { id:44, type:'mcq', cat:'Enums', diff:'medium',
+    q:'An enum in Java is a:',
+    opts:['Simple primitive type','Specialized class','Special type of array','Type of interface'],
+    ans:1, explanation:'Enums are full classes in Java with fields, methods, and constructors possible.' },
+
+  { id:45, type:'mcq', cat:'Enums', diff:'hard',
+    q:'Which enum method compares two enum constants by their ordinal values?',
+    opts:['equals()','toString()','compareTo()','ordinal()'],
+    ans:2, explanation:'<code>compareTo()</code> compares ordinals and returns negative, zero, or positive.' },
+
+  // ============ MCQ - ArrayList ============
+  { id:46, type:'mcq', cat:'ArrayList', diff:'easy',
+    q:'Which method is used to retrieve an element at a specific index in an ArrayList?',
+    opts:['fetch()','retrieve()','get()','element()'],
+    ans:2, explanation:'<code>list.get(i)</code> retrieves the element at index i.' },
+
+  { id:47, type:'mcq', cat:'ArrayList', diff:'easy',
+    q:'Which ArrayList method replaces an existing element at a given index?',
+    opts:['add()','replace()','update()','set()'],
+    ans:3, explanation:'<code>list.set(index, value)</code> replaces without shifting other elements.' },
+
+  { id:48, type:'mcq', cat:'ArrayList', diff:'medium',
+    q:'After these operations, what does <code>list.get(0)</code> return?\n<code>list.add("A"); list.add("B"); list.remove(0);</code>',
+    opts:['"A"','null','"B"','IndexOutOfBoundsException'],
+    ans:2, explanation:'After removing index 0 ("A"), "B" shifts to index 0.' },
+
+  { id:49, type:'mcq', cat:'ArrayList', diff:'easy',
+    q:'Which method returns the number of elements in an ArrayList?',
+    opts:['length()','count()','capacity()','size()'],
+    ans:3, explanation:'<code>size()</code> is the ArrayList method (unlike arrays which use <code>.length</code>).' },
+
+  { id:50, type:'mcq', cat:'ArrayList', diff:'easy',
+    q:'The ArrayList class differs from arrays because it:',
+    opts:['Can only store String types','Automatically resizes as elements are added or removed','Is faster than an array','Uses a fixed size set at declaration'],
+    ans:1, explanation:'ArrayList is dynamic — it grows and shrinks automatically.' },
+
+  { id:51, type:'mcq', cat:'ArrayList', diff:'medium',
+    q:'To insert an element at index 2 in an ArrayList <code>list</code>, you write:',
+    opts:['list.set(2, "X")','list.insert(2, "X")','list.add(2, "X")','list.put(2, "X")'],
+    ans:2, explanation:'<code>add(index, element)</code> inserts at a position and shifts existing elements right.' },
+
+  { id:52, type:'mcq', cat:'ArrayList', diff:'medium',
+    q:'Which of the following correctly creates an ArrayList of BankAccount objects?',
+    opts:['ArrayList<BankAccount> list = new ArrayList();','ArrayList<BankAccount> list = new ArrayList<BankAccount>();','BankAccount[] list = new ArrayList<BankAccount>();','ArrayList list = new BankAccount();'],
+    ans:1, explanation:'The second option correctly specifies the generic type on both sides.' },
+
+  // ============ TRUE/FALSE ============
+  { id:53, type:'tf', cat:'Classes & Objects', diff:'easy',
+    q:'A constructor must have the same name as the class it belongs to.',
+    ans:true, explanation:'This is a fundamental rule of Java constructors.' },
+
+  { id:54, type:'tf', cat:'Classes & Objects', diff:'easy',
+    q:'Constructors can have a return type of void.',
+    ans:false, explanation:'Constructors have NO return type — not even void.' },
+
+  { id:55, type:'tf', cat:'Classes & Objects', diff:'medium',
+    q:'Java always provides a default constructor, even if you define your own.',
+    ans:false, explanation:'Java only auto-provides a default constructor when you write zero constructors.' },
+
+  { id:56, type:'tf', cat:'Inheritance', diff:'medium',
+    q:'A private field of a superclass can be directly accessed in a subclass.',
+    ans:false, explanation:'Private fields exist in memory but must be accessed through public/protected methods.' },
+
+  { id:57, type:'tf', cat:'Polymorphism', diff:'medium',
+    q:'Method overriding can occur within the same class without any inheritance.',
+    ans:false, explanation:'Overriding requires an inheritance relationship between two classes.' },
+
+  { id:58, type:'tf', cat:'Static Members', diff:'medium',
+    q:'Static methods can access instance (non-static) variables directly.',
+    ans:false, explanation:'Static methods have no <code>this</code> reference so they cannot access instance members.' },
+
+  { id:59, type:'tf', cat:'Interfaces', diff:'easy',
+    q:'A class can implement more than one interface in Java.',
+    ans:true, explanation:'Multiple interface implementation is one of Java\'s key features.' },
+
+  { id:60, type:'tf', cat:'Abstract Classes', diff:'easy',
+    q:'An abstract class can be instantiated directly using the <code>new</code> keyword.',
+    ans:false, explanation:'Abstract classes cannot be instantiated; you must use a concrete subclass.' },
+
+  { id:61, type:'tf', cat:'Interfaces', diff:'medium',
+    q:'All methods in an interface must be implemented by any class that implements it (prior to Java 8).',
+    ans:true, explanation:'Before Java 8 default methods, every interface method required implementation.' },
+
+  { id:62, type:'tf', cat:'Interfaces', diff:'medium',
+    q:'Fields declared inside an interface are automatically public, final, and static.',
+    ans:true, explanation:'Interface fields are implicitly constants: <code>public static final</code>.' },
+
+  { id:63, type:'tf', cat:'Inheritance', diff:'easy',
+    q:'A subclass inherits constructors from its superclass.',
+    ans:false, explanation:'Constructors are NOT inherited; the subclass must define its own.' },
+
+  { id:64, type:'tf', cat:'Inheritance', diff:'easy',
+    q:'The <code>super</code> keyword can be used to call a superclass constructor from a subclass.',
+    ans:true, explanation:'<code>super()</code> calls the parent constructor and must be the first statement.' },
+
+  { id:65, type:'tf', cat:'Polymorphism', diff:'medium',
+    q:'Method overloading requires methods to have the same number and type of parameters.',
+    ans:false, explanation:'Overloaded methods must have DIFFERENT parameter lists.' },
+
+  { id:66, type:'tf', cat:'ArrayList', diff:'easy',
+    q:'An ArrayList automatically expands when elements are added beyond its current capacity.',
+    ans:true, explanation:'ArrayList manages its internal array automatically.' },
+
+  { id:67, type:'tf', cat:'Enums', diff:'medium',
+    q:'The ordinal of the first constant in an enum is 1.',
+    ans:false, explanation:'Ordinals start at 0. The first constant has ordinal 0.' },
+
+  { id:68, type:'tf', cat:'Inheritance', diff:'medium',
+    q:'In Java, a class can extend multiple superclasses.',
+    ans:false, explanation:'Java only supports single class inheritance. Use interfaces for multiple types.' },
+
+  { id:69, type:'tf', cat:'Polymorphism', diff:'easy',
+    q:'Protected members are accessible within the same package and in subclasses.',
+    ans:true, explanation:'<code>protected</code> = same package + any subclass (even in other packages).' },
+
+  { id:70, type:'tf', cat:'Enums', diff:'easy',
+    q:'An enum in Java is a specialized class.',
+    ans:true, explanation:'Enums compile to classes and can have fields, constructors, and methods.' },
+
+  { id:71, type:'tf', cat:'Interfaces', diff:'easy',
+    q:'You can create an instance of an interface directly using the <code>new</code> keyword.',
+    ans:false, explanation:'Interfaces cannot be instantiated — only classes that implement them can.' },
+
+  { id:72, type:'tf', cat:'Static Members', diff:'hard',
+    q:'A static field is initialized each time a new object is created.',
+    ans:false, explanation:'Static fields are initialized once when the class is first loaded.' },
+
+  { id:73, type:'tf', cat:'Interfaces', diff:'medium',
+    q:'Default methods in interfaces (Java 8+) have a method body.',
+    ans:true, explanation:'Java 8 introduced <code>default</code> methods with full implementations in interfaces.' },
+
+  // ============ CODE TRACING ============
+  { id:74, type:'trace', cat:'Code Tracing', diff:'hard',
+    q:'Trace the following code and write the exact output:',
+    code:`public class Counter {
+  static int x = 0;
+  Counter() { x++; }
+  void display() { System.out.println(x); }
+
+  public static void main(String[] args) {
+    Counter c1 = new Counter(); c1.display();
+    Counter c2 = new Counter(); c2.display();
+    Counter c3 = new Counter(); c3.display();
+    c1.display();
+    c2.display();
+  }
+}`,
+    ans:`1\n2\n3\n3\n3`,
+    explanation:'<code>x</code> is static and shared. Each <code>new Counter()</code> increments it once. After all 3 are created, x=3 and stays 3.' },
+
+  { id:75, type:'trace', cat:'Code Tracing', diff:'hard',
+    q:'Trace the ArrayList operations and write the list contents after each step:',
+    code:`ArrayList<String> list = new ArrayList<>();
+list.add("Alice");     // Step 1
+list.add("Bob");       // Step 2
+list.add("Charlie");   // Step 3
+list.remove(1);        // Step 4
+list.add(1, "David");  // Step 5
+list.set(0, "Eve");    // Step 6
+System.out.println(list); // Step 7`,
+    ans:`Step 1: [Alice]
+Step 2: [Alice, Bob]
+Step 3: [Alice, Bob, Charlie]
+Step 4: [Alice, Charlie]
+Step 5: [Alice, David, Charlie]
+Step 6: [Eve, David, Charlie]
+Output: [Eve, David, Charlie]`,
+    explanation:'Step 4 removes index 1 (Bob). Step 5 inserts David at index 1. Step 6 replaces index 0 with Eve.' },
+
+  { id:76, type:'trace', cat:'Code Tracing', diff:'medium',
+    q:'What does the following method print? Trace the output:',
+    code:`public class Test {
+  public static void main(String[] args) {
+    int[] arr = {10, 20, 30, 40, 50};
+    for (int i = arr.length - 1; i >= 0; i--) {
+      System.out.print(arr[i] + " ");
+    }
+  }
+}`,
+    ans:`50 40 30 20 10 `,
+    explanation:'The loop iterates from index 4 down to 0, printing array elements in reverse order.' },
+
+  { id:77, type:'trace', cat:'Code Tracing', diff:'hard',
+    q:'Trace this inheritance example and identify the output:',
+    code:`class Animal {
+  String sound() { return "..."; }
+}
+class Dog extends Animal {
+  @Override
+  String sound() { return "Woof"; }
+}
+class Cat extends Animal {
+  @Override
+  String sound() { return "Meow"; }
+}
+// In main:
+Animal a1 = new Dog();
+Animal a2 = new Cat();
+System.out.println(a1.sound());
+System.out.println(a2.sound());`,
+    ans:`Woof\nMeow`,
+    explanation:'This is runtime polymorphism. The JVM calls the overridden method based on the actual object type at runtime.' }
+];
+
+// State
+let selectedCats = new Set(Object.keys(CATEGORIES));
+let selectedDiffs = new Set(['easy','medium','hard']);
+let selectedTypes = new Set(['mcq','tf','trace']);
+let quizQuestions = [];
+let currentIdx = 0;
+let score = 0;
+let skipped = 0;
+let answered = 0;
+let catScores = {};
+let wrongQuestions = [];
+let reviewMode = false;
+let answered_ids = new Set();
+
+// Init categories
+function initCatGrid() {
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  Object.entries(CATEGORIES).forEach(([name, meta]) => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-chip active';
+    btn.dataset.cat = name;
+    btn.innerHTML = `<span class="chip-icon">${meta.icon}</span>${name}`;
+    btn.onclick = () => toggleCat(btn, name);
+    grid.appendChild(btn);
+  });
+}
+
+function toggleCat(btn, name) {
+  if (selectedCats.has(name)) {
+    if (selectedCats.size === 1) return;
+    selectedCats.delete(name);
+    btn.classList.remove('active');
+  } else {
+    selectedCats.add(name);
+    btn.classList.add('active');
+  }
+  updateStats();
+}
+
+document.querySelectorAll('.diff-chip').forEach(btn => {
+  btn.onclick = () => {
+    const d = btn.dataset.diff;
+    if (selectedDiffs.has(d)) {
+      if (selectedDiffs.size === 1) return;
+      selectedDiffs.delete(d);
+      btn.classList.remove('active');
+    } else {
+      selectedDiffs.add(d);
+      btn.classList.add('active');
+    }
+    updateStats();
+  };
+});
+
+document.querySelectorAll('.type-chip').forEach(btn => {
+  btn.onclick = () => {
+    const t = btn.dataset.type;
+    if (selectedTypes.has(t)) {
+      if (selectedTypes.size === 1) return;
+      selectedTypes.delete(t);
+      btn.classList.remove('active');
+    } else {
+      selectedTypes.add(t);
+      btn.classList.add('active');
+    }
+    updateStats();
+  };
+});
+
+function getFiltered() {
+  return ALL_QUESTIONS.filter(q =>
+    selectedCats.has(q.cat) &&
+    selectedDiffs.has(q.diff) &&
+    selectedTypes.has(q.type)
+  );
+}
+
+function updateStats() {
+  const qs = getFiltered();
+  document.getElementById('qCount').textContent = qs.length;
+  const cats = new Set(qs.map(q => q.cat));
+  document.getElementById('catCount').textContent = cats.size;
+  const mins = Math.ceil(qs.length * 1.2);
+  document.getElementById('timeEst').textContent = mins + 'm';
+  document.getElementById('startBtn').disabled = qs.length === 0;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz(useWrong = false) {
+  reviewMode = useWrong;
+  quizQuestions = shuffle(useWrong ? wrongQuestions : getFiltered());
+  currentIdx = 0; score = 0; skipped = 0; answered = 0;
+  catScores = {}; wrongQuestions = []; answered_ids = new Set();
+  quizQuestions.forEach(q => {
+    if (!catScores[q.cat]) catScores[q.cat] = { correct: 0, total: 0 };
+    catScores[q.cat].total++;
+  });
+  document.getElementById('homeSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('quizSection').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizQuestions[currentIdx];
+  const total = quizQuestions.length;
+  document.getElementById('qNumLabel').textContent = `Q${currentIdx + 1} / ${total}`;
+  document.getElementById('progressBar').style.width = `${((currentIdx) / total) * 100}%`;
+
+  const diffBadge = document.getElementById('qDiffBadge');
+  diffBadge.textContent = q.diff.charAt(0).toUpperCase() + q.diff.slice(1);
+  diffBadge.className = `diff-badge ${q.diff}`;
+  document.getElementById('qCatTag').textContent = q.cat;
+
+  const card = document.getElementById('questionCard');
+  let html = `<div class="q-type-label">${q.type === 'mcq' ? 'Multiple Choice' : q.type === 'tf' ? 'True / False' : 'Code Trace'}</div>`;
+  html += `<div class="q-text">${q.q}</div>`;
+  if (q.code) html += `<code class="code-block">${escHtml(q.code)}</code>`;
+
+  if (q.type === 'mcq') {
+    html += '<div class="options-grid">';
+    const letters = ['A','B','C','D'];
+    q.opts.forEach((opt, i) => {
+      html += `<button class="option-btn" onclick="selectMCQ(this, ${i})" data-idx="${i}">
+        <span class="option-letter">${letters[i]}</span>
+        <span>${opt}</span>
+      </button>`;
+    });
+    html += '</div>';
+  } else if (q.type === 'tf') {
+    html += '<div class="tf-grid">';
+    html += `<button class="tf-btn true-btn" onclick="selectTF(this, true)">✓ TRUE</button>`;
+    html += `<button class="tf-btn false-btn" onclick="selectTF(this, false)">✗ FALSE</button>`;
+    html += '</div>';
+  } else {
+    html += `<textarea class="trace-area" id="traceInput" placeholder="Write your answer here..."></textarea>`;
+    html += `<button class="reveal-btn" onclick="revealTrace()">Reveal Answer</button>`;
+    html += `<div class="answer-reveal" id="answerReveal">
+      <strong>Model Answer:</strong><br><code class="code-block" style="margin-top:.5rem">${escHtml(q.ans)}</code>
+      <p style="margin-top:.6rem;font-size:.85rem;color:var(--green)">${q.explanation}</p>
+    </div>`;
+  }
+
+  card.innerHTML = html;
+  hideFeedback();
+  document.getElementById('skipBtn').style.display = q.type === 'trace' ? 'none' : '';
+  document.getElementById('nextBtn').textContent = currentIdx === quizQuestions.length - 1 ? 'Finish ✓' : 'Next →';
+  document.getElementById('nextBtn').disabled = (q.type !== 'trace');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectMCQ(btn, idx) {
+  const q = quizQuestions[currentIdx];
+  if (answered_ids.has(q.id)) return;
+  answered_ids.add(q.id);
+
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const correct = idx === q.ans;
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) {
+    document.querySelectorAll('.option-btn')[q.ans].classList.add('correct');
+    wrongQuestions.push(q);
+  } else {
+    score++;
+    if (catScores[q.cat]) catScores[q.cat].correct++;
+  }
+  answered++;
+  showFeedback(correct, q.explanation);
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function selectTF(btn, val) {
+  const q = quizQuestions[currentIdx];
+  if (answered_ids.has(q.id)) return;
+  answered_ids.add(q.id);
+
+  document.querySelectorAll('.tf-btn').forEach(b => b.disabled = true);
+  const correct = val === q.ans;
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) {
+    document.querySelectorAll('.tf-btn').forEach(b => {
+      if ((b.classList.contains('true-btn') && q.ans === true) ||
+          (b.classList.contains('false-btn') && q.ans === false)) b.classList.add('correct');
+    });
+    wrongQuestions.push(q);
+  } else {
+    score++;
+    if (catScores[q.cat]) catScores[q.cat].correct++;
+  }
+  answered++;
+  showFeedback(correct, q.explanation);
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function revealTrace() {
+  const rev = document.getElementById('answerReveal');
+  if (rev) { rev.classList.add('show'); }
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function showFeedback(correct, explanation) {
+  const bar = document.getElementById('feedbackBar');
+  bar.className = `feedback-bar show ${correct ? 'correct-fb' : 'wrong-fb'}`;
+  document.getElementById('fbIcon').textContent = correct ? '✓' : '✗';
+  document.getElementById('fbTitle').textContent = correct ? 'Correct!' : 'Incorrect';
+  document.getElementById('fbDetail').innerHTML = explanation || '';
+}
+
+function hideFeedback() {
+  const bar = document.getElementById('feedbackBar');
+  bar.className = 'feedback-bar';
+}
+
+function skipQuestion() {
+  const q = quizQuestions[currentIdx];
+  if (!answered_ids.has(q.id)) {
+    skipped++;
+    wrongQuestions.push(q);
+  }
+  nextQuestion();
+}
+
+function nextQuestion() {
+  if (currentIdx >= quizQuestions.length - 1) {
+    showResults();
+  } else {
+    currentIdx++;
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('quizSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'block';
+
+  const total = quizQuestions.length;
+  const wrong = total - score - skipped;
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+
+  document.getElementById('scorePct').textContent = pct + '%';
+  document.getElementById('scoreRing').style.setProperty('--pct', pct);
+  document.getElementById('rCorrect').textContent = score;
+  document.getElementById('rWrong').textContent = wrong;
+  document.getElementById('rSkipped').textContent = skipped;
+  document.getElementById('rTotal').textContent = total;
+
+  let title, msg;
+  if (pct >= 90) { title = '🎉 Excellent!'; msg = 'Outstanding performance — you have mastered Java OOP!'; }
+  else if (pct >= 75) { title = '👍 Great Job!'; msg = 'Solid understanding. Review the questions you missed.'; }
+  else if (pct >= 60) { title = '📖 Keep Going!'; msg = 'Good foundation. A bit more study will get you there.'; }
+  else { title = '💡 Keep Practicing!'; msg = 'Review the material and try again — you\'ve got this!'; }
+  document.getElementById('scoreTitle').textContent = title;
+  document.getElementById('scoreMsg').textContent = msg;
+
+  const bd = document.getElementById('catBreakdown');
+  let bHTML = '<h3>Performance by Category</h3>';
+  Object.entries(catScores).forEach(([cat, data]) => {
+    const p = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+    bHTML += `<div class="cat-row">
+      <span class="cat-name">${cat}</span>
+      <div class="cat-bar-wrap"><div class="cat-bar" style="width:${p}%;background:${p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)'}"></div></div>
+      <span class="cat-score">${data.correct}/${data.total}</span>
+    </div>`;
+  });
+  bd.innerHTML = bHTML;
+
+  document.querySelector('.results-actions .nav-btn:last-child').style.display =
+    wrongQuestions.length > 0 ? '' : 'none';
+}
+
+function restartQuiz() {
+  reviewMode = false;
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('homeSection').style.display = 'block';
+  updateStats();
+}
+
+function reviewWrong() {
+  if (wrongQuestions.length === 0) return;
+  startQuiz(true);
+}
+
+initCatGrid();
+updateStats();
+</script>
+</body>
+</html>

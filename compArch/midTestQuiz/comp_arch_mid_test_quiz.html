@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Architecture Quiz — October 6 University</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #f97316;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --easy: #10b981;
+    --medium: #f59e0b;
+    --hard: #ef4444;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ========== SPLASH SCREEN ========== */
+  #splash {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2rem; padding: 2rem; text-align: center;
+  }
+
+  .splash-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.25em;
+    color: var(--accent); text-transform: uppercase;
+    border: 1px solid var(--accent);
+    padding: 0.35rem 1rem; border-radius: 2px;
+  }
+
+  .splash-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800; line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent2) 60%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .splash-sub {
+    font-size: 1rem; color: var(--text-dim); max-width: 500px;
+    font-weight: 400;
+  }
+
+  .splash-stats {
+    display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center;
+  }
+
+  .stat-box {
+    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  }
+
+  .stat-num {
+    font-size: 2.5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    color: var(--text-muted); text-transform: uppercase;
+  }
+
+  .start-btn {
+    margin-top: 1rem;
+    background: var(--accent);
+    color: #fff; border: none;
+    padding: 1rem 3rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem; font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer; border-radius: 4px;
+    transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+
+  .start-btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0; transition: opacity 0.2s;
+  }
+
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(249,115,22,0.4); }
+  .start-btn:hover::after { opacity: 1; }
+
+  /* ========== MAIN QUIZ ========== */
+  #quiz-app {
+    display: none;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 5rem;
+    position: relative; z-index: 1;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap; gap: 1rem;
+  }
+
+  .topbar-title {
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--accent); text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .topbar-meta {
+    display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-family: 'Space Mono', monospace; font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .meta-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* PROGRESS */
+  .progress-section { margin-bottom: 2rem; }
+
+  .progress-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.6rem;
+  }
+
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em;
+    color: var(--text-muted); text-transform: uppercase;
+  }
+
+  .progress-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; font-weight: 700;
+    color: var(--text);
+  }
+
+  .progress-bar-bg {
+    height: 6px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 3px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* SECTION TABS */
+  .section-tabs {
+    display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;
+  }
+
+  .sec-tab {
+    padding: 0.4rem 0.9rem;
+    border-radius: 4px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.15s;
+  }
+
+  .sec-tab.active {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent);
+  }
+
+  .sec-tab:hover:not(.active) { border-color: var(--accent2); color: var(--accent2); }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    animation: fadeSlide 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .question-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--diff-color, var(--accent2));
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+
+  .q-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.12em;
+    color: var(--text-muted); text-transform: uppercase;
+    min-width: 60px;
+  }
+
+  .q-type-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 0.2rem 0.5rem;
+    border-radius: 3px; font-weight: 700;
+  }
+
+  .badge-mcq { background: rgba(59,130,246,0.15); color: var(--accent2); border: 1px solid rgba(59,130,246,0.3); }
+  .badge-tf { background: rgba(249,115,22,0.12); color: var(--accent); border: 1px solid rgba(249,115,22,0.3); }
+  .badge-prob { background: rgba(16,185,129,0.12); color: var(--easy); border: 1px solid rgba(16,185,129,0.3); }
+
+  .diff-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.2rem 0.5rem; border-radius: 3px;
+    margin-left: auto;
+  }
+
+  .diff-easy { background: rgba(16,185,129,0.12); color: var(--easy); border: 1px solid rgba(16,185,129,0.3); }
+  .diff-medium { background: rgba(245,158,11,0.12); color: var(--medium); border: 1px solid rgba(245,158,11,0.3); }
+  .diff-hard { background: rgba(239,68,68,0.12); color: var(--hard); border: 1px solid rgba(239,68,68,0.3); }
+
+  .q-text {
+    font-size: 1.05rem; line-height: 1.7; font-weight: 600;
+    color: var(--text); margin-bottom: 1.5rem;
+  }
+
+  .q-text code {
+    font-family: 'Space Mono', monospace;
+    background: var(--surface2);
+    padding: 0.1em 0.4em; border-radius: 3px;
+    font-size: 0.9em; color: var(--accent);
+  }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .option {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+
+  .option:hover:not(.locked) { border-color: var(--accent2); background: rgba(59,130,246,0.05); }
+
+  .option.selected:not(.correct):not(.wrong) {
+    border-color: var(--accent2);
+    background: rgba(59,130,246,0.1);
+  }
+
+  .option.correct {
+    border-color: var(--easy);
+    background: rgba(16,185,129,0.1);
+  }
+
+  .option.wrong {
+    border-color: var(--danger);
+    background: rgba(239,68,68,0.08);
+  }
+
+  .option.reveal-correct {
+    border-color: var(--easy);
+    background: rgba(16,185,129,0.07);
+  }
+
+  .opt-key {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem; font-weight: 700;
+    width: 24px; height: 24px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: var(--border); color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .option.selected:not(.correct):not(.wrong) .opt-key { background: var(--accent2); color: #fff; }
+  .option.correct .opt-key { background: var(--easy); color: #fff; }
+  .option.wrong .opt-key { background: var(--danger); color: #fff; }
+  .option.reveal-correct .opt-key { background: rgba(16,185,129,0.3); color: var(--easy); }
+
+  .opt-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-dim); padding-top: 2px; }
+
+  /* T/F BUTTONS */
+  .tf-options { display: flex; gap: 1rem; }
+
+  .tf-btn {
+    flex: 1; padding: 1rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer;
+    font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+    color: var(--text-dim); transition: all 0.15s;
+    text-align: center;
+  }
+
+  .tf-btn:hover:not(.locked) { border-color: var(--accent2); }
+  .tf-btn.selected:not(.correct):not(.wrong) { border-color: var(--accent2); color: var(--accent2); background: rgba(59,130,246,0.1); }
+  .tf-btn.correct { border-color: var(--easy); color: var(--easy); background: rgba(16,185,129,0.1); }
+  .tf-btn.wrong { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,0.1); }
+  .tf-btn.reveal-correct { border-color: var(--easy); color: var(--easy); background: rgba(16,185,129,0.06); }
+
+  /* EXPLANATION */
+  .explanation {
+    margin-top: 1.25rem; padding: 1rem 1.25rem;
+    background: rgba(59,130,246,0.06);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 6px;
+    font-size: 0.88rem; line-height: 1.6;
+    color: var(--text-dim);
+    display: none;
+  }
+
+  .explanation.show { display: block; animation: fadeIn 0.25s ease; }
+
+  .explanation strong { color: var(--accent2); }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* NAV BUTTONS */
+  .nav-strip {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+    padding: 1.25rem 0;
+  }
+
+  .nav-btn {
+    padding: 0.75rem 1.75rem;
+    border-radius: 5px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text);
+    font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+
+  .nav-btn:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .nav-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .nav-btn.primary:hover { box-shadow: 0 4px 20px rgba(249,115,22,0.35); }
+
+  /* MINI MAP */
+  .q-map {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 1.25rem; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 2rem;
+  }
+
+  .map-dot {
+    width: 28px; height: 28px; border-radius: 4px;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 0.6rem;
+    cursor: pointer; transition: all 0.12s;
+    color: var(--text-muted);
+  }
+
+  .map-dot:hover { border-color: var(--accent2); }
+  .map-dot.answered-c { background: rgba(16,185,129,0.2); border-color: var(--easy); color: var(--easy); }
+  .map-dot.answered-w { background: rgba(239,68,68,0.15); border-color: var(--danger); color: var(--danger); }
+  .map-dot.current { border-color: var(--accent); color: var(--accent); }
+  .map-dot.unanswered { opacity: 0.5; }
+
+  /* ========== RESULTS ========== */
+  #results {
+    display: none;
+    max-width: 860px; margin: 0 auto;
+    padding: 3rem 1.5rem; position: relative; z-index: 1;
+  }
+
+  .results-header { text-align: center; margin-bottom: 3rem; }
+
+  .results-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800; line-height: 1.1;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #fff, var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .results-grade {
+    font-size: 5rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .results-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+
+  .result-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.5rem; text-align: center;
+  }
+
+  .result-card-val {
+    font-size: 2.5rem; font-weight: 800;
+    margin-bottom: 0.25rem;
+  }
+
+  .result-card-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.12em;
+    color: var(--text-muted); text-transform: uppercase;
+  }
+
+  .retry-btn {
+    display: block; margin: 2rem auto 0;
+    padding: 1rem 3rem;
+    background: var(--accent); color: #fff; border: none;
+    font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+    border-radius: 5px; cursor: pointer; transition: all 0.2s;
+  }
+
+  .retry-btn:hover { box-shadow: 0 6px 25px rgba(249,115,22,0.4); transform: translateY(-2px); }
+
+  .section-breakdown {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin-top: 2rem;
+  }
+
+  .breakdown-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem;
+  }
+
+  .breakdown-title {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 0.75rem;
+  }
+
+  .breakdown-bar-bg {
+    height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden;
+    margin-bottom: 0.4rem;
+  }
+
+  .breakdown-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease 0.5s; }
+
+  .breakdown-pct {
+    font-size: 1.4rem; font-weight: 800;
+  }
+
+  /* Timer */
+  .timer-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem; color: var(--text-dim);
+  }
+
+  .timer-display.warning { color: var(--medium); }
+  .timer-display.danger { color: var(--danger); animation: pulse 0.5s infinite; }
+
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .question-card { padding: 1.25rem; }
+    .q-text { font-size: 0.95rem; }
+    .splash-stats { gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-badge">October 6 University &nbsp;·&nbsp; Info Sys &amp; Comp Science</div>
+  <div class="splash-title">Computer<br>Architecture</div>
+  <div class="splash-sub">Lectures 1 – 3 &nbsp;|&nbsp; Structure &amp; Function, Instruction Cycles, Interrupts, Micro-Operations &amp; Control Unit</div>
+  <div class="splash-stats">
+    <div class="stat-box">
+      <div class="stat-num">90</div>
+      <div class="stat-label">Questions</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Types</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Lectures</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">90</div>
+      <div class="stat-label">Min Timer</div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">▶ &nbsp; Begin Quiz</button>
+</div>
+
+<!-- QUIZ APP -->
+<div id="quiz-app">
+  <div class="topbar">
+    <div class="topbar-title">Comp. Arch. Quiz</div>
+    <div class="topbar-meta">
+      <div class="meta-item">
+        <div class="meta-dot" style="background:var(--accent2)"></div> MCQ
+      </div>
+      <div class="meta-item">
+        <div class="meta-dot" style="background:var(--accent)"></div> True / False
+      </div>
+      <div class="meta-item">
+        <div class="meta-dot" style="background:var(--easy)"></div> Problem
+      </div>
+      <div class="meta-item timer-display" id="timer">⏱ 90:00</div>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-header">
+      <span class="progress-label">Progress</span>
+      <span class="progress-count" id="progress-count">0 / 90</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="section-tabs" id="sec-tabs">
+    <button class="sec-tab active" onclick="jumpSection(0, this)">All (90)</button>
+    <button class="sec-tab" onclick="jumpSection(1, this)">L1: Structure &amp; Function (30)</button>
+    <button class="sec-tab" onclick="jumpSection(31, this)">L2: Interrupts (30)</button>
+    <button class="sec-tab" onclick="jumpSection(61, this)">L3: Micro-Ops (30)</button>
+  </div>
+
+  <div class="q-map" id="q-map"></div>
+
+  <div id="question-area"></div>
+
+  <div class="nav-strip">
+    <button class="nav-btn" id="prev-btn" onclick="goQuestion(currentQ - 1)">← Prev</button>
+    <button class="nav-btn primary" id="next-btn" onclick="goQuestion(currentQ + 1)">Next →</button>
+    <button class="nav-btn" id="finish-btn" onclick="showResults()" style="background:var(--easy);border-color:var(--easy);color:#fff;display:none;">✓ Finish</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="results-header">
+    <div class="results-title">Quiz Complete!</div>
+    <div class="results-grade" id="grade-pct"></div>
+    <p id="grade-msg" style="color:var(--text-dim);margin-top:0.5rem;font-size:1rem;"></p>
+  </div>
+  <div class="results-grid">
+    <div class="result-card">
+      <div class="result-card-val" style="color:var(--easy)" id="r-correct">0</div>
+      <div class="result-card-label">Correct</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-val" style="color:var(--danger)" id="r-wrong">0</div>
+      <div class="result-card-label">Wrong</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-val" style="color:var(--medium)" id="r-skip">0</div>
+      <div class="result-card-label">Skipped</div>
+    </div>
+    <div class="result-card">
+      <div class="result-card-val" style="color:var(--accent2)" id="r-time">--</div>
+      <div class="result-card-label">Time Used</div>
+    </div>
+  </div>
+  <div class="section-breakdown">
+    <div class="breakdown-card">
+      <div class="breakdown-title">Lec 1: Structure &amp; Function</div>
+      <div class="breakdown-pct" id="bd-lec1" style="color:var(--accent2)">0%</div>
+      <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" id="bd-lec1-bar" style="width:0%;background:var(--accent2)"></div></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="breakdown-title">Lec 2: Interrupts</div>
+      <div class="breakdown-pct" id="bd-lec2" style="color:var(--accent)">0%</div>
+      <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" id="bd-lec2-bar" style="width:0%;background:var(--accent)"></div></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="breakdown-title">Lec 3: Micro-Operations</div>
+      <div class="breakdown-pct" id="bd-lec3" style="color:var(--easy)">0%</div>
+      <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" id="bd-lec3-bar" style="width:0%;background:var(--easy)"></div></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="breakdown-title">MCQ Score</div>
+      <div class="breakdown-pct" id="bd-mcq" style="color:var(--accent2)">0%</div>
+      <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" id="bd-mcq-bar" style="width:0%;background:var(--accent2)"></div></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="breakdown-title">True/False Score</div>
+      <div class="breakdown-pct" id="bd-tf" style="color:var(--accent)">0%</div>
+      <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" id="bd-tf-bar" style="width:0%;background:var(--accent)"></div></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="breakdown-title">Problems Score</div>
+      <div class="breakdown-pct" id="bd-prob" style="color:var(--easy)">0%</div>
+      <div class="breakdown-bar-bg"><div class="breakdown-bar-fill" id="bd-prob-bar" style="width:0%;background:var(--easy)"></div></div>
+    </div>
+  </div>
+  <button class="retry-btn" onclick="retry()">↩ Retake Quiz</button>
+</div>
+
+<script>
+// ============================================================
+// QUESTION BANK — 90 Questions
+// Types: 'mcq', 'tf', 'prob'
+// Diff: 'easy', 'medium', 'hard'
+// Lecture: 1, 2, 3
+// ============================================================
+const questions = [
+
+// ===== LECTURE 1 — Structure & Function (Q1–Q30) =====
+// MCQ (Q1–Q15)
+{id:1, lec:1, type:'mcq', diff:'easy',
+ q:'What does CPU stand for in computer architecture?',
+ opts:['Central Processing Unit','Computer Program Utility','Control Processing Unit','Central Program Unit'],
+ ans:0,
+ exp:'CPU = Central Processing Unit — the "brain" of the computer that performs instruction fetch, decode, and execute.'},
+
+{id:2, lec:1, type:'mcq', diff:'easy',
+ q:'Which component of the CPU is responsible for performing arithmetic and logical operations on data?',
+ opts:['Control Unit (CU)','Memory Buffer Register (MBR)','Arithmetic and Logic Unit (ALU)','Program Counter (PC)'],
+ ans:2,
+ exp:'The ALU performs all arithmetic (+, −, ×, ÷) and logical (AND, OR, NOT) operations on data.'},
+
+{id:3, lec:1, type:'mcq', diff:'easy',
+ q:'In the von Neumann architecture, where are both instructions and data stored?',
+ opts:['In separate dedicated memories','In the same read-write memory','Only in ROM','Only in CPU registers'],
+ ans:1,
+ exp:'A key concept of von Neumann architecture: data and instructions share a single, unified read-write memory.'},
+
+{id:4, lec:1, type:'mcq', diff:'easy',
+ q:'What does the Program Counter (PC) hold?',
+ opts:['The result of the last ALU operation','The address of the next instruction to fetch','The current instruction being decoded','The number of instructions executed'],
+ ans:1,
+ exp:'The PC holds the memory address of the next instruction the processor will fetch.'},
+
+{id:5, lec:1, type:'mcq', diff:'easy',
+ q:'Which register holds the instruction currently being executed by the processor?',
+ opts:['MAR','MBR','PC','IR'],
+ ans:3,
+ exp:'IR (Instruction Register) holds the most recently fetched instruction while it is being decoded and executed.'},
+
+{id:6, lec:1, type:'mcq', diff:'medium',
+ q:'What is the primary purpose of the Memory Address Register (MAR)?',
+ opts:['To hold data read from or to be written to memory','To hold the address for a memory read or write operation','To count completed instructions','To store the results of ALU operations'],
+ ans:1,
+ exp:'The MAR is connected to the address bus and specifies the memory location for the current read or write operation.'},
+
+{id:7, lec:1, type:'mcq', diff:'medium',
+ q:'In the top-level computer structure, which component connects the CPU, main memory, and I/O modules?',
+ opts:['Data bus only','Address bus only','System bus','Control Unit'],
+ ans:2,
+ exp:'The System Bus interconnects all major components: CPU, Main Memory, and I/O modules for data, address, and control signals.'},
+
+{id:8, lec:1, type:'mcq', diff:'medium',
+ q:'According to the hierarchical view of computers, what does "structure" refer to at each level?',
+ opts:['The operation of individual components','The way in which components are interrelated','The speed of computation','The type of instructions supported'],
+ ans:1,
+ exp:'Structure describes HOW components are interrelated (interconnections), while function describes WHAT each component does.'},
+
+{id:9, lec:1, type:'mcq', diff:'medium',
+ q:'What does the abbreviation RISC stand for?',
+ opts:['Reduced Instruction Set Computer','Random Instruction Set Controller','Rapid Integrated System Circuit','Register Instruction Sequence Computer'],
+ ans:0,
+ exp:'RISC = Reduced Instruction Set Computer — a CPU design philosophy using a small, optimized set of instructions.'},
+
+{id:10, lec:1, type:'mcq', diff:'medium',
+ q:'Which of the following is NOT a major structural component of the CPU?',
+ opts:['Control Unit','ALU','Registers','Main Memory'],
+ ans:3,
+ exp:'Main Memory is external to the CPU. The CPU\'s major structural components are the CU, ALU, Registers, and CPU interconnection.'},
+
+{id:11, lec:1, type:'mcq', diff:'medium',
+ q:'In the simplified 2-step instruction cycle, what are the two steps?',
+ opts:['Load and Store','Fetch and Execute','Encode and Decode','Read and Write'],
+ ans:1,
+ exp:'The basic instruction cycle consists of two steps: (1) Fetch — retrieve the instruction from memory, and (2) Execute — carry it out.'},
+
+{id:12, lec:1, type:'mcq', diff:'hard',
+ q:'What happens to the Program Counter (PC) during the Fetch cycle?',
+ opts:['It is cleared to zero','It is decremented by 1','It is incremented to point to the next instruction','It is loaded with the result of the ALU operation'],
+ ans:2,
+ exp:'During the Fetch cycle, after the current instruction is loaded into IR, the PC is incremented by 1 (or by instruction size) so it points to the next instruction.'},
+
+{id:13, lec:1, type:'mcq', diff:'hard',
+ q:'The Memory Buffer Register (MBR) is connected to which bus?',
+ opts:['Address bus','Control bus','Data bus','I/O bus'],
+ ans:2,
+ exp:'The MBR interfaces with the data bus. It holds data that has just been read from memory, or data about to be written to memory.'},
+
+{id:14, lec:1, type:'mcq', diff:'hard',
+ q:'Which execute cycle action involves altering the sequence of instruction execution?',
+ opts:['Data processing','Processor-memory data transfer','Control (e.g., jump)','Processor I/O transfer'],
+ ans:2,
+ exp:'The "Control" action during execution refers to operations like jumps and branches that alter the normal sequential flow of instruction execution.'},
+
+{id:15, lec:1, type:'mcq', diff:'hard',
+ q:'What is the role of the instruction interpreter in a general-purpose computer?',
+ opts:['To store instructions permanently in ROM','To accept instruction codes and convert them to control signals for the hardware','To compress instruction sequences for efficiency','To manage physical memory allocation'],
+ ans:1,
+ exp:'The instruction interpreter (part of the CU) decodes instruction opcodes and generates the appropriate control signals to drive the ALU and data paths.'},
+
+// T/F (Q16–Q23)
+{id:16, lec:1, type:'tf', diff:'easy',
+ q:'The instruction cycle and the clock cycle are the same thing.',
+ ans:false,
+ exp:'FALSE. An instruction cycle consists of multiple clock cycles (fetch + execute can span several clock periods). They are distinct concepts.'},
+
+{id:17, lec:1, type:'tf', diff:'easy',
+ q:'In von Neumann architecture, memory contents are addressable by location regardless of whether the content is data or instruction.',
+ ans:true,
+ exp:'TRUE. A key principle of von Neumann architecture: memory is uniformly addressable — the processor accesses data and instructions using the same address mechanism.'},
+
+{id:18, lec:1, type:'tf', diff:'easy',
+ q:'A hardwired system is more flexible than a general-purpose hardware system.',
+ ans:false,
+ exp:'FALSE. Hardwired systems (like basic calculators) are inflexible — they can only perform fixed operations. General-purpose hardware can be reprogrammed by supplying different control signals.'},
+
+{id:19, lec:1, type:'tf', diff:'medium',
+ q:'The Control Unit (CU) is responsible for performing arithmetic operations on data.',
+ ans:false,
+ exp:'FALSE. The ALU performs arithmetic and logical operations. The CU controls the operation of the CPU and issues control signals; it does NOT compute.'},
+
+{id:20, lec:1, type:'tf', diff:'medium',
+ q:'At each level of a hierarchical computer system, the designer is concerned with both structure and function.',
+ ans:true,
+ exp:'TRUE. The lecture explicitly states: "At each level, the designer is concerned with structure (how components are interrelated) and function (operation of each component)."'},
+
+{id:21, lec:1, type:'tf', diff:'medium',
+ q:'DRAM stands for Dynamic Random-Access Memory.',
+ ans:true,
+ exp:'TRUE. DRAM = Dynamic Random-Access Memory — a type of volatile RAM that requires periodic refresh to retain data.'},
+
+{id:22, lec:1, type:'tf', diff:'hard',
+ q:'In the execution cycle, a "Processor I/O" action involves data transfer between the CPU and main memory.',
+ ans:false,
+ exp:'FALSE. "Processor I/O" involves data transfer between the CPU and an I/O module (not main memory). "Processor-memory" covers CPU ↔ main memory transfers.'},
+
+{id:23, lec:1, type:'tf', diff:'hard',
+ q:'CISC stands for Complex Instruction Set Computer.',
+ ans:true,
+ exp:'TRUE. CISC = Complex Instruction Set Computer — a CPU design with a large number of complex instructions, in contrast to RISC.'},
+
+// Problems (Q24–Q30)
+{id:24, lec:1, type:'prob', diff:'easy',
+ q:'A computer fetches an instruction from memory address 0x100. After fetching, what value does the Program Counter (PC) hold, assuming each instruction is 1 memory word?',
+ opts:['0x0FF','0x100','0x101','0x200'],
+ ans:2,
+ exp:'After fetching from 0x100, the PC is incremented by 1 → PC = 0x101, pointing to the next instruction.'},
+
+{id:25, lec:1, type:'prob', diff:'easy',
+ q:'Which of the following correctly shows the first micro-operation of the Fetch cycle?',
+ opts:['IR ← (MBR)','MBR ← (memory)','MAR ← (PC)','PC ← (PC) + 1'],
+ ans:2,
+ exp:'t1 of the Fetch cycle: MAR ← (PC). The address in PC is transferred to MAR so memory can be addressed.'},
+
+{id:26, lec:1, type:'prob', diff:'medium',
+ q:'Identify the correct sequence for the full Fetch cycle micro-operations:\n(A) IR ← (MBR)\n(B) MBR ← (memory), PC ← (PC)+1\n(C) MAR ← (PC)',
+ opts:['A → B → C','C → B → A','B → C → A','C → A → B'],
+ ans:1,
+ exp:'The correct Fetch sequence is: t1: MAR←(PC), t2: MBR←(memory) & PC←(PC)+1, t3: IR←(MBR). That is C → B → A.'},
+
+{id:27, lec:1, type:'prob', diff:'medium',
+ q:'The MBR is connected to the data bus. What is the purpose of the MBR during a memory read?',
+ opts:['It holds the address of the memory location to read','It holds the data retrieved from memory after a read operation','It counts the number of reads performed','It decodes the instruction opcode'],
+ ans:1,
+ exp:'During a memory read, data travels from memory via the data bus into the MBR. The MBR acts as a buffer holding the data just read.'},
+
+{id:28, lec:1, type:'prob', diff:'hard',
+ q:'In the fetch cycle, micro-operations at time t2 are: MBR ← (memory) AND PC ← (PC)+1. Why can these be executed in the SAME clock cycle?',
+ opts:['Because memory and ALU share the same bus','Because they involve independent resources (memory/data bus vs. PC/incrementer), causing no conflict','Because the PC and MBR are the same register','Because memory access takes zero time'],
+ ans:1,
+ exp:'Both operations can be parallelized at t2 because they use independent hardware paths: reading memory uses the data bus → MBR, while incrementing PC uses the PC register and adder. No resource conflict exists.'},
+
+{id:29, lec:1, type:'prob', diff:'hard',
+ q:'A program executes sequentially from address 200. It encounters a JUMP instruction to address 500. After the JUMP executes, what is the value of the PC?',
+ opts:['201','500','501','200'],
+ ans:1,
+ exp:'A JUMP (control-type execute) loads the target address into the PC. So after execution, PC = 500, meaning the next fetch comes from address 500.'},
+
+{id:30, lec:1, type:'prob', diff:'hard',
+ q:'Which two registers work together to move an instruction from main memory into the CPU, using the system bus?',
+ opts:['IR and PC','MAR and MBR','AC and ALU','I/O AR and I/O BR'],
+ ans:1,
+ exp:'MAR (connected to address bus) specifies the location; MBR (connected to data bus) receives the instruction data. Together they bridge CPU and main memory via the system bus.'},
+
+// ===== LECTURE 2 — Interrupts (Q31–Q60) =====
+// MCQ (Q31–Q45)
+{id:31, lec:2, type:'mcq', diff:'easy',
+ q:'Which type of interrupt is generated by an internal processor timer to allow time-scheduled tasks?',
+ opts:['Program interrupt','I/O interrupt','Timer interrupt','Hardware failure interrupt'],
+ ans:2,
+ exp:'Timer interrupts are generated by the processor\'s internal timer mechanism, allowing the OS to perform time-scheduled or time-sharing operations.'},
+
+{id:32, lec:2, type:'mcq', diff:'easy',
+ q:'What does ISR stand for in the context of interrupts?',
+ opts:['Instruction Store Register','Interrupt Service Routine','Internal System Reset','Instruction Sequence Register'],
+ ans:1,
+ exp:'ISR = Interrupt Service Routine — the special code segment that handles (services) a particular interrupt condition.'},
+
+{id:33, lec:2, type:'mcq', diff:'easy',
+ q:'What kind of interrupt is triggered by events such as arithmetic overflow, divide by zero, or an illegal instruction?',
+ opts:['Timer interrupt','Hardware failure interrupt','I/O interrupt','Program interrupt'],
+ ans:3,
+ exp:'Program interrupts occur as a direct result of program execution — illegal instructions, arithmetic overflow, divide-by-zero, or memory protection errors.'},
+
+{id:34, lec:2, type:'mcq', diff:'easy',
+ q:'When an interrupt is pending and interrupts are enabled, what does the processor do FIRST during the interrupt cycle?',
+ opts:['Immediately halt the program','Suspend execution and save context','Ignore the interrupt','Restart the computer'],
+ ans:1,
+ exp:'When an interrupt is pending, the processor suspends current execution and saves its context (registers, PC, flags) onto the stack before handling the interrupt.'},
+
+{id:35, lec:2, type:'mcq', diff:'medium',
+ q:'After the interrupt service routine completes, what happens to the interrupted program?',
+ opts:['It restarts from the beginning','Its context is restored and execution continues from where it was interrupted','It is permanently terminated','The OS schedules a different program'],
+ ans:1,
+ exp:'After the ISR runs, the saved context (PC, registers, flags) is restored from the stack, and the original program resumes exactly where it was interrupted.'},
+
+{id:36, lec:2, type:'mcq', diff:'medium',
+ q:'What does "global enabling/disabling" of interrupts mean?',
+ opts:['Enabling only specific interrupts by name','Disabling the clock signal globally','Affecting all maskable interrupts at once','Routing all interrupts to the same ISR'],
+ ans:2,
+ exp:'Global enabling/disabling (e.g., CLI/STI instructions on x86) affects ALL maskable interrupts simultaneously. Local enabling affects individual interrupts selectively.'},
+
+{id:37, lec:2, type:'mcq', diff:'medium',
+ q:'What is the key advantage of using interrupts instead of having the CPU continuously poll I/O devices (no-interrupt scheme)?',
+ opts:['Interrupts increase memory usage','Interrupts allow the CPU to continue useful work while I/O is in progress','Interrupts slow down the CPU clock','Interrupts replace the need for DMA'],
+ ans:1,
+ exp:'With interrupts, the CPU sends an I/O command and continues executing other work. When the I/O completes, an interrupt notifies the CPU — avoiding wasteful busy-waiting/polling.'},
+
+{id:38, lec:2, type:'mcq', diff:'medium',
+ q:'In the instruction cycle state diagram, what state follows "Data Operation" when the instruction operates on a single operand stored in memory?',
+ opts:['Instruction fetch','Operand store','Operand fetch','Interrupt'],
+ ans:1,
+ exp:'After the Data Operation (execution), if the result needs to be written back, the cycle moves to "Operand store" to save the result to memory.'},
+
+{id:39, lec:2, type:'mcq', diff:'medium',
+ q:'Which interrupt type is generated by a device like a keyboard, mouse, or NIC signaling the processor?',
+ opts:['Program interrupt','Hardware failure interrupt','Timer interrupt','I/O interrupt'],
+ ans:3,
+ exp:'I/O interrupts are generated by I/O controllers (keyboard, mouse, NIC, disk) to request processor service when they have data ready or need attention.'},
+
+{id:40, lec:2, type:'mcq', diff:'hard',
+ q:'During the interrupt cycle, where is the current program\'s context (PC, registers, flags) saved?',
+ opts:['In the Instruction Register','In the MAR','On the stack in main memory','In the ALU accumulator'],
+ ans:2,
+ exp:'The context is pushed onto the stack (in main memory). This allows the interrupt handler to run and then restore the context by popping from the stack.'},
+
+{id:41, lec:2, type:'mcq', diff:'hard',
+ q:'What is Direct Memory Access (DMA)?',
+ opts:['A technique where the CPU directly accesses all memory without caching','Permission granted to an I/O module to transfer data directly to/from memory without CPU involvement','A type of ROM memory','A way to double the CPU clock speed'],
+ ans:1,
+ exp:'DMA allows an I/O module to read from or write to main memory independently of the CPU. The CPU is interrupted only AFTER the entire block transfer is complete.'},
+
+{id:42, lec:2, type:'mcq', diff:'hard',
+ q:'In the "short I/O wait" interrupt timing diagram, compared to the no-interrupt scheme, using interrupts results in:',
+ opts:['Longer total time due to interrupt overhead','Approximately the same total time with improved CPU utilization','Much shorter total time with no overhead','Complete elimination of I/O wait time'],
+ ans:1,
+ exp:'For short I/O wait, interrupts add some overhead (context save/restore) so total wall-clock time is similar, but CPU is utilized better during the short I/O period.'},
+
+{id:43, lec:2, type:'mcq', diff:'hard',
+ q:'In the extended instruction cycle (with interrupts), after "Operand store", what state is checked next?',
+ opts:['Instruction fetch','Operand fetch','Interrupt check','Data operation'],
+ ans:2,
+ exp:'The extended cycle adds an "Interrupt check" state after "Operand store". If an interrupt is pending and enabled, the processor transitions to the Interrupt state; otherwise it goes back to Instruction fetch.'},
+
+{id:44, lec:2, type:'mcq', diff:'medium',
+ q:'Which statement about pending interrupts is TRUE?',
+ opts:['Pending interrupts are discarded if interrupts are disabled','Pending interrupts are serviced as soon as interrupts are enabled again','Only hardware failure interrupts can pend','DMA interrupts cannot be pending'],
+ ans:1,
+ exp:'If interrupts are currently disabled, pending interrupts are NOT discarded — they are held pending and will be serviced as soon as interrupts are re-enabled.'},
+
+{id:45, lec:2, type:'mcq', diff:'easy',
+ q:'What happens when the processor encounters a "Hardware failure" interrupt?',
+ opts:['The program skips the current instruction','An I/O device is notified','The processor signals some error condition in the hardware','The memory is refreshed automatically'],
+ ans:2,
+ exp:'Hardware failure interrupts signal error conditions — such as power failure, parity error, or bus error — indicating a physical hardware problem.'},
+
+// T/F (Q46–Q53)
+{id:46, lec:2, type:'tf', diff:'easy',
+ q:'No special code is needed in the main program to handle interrupts.',
+ ans:true,
+ exp:'TRUE. Interrupt handling is done separately in Interrupt Service Routines (ISRs). The main program code requires no modification to support interrupt-driven I/O.'},
+
+{id:47, lec:2, type:'tf', diff:'easy',
+ q:'An I/O interrupt is generated by the processor\'s internal timer.',
+ ans:false,
+ exp:'FALSE. I/O interrupts are generated by I/O controllers (keyboard, NIC, disk, etc.). Timer interrupts come from the processor\'s internal timer.'},
+
+{id:48, lec:2, type:'tf', diff:'medium',
+ q:'When a DMA transfer completes, the I/O module generates an interrupt to notify the processor.',
+ ans:true,
+ exp:'TRUE. In DMA, the I/O module handles the memory transfer autonomously. When complete, it sends an interrupt to the processor to signal completion.'},
+
+{id:49, lec:2, type:'tf', diff:'medium',
+ q:'During an interrupt, the processor sets the PC to the start address of the main program.',
+ ans:false,
+ exp:'FALSE. The PC is set to the START ADDRESS of the interrupt handler routine (ISR), NOT to the main program. The main program\'s return address is saved on the stack.'},
+
+{id:50, lec:2, type:'tf', diff:'medium',
+ q:'Saving the full context (all registers, flags) is done directly by micro-operations in the interrupt cycle.',
+ ans:false,
+ exp:'FALSE. Only the PC (and minimal state) is saved by micro-operations in the hardware interrupt cycle. Full context saving (all registers) is done by the INTERRUPT HANDLER ROUTINE in software.'},
+
+{id:51, lec:2, type:'tf', diff:'hard',
+ q:'In the "long I/O wait" scenario with interrupts, the CPU can execute additional user program instructions while the I/O operation is in progress.',
+ ans:true,
+ exp:'TRUE. With a long I/O wait and interrupts enabled, the CPU can continue executing other instructions (or other programs) while the slow I/O operation proceeds concurrently.'},
+
+{id:52, lec:2, type:'tf', diff:'hard',
+ q:'A program interrupt can be caused by a divide-by-zero operation.',
+ ans:true,
+ exp:'TRUE. Divide-by-zero is an example of a program interrupt — an exception generated as a result of program execution hitting an illegal condition.'},
+
+{id:53, lec:2, type:'tf', diff:'medium',
+ q:'Local enabling of interrupts affects all maskable interrupts simultaneously.',
+ ans:false,
+ exp:'FALSE. LOCAL enabling/disabling affects only INDIVIDUAL specific interrupts. GLOBAL enabling/disabling affects ALL maskable interrupts simultaneously.'},
+
+// Problems (Q54–Q60)
+{id:54, lec:2, type:'prob', diff:'easy',
+ q:'An interrupt occurs after instruction i in a user program. The processor suspends at instruction i and jumps to the ISR. After the ISR finishes, execution resumes at:',
+ opts:['Instruction 1 (beginning of program)','Instruction i again','Instruction i+1','The ISR remains active'],
+ ans:2,
+ exp:'When an interrupt occurs after instruction i, the saved PC points to i+1 (the NEXT instruction). After ISR completion, the context is restored and execution resumes at i+1.'},
+
+{id:55, lec:2, type:'prob', diff:'medium',
+ q:'A processor is executing a write operation. The I/O device signals completion with an interrupt. At this point, if interrupts are DISABLED, the processor will:',
+ opts:['Handle the interrupt immediately','Ignore the interrupt permanently','Queue the interrupt and service it when interrupts are re-enabled','Reset the I/O device'],
+ ans:2,
+ exp:'When interrupts are disabled, incoming interrupt signals are held PENDING. As soon as interrupts are re-enabled, the processor checks for and services pending interrupts.'},
+
+{id:56, lec:2, type:'prob', diff:'medium',
+ q:'Consider the interrupt cycle micro-operations:\nt1: MBR ← (PC)\nt2: MAR ← save-address; PC ← routine-address\nt3: memory ← (MBR)\n\nWhat is being saved in memory at t3?',
+ opts:['The current instruction opcode','The address of the instruction following the interrupted instruction (return address)','The ALU result','The interrupt vector number'],
+ ans:1,
+ exp:'At t1, MBR gets the current PC (which points to the next instruction after the interrupt — the return address). At t3, this return address is saved to memory at the save-address location.'},
+
+{id:57, lec:2, type:'prob', diff:'hard',
+ q:'In the instruction cycle state diagram WITH interrupts, the ICC (Instruction Cycle Code) = 11 corresponds to which state?',
+ opts:['Fetch','Indirect','Execute','Interrupt'],
+ ans:3,
+ exp:'From the flowchart: ICC=00 → Fetch, ICC=01 → Indirect, ICC=10 → Execute, ICC=11 → Interrupt. So ICC=11 is the Interrupt state.'},
+
+{id:58, lec:2, type:'prob', diff:'hard',
+ q:'If the ICC = 00 in the instruction cycle flowchart, which action does the processor take next?',
+ opts:['Setup interrupt','Decode opcode','Fetch instruction from memory','Read indirect address'],
+ ans:2,
+ exp:'ICC=00 → Fetch state → the processor fetches the next instruction from memory using the PC.'},
+
+{id:59, lec:2, type:'prob', diff:'hard',
+ q:'After an interrupt occurs and the PC is loaded with the ISR\'s start address, what is the NEXT action the ISR software typically performs?',
+ opts:['Immediately return to the user program','Save the full processor context (all registers/flags) onto the stack','Execute the next user instruction','Disable all interrupts permanently'],
+ ans:1,
+ exp:'The ISR\'s first action is to save the full processor context (all registers, flags, etc.) onto the stack so they can be restored when the ISR completes.'},
+
+{id:60, lec:2, type:'prob', diff:'medium',
+ q:'Without interrupts, a processor writing to a slow I/O device must _____ until the device is ready. This is called:',
+ opts:['Context switching','Busy-waiting (polling)','DMA transfer','Interrupt masking'],
+ ans:1,
+ exp:'Without interrupts, the CPU must repeatedly test (poll) the I/O device status in a busy-wait loop — wasting CPU cycles that could be used for other work.'},
+
+// ===== LECTURE 3 — Micro-Operations & Control Unit (Q61–Q90) =====
+// MCQ (Q61–Q75)
+{id:61, lec:3, type:'mcq', diff:'easy',
+ q:'What are micro-operations?',
+ opts:['High-level programming operations','Atomic, elemental operations performed by the CPU during one clock cycle','Operations performed by the OS kernel','Operations specific to I/O devices only'],
+ ans:1,
+ exp:'Micro-operations (μOPs) are the smallest, indivisible operations within the CPU — each one occurs in a single clock cycle and implements part of a larger instruction.'},
+
+{id:62, lec:3, type:'mcq', diff:'easy',
+ q:'How many "control" registers are primarily used during the Fetch cycle?',
+ opts:['2','3','4','5'],
+ ans:2,
+ exp:'Four control registers are used in the Fetch cycle: PC (Program Counter), MAR (Memory Address Register), MBR (Memory Buffer Register), and IR (Instruction Register).'},
+
+{id:63, lec:3, type:'mcq', diff:'easy',
+ q:'What is the first micro-operation (t1) of the Indirect addressing cycle?',
+ opts:['MBR ← (memory)','IR(address) ← (MBR(address))','MAR ← (IR(address))','PC ← (PC) + 1'],
+ ans:2,
+ exp:'Indirect cycle t1: MAR ← (IR(address)). The address field of the IR (which holds the pointer, not the data) is loaded into MAR to fetch the actual address from memory.'},
+
+{id:64, lec:3, type:'mcq', diff:'easy',
+ q:'Which of the following is NOT a basic element of the processor listed in Lecture 3?',
+ opts:['ALU','Registers','External data paths','Operating System kernel'],
+ ans:3,
+ exp:'The basic elements of the processor are: ALU, Registers, Internal data paths, External data paths, and Control Unit. The OS kernel is software, not a hardware processor element.'},
+
+{id:65, lec:3, type:'mcq', diff:'medium',
+ q:'What are the four phases (sub-cycles) of a complete instruction cycle?',
+ opts:['Load, Store, Add, Jump','Fetch, Indirect, Execute, Interrupt','Read, Decode, Compute, Write','Start, Run, Stop, Reset'],
+ ans:1,
+ exp:'A complete instruction cycle contains: Fetch (get instruction), Indirect (resolve indirect address if needed), Execute (perform operation), and Interrupt (handle interrupt if pending).'},
+
+{id:66, lec:3, type:'mcq', diff:'medium',
+ q:'In the Fetch cycle, which micro-operation can be executed IN PARALLEL at time t2?',
+ opts:['MAR ← (PC) and IR ← (MBR)','MBR ← (memory) and PC ← (PC)+1','IR ← (MBR) and MAR ← (IR)','PC ← (PC)+1 and IR ← (MBR)'],
+ ans:1,
+ exp:'At t2, MBR ← (memory) uses the data bus path, while PC ← (PC)+1 uses the PC incrementer — independent resources, so they can execute in parallel with no conflict.'},
+
+{id:67, lec:3, type:'mcq', diff:'medium',
+ q:'What does the Instruction Register (IR) hold at the completion of the Fetch cycle?',
+ opts:['The address of the next instruction','The result of the last ALU computation','The fetched instruction (opcode + operand fields)','The memory address for the indirect cycle'],
+ ans:2,
+ exp:'At t3 of Fetch: IR ← (MBR). The IR now holds the complete fetched instruction including its opcode and any operand/address fields.'},
+
+{id:68, lec:3, type:'mcq', diff:'medium',
+ q:'What are the four types of micro-operations identified in Lecture 3?',
+ opts:['Fetch, Decode, Execute, Store','Transfer register-register, Register-to-external, External-to-register, Arithmetic/Logical','Load, Add, Subtract, Jump','Read, Write, Compute, Branch'],
+ ans:1,
+ exp:'The four types of micro-operations are: (1) Transfer data between registers, (2) Transfer data from register to external, (3) Transfer data from external to register, (4) Perform arithmetic or logical operations.'},
+
+{id:69, lec:3, type:'mcq', diff:'medium',
+ q:'What is the role of the clock signal in controlling micro-operations?',
+ opts:['It cools the CPU to prevent overheating','It synchronizes when micro-operations execute — one micro-instruction (or set) per clock cycle','It determines the voltage level of the control signals','It directly drives the ALU operations without the control unit'],
+ ans:1,
+ exp:'The clock provides the timing reference: one clock cycle = one micro-operation time slot. The control unit generates control signals synchronized to clock cycles.'},
+
+{id:70, lec:3, type:'mcq', diff:'hard',
+ q:'In the Execute cycle for ADD R1, X: what micro-operation at t3 combines data from memory with a register?',
+ opts:['MAR ← (IR(address))','MBR ← (memory)','R1 ← R1 + (MBR)','IR ← (MBR)'],
+ ans:2,
+ exp:'At t3 of ADD R1,X: R1 ← R1 + (MBR). The ALU adds the content of MBR (fetched from memory address X) to register R1, storing the result back in R1.'},
+
+{id:71, lec:3, type:'mcq', diff:'hard',
+ q:'In the ISZ X instruction (Increment and Skip if Zero), what happens after the memory is updated at t4?',
+ opts:['The PC is always incremented by 2','If the incremented value is zero, PC is incremented by 1 (skip next instruction)','The IR is cleared','The CPU halts'],
+ ans:1,
+ exp:'ISZ t4: memory ← (MBR); if (MBR)==0 then PC ← (PC)+1. If the incremented value is zero, the NEXT instruction is skipped by adding 1 more to PC.'},
+
+{id:72, lec:3, type:'mcq', diff:'hard',
+ q:'Which basic rule for clock cycle grouping states that you must not read and write the same register in the same clock cycle?',
+ opts:['Sequencing rule','Conflict avoidance rule','Parallelism rule','Timing alignment rule'],
+ ans:1,
+ exp:'The "Conflict avoidance" rule: you cannot read AND write the same register simultaneously in one clock cycle. This is why MBR ← (memory) and IR ← (MBR) cannot share the same time slot.'},
+
+{id:73, lec:3, type:'mcq', diff:'hard',
+ q:'In the BSA X (Branch and Save Address) execute cycle, where is the return address (address after BSA) saved?',
+ opts:['In register R1','In the Instruction Register (IR)','In memory at the address specified by X','In the MAR'],
+ ans:2,
+ exp:'BSA saves the return address (PC content, pointing to the instruction AFTER BSA) into memory location X. Execution then continues from X+1.'},
+
+{id:74, lec:3, type:'mcq', diff:'hard',
+ q:'What are the three inputs to the Control Unit, as shown in the control unit diagram?',
+ opts:['ALU, Memory, I/O','Instruction Register, Flags, Clock (+ control bus signals)','PC, MAR, MBR','Address bus, Data bus, Control bus'],
+ ans:1,
+ exp:'The Control Unit receives: (1) content of the Instruction Register (opcode), (2) Flags (CPU state/condition codes), (3) Clock signal, and (4) signals from the control bus (interrupts, acknowledgements).'},
+
+{id:75, lec:3, type:'mcq', diff:'medium',
+ q:'In the BSA X execute cycle at t1, two micro-operations run in parallel. They are:',
+ opts:['MAR ← (IR) and MBR ← (memory)','MAR ← (IR(address)) and MBR ← (PC)','PC ← (IR(address)) and memory ← (MBR)','IR ← (MBR) and MAR ← (PC)'],
+ ans:1,
+ exp:'BSA t1: MAR ← IR(address) [to prepare for memory write] AND MBR ← (PC) [to hold the return address] — these use independent resources and can run in parallel.'},
+
+// T/F (Q76–Q83)
+{id:76, lec:3, type:'tf', diff:'easy',
+ q:'Each instruction cycle is composed of a sequence of micro-operations.',
+ ans:true,
+ exp:'TRUE. Each instruction cycle (Fetch, Indirect, Execute, Interrupt) is broken down into micro-operations — the atomic steps the hardware performs each clock cycle.'},
+
+{id:77, lec:3, type:'tf', diff:'easy',
+ q:'The Fetch cycle micro-operations are the same for every instruction.',
+ ans:true,
+ exp:'TRUE. The Fetch cycle is IDENTICAL for all instructions (MAR←PC, MBR←memory & PC←PC+1, IR←MBR). Only the Execute cycle differs per instruction type.'},
+
+{id:78, lec:3, type:'tf', diff:'medium',
+ q:'The rule "proper sequence must be followed" means that MAR ← (PC) must come BEFORE MBR ← (memory) in the Fetch cycle.',
+ ans:true,
+ exp:'TRUE. MAR must be loaded with the address BEFORE the memory read can occur. You cannot read from memory until the MAR holds the correct address — this is the sequencing rule.'},
+
+{id:79, lec:3, type:'tf', diff:'medium',
+ q:'The Execute cycle micro-operations are identical for every type of instruction.',
+ ans:false,
+ exp:'FALSE. The Execute cycle is DIFFERENT for each instruction type. ADD, ISZ, BSA, and other instructions each have their own unique sequence of execute-cycle micro-operations.'},
+
+{id:80, lec:3, type:'tf', diff:'medium',
+ q:'After the Indirect cycle completes, the IR is in the same state as if direct addressing had been used.',
+ ans:true,
+ exp:'TRUE. The Indirect cycle replaces the pointer in IR\'s address field with the actual effective address (fetched from memory). After completion, the IR looks identical to a direct-addressed instruction.'},
+
+{id:81, lec:3, type:'tf', diff:'hard',
+ q:'During the Interrupt cycle, saving the full context of all CPU registers is performed entirely by hardware micro-operations.',
+ ans:false,
+ exp:'FALSE. Micro-operations only save the minimum (PC → memory). Full context saving (all registers, flags, etc.) is done by the INTERRUPT HANDLER ROUTINE (software), not by hardware micro-ops.'},
+
+{id:82, lec:3, type:'tf', diff:'hard',
+ q:'The control signal C_R represents "Read control signal to the system bus" while C_W represents "Write control signal to the system bus".',
+ ans:true,
+ exp:'TRUE. As shown in the micro-operation timing table: C_R = Read control signal to system bus, C_W = Write control signal to system bus.'},
+
+{id:83, lec:3, type:'tf', diff:'hard',
+ q:'At time t2 of the Fetch cycle, it is correct to move PC ← (PC)+1 to t3 instead, making t3: PC←(PC)+1 AND IR←(MBR).',
+ ans:true,
+ exp:'TRUE. PC←(PC)+1 and IR←(MBR) use independent resources (PC/incrementer vs. MBR/IR transfer), so they CAN be combined at t3 without conflict — a valid and equivalent grouping.'},
+
+// Problems (Q84–Q90)
+{id:84, lec:3, type:'prob', diff:'easy',
+ q:'Given the Fetch cycle:\nt1: MAR ← (PC)\nt2: MBR ← (memory), PC ← (PC)+1\nt3: IR ← (MBR)\n\nHow many clock cycles does the Fetch phase take?',
+ opts:['1','2','3','4'],
+ ans:2,
+ exp:'The Fetch cycle takes exactly 3 clock cycles: t1, t2, and t3. Each time slot (t) corresponds to one clock cycle.'},
+
+{id:85, lec:3, type:'prob', diff:'medium',
+ q:'For the Execute cycle of ADD R1, X, write out the complete micro-operations. Which is the correct sequence?',
+ opts:['t1:R1←R1+(MBR), t2:MAR←IR(addr), t3:MBR←(memory)','t1:MAR←IR(addr), t2:MBR←(memory), t3:R1←R1+(MBR)','t1:MBR←(memory), t2:MAR←IR(addr), t3:R1←R1+(MBR)','t1:MAR←IR(addr), t2:R1←R1+(MBR), t3:MBR←(memory)'],
+ ans:1,
+ exp:'ADD R1,X execute: t1:MAR←IR(address) [prepare to read X], t2:MBR←(memory) [read data at X], t3:R1←R1+(MBR) [add and store result in R1]. This is the only valid sequence.'},
+
+{id:86, lec:3, type:'prob', diff:'medium',
+ q:'Why CANNOT the following two micro-operations be in the SAME clock cycle?\n• MBR ← (memory)\n• IR ← (MBR)',
+ opts:['They both use the ALU','They conflict because both read AND write MBR at the same time','They require different clock speeds','They cannot use the same memory address'],
+ ans:1,
+ exp:'MBR ← (memory) WRITES to MBR; IR ← (MBR) READS from MBR. Reading and writing the SAME register simultaneously causes a conflict. They must be in separate clock cycles.'},
+
+{id:87, lec:3, type:'prob', diff:'hard',
+ q:'The Indirect cycle has these micro-operations:\nt1: MAR ← (IR(address))\nt2: MBR ← (memory)\nt3: IR(address) ← (MBR(address))\n\nWhat is the PURPOSE of t3?',
+ opts:['To increment the PC','To replace the pointer in IR\'s address field with the actual target address fetched from memory','To save the current instruction to the stack','To trigger the execute cycle immediately'],
+ ans:1,
+ exp:'t3 overwrites IR\'s address field with the actual effective address (read from memory). This transforms the indirect reference into a direct address, so subsequent execute-cycle logic works identically to direct addressing.'},
+
+{id:88, lec:3, type:'prob', diff:'hard',
+ q:'For the Interrupt cycle micro-operations:\nt1: MBR ← (PC)\nt2: MAR ← save-address; PC ← routine-address\nt3: memory ← (MBR)\n\nAt t2, two operations run in parallel. Why is this valid?',
+ opts:['Because MAR and PC are the same register','Because MAR ← save-address writes to MAR while PC ← routine-address writes to PC — two different registers, no conflict','Because interrupts disable the clock','Because memory operations are instantaneous'],
+ ans:1,
+ exp:'MAR ← save-address writes to MAR, while PC ← routine-address writes to PC. These are DIFFERENT registers using independent data paths, so they can legitimately execute in parallel at t2.'},
+
+{id:89, lec:3, type:'prob', diff:'hard',
+ q:'Consider the ISZ X instruction execute cycle:\nt1: MAR←IR(address)\nt2: MBR←(memory)\nt3: MBR←(MBR)+1\nt4: memory←(MBR); if(MBR)==0 then PC←(PC)+1\n\nIf the value stored at address X was 0xFFFE (−2 in two\'s complement) before ISZ executes, what happens to PC after t4?',
+ opts:['PC is skipped (incremented by 1 extra)','PC is NOT skipped (continues to next instruction normally)','PC is reset to 0','The CPU halts'],
+ ans:1,
+ exp:'0xFFFE + 1 = 0xFFFF ≠ 0. The condition (MBR)==0 is FALSE, so the skip does NOT occur. PC continues normally to the very next instruction without any extra increment.'},
+
+{id:90, lec:3, type:'prob', diff:'hard',
+ q:'In a system with the control signals labeled C0–C13, the Fetch cycle t2 requires signals C5 and C_R. What does activating C_R accomplish?',
+ opts:['It writes data to memory','It issues a READ command on the system bus to fetch data from the memory location pointed to by MAR','It increments the PC','It copies MBR content to IR'],
+ ans:1,
+ exp:'C_R = Read control signal to the system bus. Activating C_R at t2 causes the CPU to issue a memory READ command, fetching the data from the MAR-specified address onto the data bus into MBR.'}
+
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentQ = 0;
+let answers = new Array(questions.length).fill(null); // null = unanswered
+let locked = new Array(questions.length).fill(false);
+let timerInterval = null;
+let timeLeft = 90 * 60;
+let timeUsed = 0;
+
+// ============================================================
+// INIT
+// ============================================================
+function startQuiz() {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('quiz-app').style.display = 'block';
+  buildMap();
+  goQuestion(0);
+  startTimer();
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timeUsed++;
+    const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+    const s = (timeLeft % 60).toString().padStart(2, '0');
+    const el = document.getElementById('timer');
+    el.textContent = `⏱ ${m}:${s}`;
+    el.className = 'meta-item timer-display' +
+      (timeLeft < 300 ? ' danger' : timeLeft < 600 ? ' warning' : '');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      showResults();
+    }
+  }, 1000);
+}
+
+// ============================================================
+// MAP
+// ============================================================
+function buildMap() {
+  const map = document.getElementById('q-map');
+  map.innerHTML = '';
+  questions.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'map-dot unanswered';
+    dot.id = `dot-${i}`;
+    dot.textContent = i + 1;
+    dot.onclick = () => goQuestion(i);
+    map.appendChild(dot);
+  });
+}
+
+function updateMap() {
+  questions.forEach((q, i) => {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.className = 'map-dot';
+    if (i === currentQ) dot.classList.add('current');
+    else if (answers[i] !== null) {
+      const correct = checkAnswer(i);
+      dot.classList.add(correct ? 'answered-c' : 'answered-w');
+    } else {
+      dot.classList.add('unanswered');
+    }
+  });
+}
+
+function checkAnswer(i) {
+  const q = questions[i];
+  if (q.type === 'tf') return answers[i] === q.ans;
+  return answers[i] === q.ans;
+}
+
+// ============================================================
+// RENDER QUESTION
+// ============================================================
+function goQuestion(idx) {
+  if (idx < 0 || idx >= questions.length) return;
+  currentQ = idx;
+  updateMap();
+  updateProgress();
+  renderQuestion();
+  updateNav();
+}
+
+function updateProgress() {
+  const answered = answers.filter(a => a !== null).length;
+  document.getElementById('progress-count').textContent = `${answered} / ${questions.length}`;
+  document.getElementById('progress-bar').style.width = `${(answered / questions.length) * 100}%`;
+}
+
+function updateNav() {
+  document.getElementById('prev-btn').disabled = currentQ === 0;
+  document.getElementById('next-btn').disabled = currentQ === questions.length - 1;
+  const allAnswered = answers.every(a => a !== null);
+  document.getElementById('finish-btn').style.display = allAnswered ? 'inline-block' : 'none';
+}
+
+function renderQuestion() {
+  const area = document.getElementById('question-area');
+  const q = questions[currentQ];
+  const isLocked = locked[currentQ];
+  const selectedAns = answers[currentQ];
+
+  const diffColor = q.diff === 'easy' ? 'var(--easy)' : q.diff === 'medium' ? 'var(--medium)' : 'var(--hard)';
+  const typeLabel = q.type === 'mcq' ? 'MCQ' : q.type === 'tf' ? 'True / False' : 'Problem';
+  const typeBadge = q.type === 'mcq' ? 'badge-mcq' : q.type === 'tf' ? 'badge-tf' : 'badge-prob';
+  const diffLabel = q.diff.charAt(0).toUpperCase() + q.diff.slice(1);
+
+  let optionsHTML = '';
+
+  if (q.type === 'tf') {
+    const trueClass = getTFClass(selectedAns, true, q.ans, isLocked);
+    const falseClass = getTFClass(selectedAns, false, q.ans, isLocked);
+    const lockedClass = isLocked ? ' locked' : '';
+    optionsHTML = `
+      <div class="tf-options">
+        <div class="tf-btn${lockedClass} ${trueClass}" onclick="selectTF(true)">
+          ✓ &nbsp; True
+        </div>
+        <div class="tf-btn${lockedClass} ${falseClass}" onclick="selectTF(false)">
+          ✗ &nbsp; False
+        </div>
+      </div>`;
+  } else {
+    const keys = ['A','B','C','D'];
+    optionsHTML = `<div class="options">` +
+      q.opts.map((opt, i) => {
+        const cls = getOptClass(selectedAns, i, q.ans, isLocked);
+        const lockedClass = isLocked ? ' locked' : '';
+        return `<div class="option${lockedClass} ${cls}" onclick="selectOption(${i})">
+          <div class="opt-key">${keys[i]}</div>
+          <div class="opt-text">${opt}</div>
+        </div>`;
+      }).join('') + `</div>`;
+  }
+
+  const expShow = isLocked ? 'show' : '';
+  const expText = q.exp || '';
+
+  area.innerHTML = `
+    <div class="question-card" style="--diff-color:${diffColor}">
+      <div class="q-header">
+        <span class="q-num">Q ${currentQ + 1} / ${questions.length}</span>
+        <span class="q-type-badge ${typeBadge}">${typeLabel}</span>
+        <span class="diff-badge diff-${q.diff}">${diffLabel}</span>
+      </div>
+      <div class="q-text">${q.q.replace(/\n/g, '<br>')}</div>
+      ${optionsHTML}
+      <div class="explanation ${expShow}">
+        <strong>Explanation:</strong> ${expText}
+      </div>
+    </div>`;
+}
+
+function getOptClass(selected, idx, correct, isLocked) {
+  if (!isLocked) return selected === idx ? 'selected' : '';
+  if (idx === correct) return 'correct';
+  if (selected === idx && idx !== correct) return 'wrong';
+  return '';
+}
+
+function getTFClass(selected, val, correct, isLocked) {
+  if (!isLocked) return selected === val ? 'selected' : '';
+  if (val === correct) return 'correct';
+  if (selected === val && val !== correct) return 'wrong';
+  return '';
+}
+
+function selectOption(idx) {
+  if (locked[currentQ]) return;
+  answers[currentQ] = idx;
+  locked[currentQ] = true;
+  renderQuestion();
+  updateProgress();
+  updateNav();
+  updateMap();
+  // Auto-advance after 1.2s
+  setTimeout(() => {
+    if (currentQ < questions.length - 1) goQuestion(currentQ + 1);
+  }, 1400);
+}
+
+function selectTF(val) {
+  if (locked[currentQ]) return;
+  answers[currentQ] = val;
+  locked[currentQ] = true;
+  renderQuestion();
+  updateProgress();
+  updateNav();
+  updateMap();
+  setTimeout(() => {
+    if (currentQ < questions.length - 1) goQuestion(currentQ + 1);
+  }, 1400);
+}
+
+function jumpSection(idx, btn) {
+  document.querySelectorAll('.sec-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  goQuestion(Math.min(idx, questions.length - 1));
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function showResults() {
+  clearInterval(timerInterval);
+  document.getElementById('quiz-app').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  window.scrollTo(0,0);
+
+  const total = questions.length;
+  let correct = 0, wrong = 0, skip = 0;
+
+  // Per-section
+  let lec1c=0,lec1t=0, lec2c=0,lec2t=0, lec3c=0,lec3t=0;
+  let mcqC=0,mcqT=0, tfC=0,tfT=0, probC=0,probT=0;
+
+  questions.forEach((q, i) => {
+    const a = answers[i];
+    if (a === null) { skip++; }
+    else {
+      const isC = checkAnswer(i);
+      if (isC) correct++; else wrong++;
+    }
+    // Lecture
+    if (q.lec === 1) { lec1t++; if(checkAnswer(i)&&answers[i]!==null) lec1c++; }
+    if (q.lec === 2) { lec2t++; if(checkAnswer(i)&&answers[i]!==null) lec2c++; }
+    if (q.lec === 3) { lec3t++; if(checkAnswer(i)&&answers[i]!==null) lec3c++; }
+    // Type
+    if (q.type==='mcq') { mcqT++; if(checkAnswer(i)&&answers[i]!==null) mcqC++; }
+    if (q.type==='tf')  { tfT++;  if(checkAnswer(i)&&answers[i]!==null) tfC++;  }
+    if (q.type==='prob'){ probT++;if(checkAnswer(i)&&answers[i]!==null) probC++;}
+  });
+
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('grade-pct').textContent = `${pct}%`;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-skip').textContent = skip;
+
+  const usedM = Math.floor(timeUsed/60).toString().padStart(2,'0');
+  const usedS = (timeUsed%60).toString().padStart(2,'0');
+  document.getElementById('r-time').textContent = `${usedM}:${usedS}`;
+
+  const msg = pct >= 90 ? '🏆 Outstanding! Excellent mastery!' :
+              pct >= 75 ? '🎯 Great work! Solid understanding.' :
+              pct >= 60 ? '📚 Good effort! Review weak areas.' :
+              pct >= 50 ? '⚠️ Passing, but more study needed.' :
+                          '❌ Needs significant review.';
+  document.getElementById('grade-msg').textContent = msg;
+
+  const setBD = (id, barId, c, t) => {
+    const p = t > 0 ? Math.round((c/t)*100) : 0;
+    document.getElementById(id).textContent = `${p}%`;
+    setTimeout(()=>{ document.getElementById(barId).style.width = p+'%'; }, 100);
+  };
+
+  setBD('bd-lec1','bd-lec1-bar', lec1c, lec1t);
+  setBD('bd-lec2','bd-lec2-bar', lec2c, lec2t);
+  setBD('bd-lec3','bd-lec3-bar', lec3c, lec3t);
+  setBD('bd-mcq','bd-mcq-bar', mcqC, mcqT);
+  setBD('bd-tf','bd-tf-bar', tfC, tfT);
+  setBD('bd-prob','bd-prob-bar', probC, probT);
+}
+
+function retry() {
+  answers = new Array(questions.length).fill(null);
+  locked = new Array(questions.length).fill(false);
+  currentQ = 0;
+  timeLeft = 90 * 60;
+  timeUsed = 0;
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('quiz-app').style.display = 'block';
+  buildMap();
+  goQuestion(0);
+  startTimer();
+}
+</script>
+</body>
+</html>

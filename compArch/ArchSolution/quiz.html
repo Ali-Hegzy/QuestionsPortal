@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Computer Architecture - Exam</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+            rel="stylesheet" />
+        <link rel="stylesheet" href="/assets/css/quiz-template.css" />
+        <link rel="stylesheet" href="/assets/css/global.css" />
+    </head>
+    <body>
+        <div class="container">
+            <nav class="nav-actions">
+                <button class="btn-nav" onclick="window.history.back()">
+                    <span class="icon-back"></span> Back
+                </button>
+                <a href="/" class="btn-nav">
+                    <span class="icon-home"></span> Home
+                </a>
+            </nav>
+            <div id="splash">
+                <div class="badge">
+                    <div class="badge-dot"></div>
+                    <span>Computer Architecture Quiz</span>
+                </div>
+                <h1 class="hero-title">Computer Architecture</h1>
+                <p class="hero-sub">
+                    Evaluate comprehensive hardware operational structures,
+                    internal processor design, control mechanics, and
+                    multi-threaded interrupt vector schemas.
+                </p>
+
+                <div class="stats-banner">
+                    <div class="stat-box">
+                        <div class="num" id="quest-num">--</div>
+                        <div class="lbl">Total Questions</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="num" id="time-num">--</div>
+                        <div class="lbl">Minutes</div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="initEngine()">
+                    ▶ Initialize Examination
+                </button>
+            </div>
+
+            <div id="app">
+                <div class="top-panel">
+                    <div class="panel-left">// Computer Architecture</div>
+                    <div class="panel-center">
+                        <div class="timer" id="clock">--:--</div>
+                    </div>
+                    <div class="panel-right">
+                        <span class="live-pill ok" id="live-ok">✓ 0</span>
+                        <span class="live-pill bad" id="live-bad">✗ 0</span>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-meta">
+                        <span class="progress-title">Processing Matrix</span>
+                        <span class="progress-ratio" id="ratio-view"
+                            >0 / 61</span
+                        >
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="track-fill"></div>
+                    </div>
+                </div>
+
+                <div class="map-grid" id="node-map"></div>
+
+                <div id="question-payload"></div>
+
+                <div class="action-bar">
+                    <button
+                        class="btn-secondary"
+                        id="ctrl-prev"
+                        onclick="navigate(-1)">
+                        ← previous
+                    </button>
+                    <button
+                        class="btn-secondary next"
+                        id="ctrl-next"
+                        onclick="navigate(1)">
+                        Next →
+                    </button>
+                    <button
+                        class="btn-secondary finish"
+                        id="ctrl-fin"
+                        onclick="terminateSession()">
+                        ✓ Submit
+                    </button>
+                </div>
+            </div>
+
+            <div id="results">
+                <div class="results-hero">
+                    <div class="score-circle">
+                        <div class="score-value" id="metrics-pct">0%</div>
+                        <div class="score-label">Efficiency</div>
+                    </div>
+                    <div class="results-title" id="metrics-title">
+                        Analysis Concluded
+                    </div>
+                    <div class="results-msg" id="metrics-msg">
+                        Processing database feedback log...
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div
+                            class="val"
+                            style="color: var(--green)"
+                            id="metrics-c">
+                            0
+                        </div>
+                        <div class="lbl">Resolved Correct</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div
+                            class="val"
+                            style="color: var(--red)"
+                            id="metrics-w">
+                            0
+                        </div>
+                        <div class="lbl">Fault Flags</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div
+                            class="val"
+                            style="color: var(--orange)"
+                            id="metrics-s">
+                            0
+                        </div>
+                        <div class="lbl">Bypassed</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div
+                            class="val"
+                            style="color: var(--accent)"
+                            id="metrics-t">
+                            00:00
+                        </div>
+                        <div class="lbl">Time Taken</div>
+                    </div>
+                </div>
+
+                <div class="breakdown-container">
+                    <div class="breakdown-header">
+                        Performance Analytics by Topology
+                    </div>
+                    <div class="breakdown-row">
+                        <div class="breakdown-label">MCQ Modules</div>
+                        <div class="breakdown-track">
+                            <div
+                                class="breakdown-fill"
+                                id="bar-mcq"
+                                style="background: var(--accent)"></div>
+                        </div>
+                        <div class="breakdown-pct" id="lbl-mcq">0%</div>
+                    </div>
+                    <div class="breakdown-row">
+                        <div class="breakdown-label">True / False</div>
+                        <div class="breakdown-track">
+                            <div
+                                class="breakdown-fill"
+                                id="bar-tf"
+                                style="background: var(--orange)"></div>
+                        </div>
+                        <div class="breakdown-pct" id="lbl-tf">0%</div>
+                    </div>
+                </div>
+
+                <button
+                    class="review-trigger"
+                    onclick="toggleReviewInspector(this)">
+                    📋 Detailed Error Inspection Log <span>▼</span>
+                </button>
+                <div class="review-box" id="inspection-log"></div>
+
+                <button
+                    class="btn-primary"
+                    style="display: block; margin: 2.5rem auto 0"
+                    onclick="resetSimulator()">
+                    ↩ Re-initialize The Exam
+                </button>
+            </div>
+        </div>
+
+        <script src="/assets/js/quiz-template.js"></script>
+        <script src="./quiz.js"></script>
+        <script>
+            const currentQuiz = new QuizEngine(QUESTIONS, 60);
+
+            // ربط الدوال العامة في الـ HTML بالـ Instance الحالية للمحرك
+            function initEngine() {
+                currentQuiz.initEngine();
+            }
+            function navigate(dir) {
+                currentQuiz.navigate(dir);
+            }
+            function terminateSession() {
+                currentQuiz.terminateSession();
+            }
+            function resetSimulator() {
+                currentQuiz.resetSimulator();
+            }
+            function toggleReviewInspector(btn) {
+                currentQuiz.toggleReviewInspector(btn);
+            }
+        </script>
+    </body>
+</html>

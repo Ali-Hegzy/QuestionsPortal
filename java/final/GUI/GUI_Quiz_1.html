@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Java GUI · Interactive Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0d0f14;
+  --surface: #161920;
+  --surface2: #1e2230;
+  --border: #2a2f40;
+  --accent: #4f9eff;
+  --accent2: #7c4dff;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --text: #e8eaf0;
+  --muted: #7b82a0;
+  --easy: #22c55e;
+  --med: #f59e0b;
+  --hard: #ef4444;
+  --lec5: #4f9eff;
+  --lec6: #a855f7;
+  --lec7: #f97316;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grid background */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(79,158,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,158,255,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── HEADER ── */
+.header {
+  position: relative;
+  z-index:10;
+  padding: 48px 40px 32px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, #0d1520 0%, transparent 100%);
+}
+.header-inner { max-width:1100px; margin:0 auto; }
+.badge {
+  display:inline-block;
+  font-family:'Space Mono', monospace;
+  font-size:10px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(79,158,255,.3);
+  padding: 4px 10px;
+  border-radius: 2px;
+  margin-bottom:16px;
+}
+h1 {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight:700;
+  line-height:1.1;
+  letter-spacing: -0.02em;
+}
+h1 span { color: var(--accent); }
+.subtitle {
+  margin-top:10px;
+  color: var(--muted);
+  font-size:15px;
+  font-weight:300;
+}
+.stats-row {
+  display:flex;
+  gap:32px;
+  margin-top:28px;
+  flex-wrap:wrap;
+}
+.stat {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.stat-val {
+  font-family:'Space Mono',monospace;
+  font-size:22px;
+  font-weight:700;
+  color: var(--accent);
+}
+.stat-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+
+/* ── SCORE BAR ── */
+.score-bar {
+  position:sticky;
+  top:0;
+  z-index:100;
+  background: rgba(13,15,20,.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 40px;
+  display:flex;
+  align-items:center;
+  gap:24px;
+  flex-wrap:wrap;
+}
+.score-pill {
+  font-family:'Space Mono',monospace;
+  font-size:13px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid;
+  white-space:nowrap;
+}
+.score-pill.correct { color:var(--green); border-color:rgba(34,197,94,.3); background:rgba(34,197,94,.08); }
+.score-pill.wrong   { color:var(--red);   border-color:rgba(239,68,68,.3);  background:rgba(239,68,68,.08);  }
+.score-pill.skipped { color:var(--yellow);border-color:rgba(245,158,11,.3); background:rgba(245,158,11,.08); }
+.progress-wrap { flex:1; min-width:140px; }
+.progress-track { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.progress-fill  { height:100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition: width .4s ease; }
+.progress-lbl   { font-size:11px; color:var(--muted); margin-top:4px; font-family:'Space Mono',monospace; }
+.reset-btn {
+  margin-left:auto;
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  letter-spacing:.1em;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background:transparent;
+  color:var(--muted);
+  border-radius:3px;
+  cursor:pointer;
+  transition: all .2s;
+  text-transform:uppercase;
+}
+.reset-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width:1100px; margin:0 auto; padding:40px; position:relative; z-index:5; }
+
+/* ── LECTURE TABS ── */
+.lecture-tabs {
+  display:flex;
+  gap:8px;
+  margin-bottom:36px;
+  flex-wrap:wrap;
+}
+.tab-btn {
+  font-family:'Space Mono',monospace;
+  font-size:12px;
+  letter-spacing:.08em;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  text-transform:uppercase;
+  position:relative;
+  overflow:hidden;
+}
+.tab-btn::before {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform .2s;
+}
+.tab-btn:hover { background:var(--surface2); color:var(--text); }
+.tab-btn.active { background:var(--surface2); border-color:var(--tab-color, var(--accent)); color:var(--tab-color, var(--accent)); }
+.tab-btn.active::before { transform: scaleX(1); }
+.tab-btn[data-lec="all"] { --tab-color: var(--accent); }
+.tab-btn[data-lec="5"]   { --tab-color: var(--lec5); }
+.tab-btn[data-lec="6"]   { --tab-color: var(--lec6); }
+.tab-btn[data-lec="7"]   { --tab-color: var(--lec7); }
+
+/* ── DIFFICULTY FILTER ── */
+.filter-row {
+  display:flex;
+  gap:8px;
+  margin-bottom:28px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.filter-lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-right:4px; font-family:'Space Mono',monospace; }
+.diff-btn {
+  font-size:11px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  font-family:'Space Mono',monospace;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.diff-btn:hover { background:var(--surface2); }
+.diff-btn.active[data-diff="easy"]   { color:var(--easy); border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.08); }
+.diff-btn.active[data-diff="medium"] { color:var(--med);  border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);}
+.diff-btn.active[data-diff="hard"]   { color:var(--hard); border-color:rgba(239,68,68,.4); background:rgba(239,68,68,.08); }
+.diff-btn.active[data-diff="all"]    { color:var(--accent);border-color:rgba(79,158,255,.4);background:rgba(79,158,255,.08);}
+
+/* ── TYPE FILTER ── */
+.type-row {
+  display:flex;
+  gap:8px;
+  margin-bottom:36px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.type-btn {
+  font-size:11px;
+  padding: 5px 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  font-family:'Space Mono',monospace;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.type-btn.active { color:var(--text); border-color:var(--accent); background:rgba(79,158,255,.08); }
+.type-btn:hover { background:var(--surface2); }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin: 40px 0 20px;
+}
+.section-dot {
+  width:10px; height:10px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.section-title {
+  font-family:'Space Mono',monospace;
+  font-size:12px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.section-line { flex:1; height:1px; background:var(--border); }
+.section-count {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* ── QUESTION CARD ── */
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 28px 24px;
+  margin-bottom: 16px;
+  transition: border-color .2s, transform .15s;
+  position:relative;
+  overflow:hidden;
+}
+.q-card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0;
+  width:3px; height:100%;
+  background: var(--lec-color, var(--accent));
+  border-radius:3px 0 0 3px;
+}
+.q-card:hover { border-color:var(--surface2); transform: translateY(-1px); }
+.q-card.answered-correct { border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.04); }
+.q-card.answered-wrong   { border-color: rgba(239,68,68,.3);  background: rgba(239,68,68,.04);  }
+.q-card.answered-essay   { border-color: rgba(79,158,255,.3); background: rgba(79,158,255,.04); }
+
+.q-meta {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.q-num {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+.q-lec-tag {
+  font-size:10px;
+  padding: 2px 8px;
+  border-radius:2px;
+  font-family:'Space Mono',monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-weight:700;
+}
+.q-diff-tag {
+  font-size:10px;
+  padding: 2px 8px;
+  border-radius:10px;
+  font-family:'Space Mono',monospace;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.diff-easy   { color:var(--easy); background:rgba(34,197,94,.1); }
+.diff-medium { color:var(--med);  background:rgba(245,158,11,.1);}
+.diff-hard   { color:var(--hard); background:rgba(239,68,68,.1); }
+
+.q-type-tag {
+  font-size:10px;
+  padding: 2px 8px;
+  border-radius:2px;
+  font-family:'Space Mono',monospace;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  border: 1px solid var(--border);
+}
+.status-icon {
+  margin-left:auto;
+  font-size:16px;
+}
+
+.q-text {
+  font-size:15px;
+  font-weight:500;
+  line-height:1.6;
+  margin-bottom:18px;
+  color:var(--text);
+}
+.q-text code {
+  font-family:'Space Mono',monospace;
+  font-size:13px;
+  background: rgba(79,158,255,.1);
+  padding:1px 5px;
+  border-radius:3px;
+  color:var(--accent);
+}
+
+/* ── MCQ OPTIONS ── */
+.options { display:flex; flex-direction:column; gap:8px; }
+.option {
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  background: var(--surface2);
+  font-size:14px;
+  line-height:1.5;
+}
+.option:hover:not(.disabled) { border-color:var(--accent); background:rgba(79,158,255,.06); }
+.option.selected-correct { border-color:var(--green); background:rgba(34,197,94,.1); color:var(--green); }
+.option.selected-wrong   { border-color:var(--red);   background:rgba(239,68,68,.1);  color:var(--red);   }
+.option.correct-reveal   { border-color:var(--green); background:rgba(34,197,94,.06); color:var(--green); }
+.option.disabled         { cursor:default; }
+.opt-letter {
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  font-weight:700;
+  min-width:20px;
+  padding-top:1px;
+  color:var(--muted);
+}
+.option.selected-correct .opt-letter,
+.option.correct-reveal .opt-letter { color:var(--green); }
+.option.selected-wrong .opt-letter  { color:var(--red); }
+
+/* ── T/F BUTTONS ── */
+.tf-buttons { display:flex; gap:10px; }
+.tf-btn {
+  flex:1;
+  padding: 14px;
+  border-radius:6px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-family:'Space Mono',monospace;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.1em;
+  cursor:pointer;
+  transition: all .15s;
+  text-transform:uppercase;
+}
+.tf-btn:hover:not(.disabled) { border-color:var(--accent); color:var(--accent); background:rgba(79,158,255,.06); }
+.tf-btn.selected-correct { border-color:var(--green); background:rgba(34,197,94,.12); color:var(--green); }
+.tf-btn.selected-wrong   { border-color:var(--red);   background:rgba(239,68,68,.12); color:var(--red);   }
+.tf-btn.correct-reveal   { border-color:var(--green); background:rgba(34,197,94,.06); color:var(--green); }
+.tf-btn.disabled { cursor:default; }
+
+/* ── ESSAY ── */
+.essay-area {
+  width:100%;
+  min-height:100px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius:6px;
+  color: var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  padding:14px 16px;
+  resize:vertical;
+  outline:none;
+  transition: border-color .2s;
+  line-height:1.6;
+}
+.essay-area:focus { border-color:var(--accent); }
+.essay-submit {
+  margin-top:10px;
+  padding: 8px 20px;
+  background: rgba(79,158,255,.1);
+  border: 1px solid rgba(79,158,255,.3);
+  color: var(--accent);
+  border-radius:4px;
+  font-family:'Space Mono',monospace;
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+}
+.essay-submit:hover { background:rgba(79,158,255,.2); }
+
+/* ── CODE BLOCK ── */
+.code-block {
+  background: #0a0c10;
+  border: 1px solid var(--border);
+  border-radius:6px;
+  padding: 16px 20px;
+  margin-bottom:16px;
+  font-family:'Space Mono',monospace;
+  font-size:12.5px;
+  line-height:1.7;
+  color:#c9d1d9;
+  overflow-x:auto;
+  white-space:pre;
+}
+.code-kw   { color:#ff7b72; }
+.code-type { color:#79c0ff; }
+.code-str  { color:#a5d6ff; }
+.code-cmt  { color:#6e7681; font-style:italic; }
+.code-num  { color:#f2cc60; }
+
+/* ── ANSWER REVEAL ── */
+.answer-reveal {
+  margin-top:14px;
+  padding: 12px 16px;
+  background: rgba(34,197,94,.06);
+  border: 1px solid rgba(34,197,94,.2);
+  border-radius:6px;
+  font-size:13px;
+  line-height:1.6;
+  color:#86efac;
+  display:none;
+}
+.answer-reveal.show { display:block; }
+.answer-reveal strong { color:var(--green); font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; display:block; margin-bottom:6px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align:center;
+  padding:80px 40px;
+  color:var(--muted);
+}
+.empty-state .empty-icon { font-size:48px; margin-bottom:16px; opacity:.4; }
+.empty-state p { font-size:14px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeSlideIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.q-card { animation: fadeSlideIn .25s ease both; }
+.q-card:nth-child(2)  { animation-delay:.03s; }
+.q-card:nth-child(3)  { animation-delay:.06s; }
+.q-card:nth-child(4)  { animation-delay:.09s; }
+.q-card:nth-child(5)  { animation-delay:.12s; }
+.q-card:nth-child(6)  { animation-delay:.14s; }
+
+/* ── FINAL SCORE MODAL ── */
+.modal-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s;
+}
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:48px;
+  max-width:440px;
+  width:90%;
+  text-align:center;
+  transform:scale(.9);
+  transition:transform .3s;
+}
+.modal-overlay.show .modal { transform:scale(1); }
+.modal-score {
+  font-family:'Space Mono',monospace;
+  font-size:72px;
+  font-weight:700;
+  color:var(--accent);
+  line-height:1;
+  margin:16px 0;
+}
+.modal-grade { font-size:24px; font-weight:600; margin-bottom:8px; }
+.modal-sub   { color:var(--muted); font-size:14px; margin-bottom:28px; }
+.modal-close {
+  padding:12px 32px;
+  background:rgba(79,158,255,.12);
+  border:1px solid rgba(79,158,255,.3);
+  color:var(--accent);
+  border-radius:6px;
+  font-family:'Space Mono',monospace;
+  font-size:12px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+}
+.modal-close:hover { background:rgba(79,158,255,.25); }
+
+/* ── TOOLTIP ── */
+.tooltip-wrap { position:relative; display:inline-block; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="badge">CS Faculty · Level 2 · Java GUI</div>
+    <h1>Java <span>GUI</span> / Swing / AWT<br>Interactive Quiz</h1>
+    <p class="subtitle">Lectures 5 · 6 · 7 — Components, Events, Layout Managers</p>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-val" id="totalQs">83</span><span class="stat-lbl">Questions</span></div>
+      <div class="stat"><span class="stat-val" id="lecCount">3</span><span class="stat-lbl">Lectures</span></div>
+      <div class="stat"><span class="stat-val">4</span><span class="stat-lbl">Types</span></div>
+      <div class="stat"><span class="stat-val">3</span><span class="stat-lbl">Difficulty Levels</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCORE BAR -->
+<div class="score-bar">
+  <div class="score-pill correct">✓ <span id="correctCount">0</span> Correct</div>
+  <div class="score-pill wrong">✗ <span id="wrongCount">0</span> Wrong</div>
+  <div class="score-pill skipped">◌ <span id="essayCount">0</span> Essay</div>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-lbl"><span id="progressText">0 / 83</span> answered</div>
+  </div>
+  <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+  <button class="reset-btn" style="color:var(--green);border-color:rgba(34,197,94,.3)" onclick="showScore()">Score</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LECTURE TABS -->
+  <div class="lecture-tabs">
+    <button class="tab-btn active" data-lec="all" onclick="setLec('all',this)">All Lectures</button>
+    <button class="tab-btn" data-lec="5" onclick="setLec('5',this)">Lecture 5 · GUI Part 1</button>
+    <button class="tab-btn" data-lec="6" onclick="setLec('6',this)">Lecture 6 · GUI Part 2</button>
+    <button class="tab-btn" data-lec="7" onclick="setLec('7',this)">Lecture 7 · Layout Managers</button>
+  </div>
+
+  <!-- DIFFICULTY FILTER -->
+  <div class="filter-row">
+    <span class="filter-lbl">Difficulty:</span>
+    <button class="diff-btn active" data-diff="all" onclick="setDiff('all',this)">All</button>
+    <button class="diff-btn" data-diff="easy" onclick="setDiff('easy',this)">Easy</button>
+    <button class="diff-btn" data-diff="medium" onclick="setDiff('medium',this)">Medium</button>
+    <button class="diff-btn" data-diff="hard" onclick="setDiff('hard',this)">Hard</button>
+  </div>
+
+  <!-- TYPE FILTER -->
+  <div class="type-row">
+    <span class="filter-lbl">Type:</span>
+    <button class="type-btn active" data-type="all" onclick="setType('all',this)">All</button>
+    <button class="type-btn" data-type="mcq" onclick="setType('mcq',this)">MCQ</button>
+    <button class="type-btn" data-type="tf" onclick="setType('tf',this)">True / False</button>
+    <button class="type-btn" data-type="essay" onclick="setType('essay',this)">Essay</button>
+    <button class="type-btn" data-type="code" onclick="setType('code',this)">Coding</button>
+  </div>
+
+  <!-- QUIZ AREA -->
+  <div id="quizArea"></div>
+
+</div>
+
+<!-- SCORE MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div style="font-size:13px;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.1em">Your Score</div>
+    <div class="modal-score" id="modalScore">0%</div>
+    <div class="modal-grade" id="modalGrade">—</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('show')">Close</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  QUESTION DATA
+// ═══════════════════════════════════════════════════════
+const QUESTIONS = [
+
+// ─── LECTURE 5 · MCQ · EASY ───
+{id:1, lec:5, type:'mcq', diff:'easy',
+ text:'Which package contains Java Swing GUI components?',
+ opts:['java.awt','javax.swing','java.gui','java.swing'],
+ ans:1},
+
+{id:2, lec:5, type:'mcq', diff:'easy',
+ text:'Which class provides the method <code>paint()</code> for drawing a component on screen?',
+ opts:['JComponent','Container','Component','JPanel'],
+ ans:2},
+
+{id:3, lec:5, type:'mcq', diff:'easy',
+ text:'Which method of the Container class is used to add a component?',
+ opts:['insert()','place()','add()','append()'],
+ ans:2},
+
+{id:4, lec:5, type:'mcq', diff:'easy',
+ text:'JLabel can display ___.',
+ opts:['Text only','Image only','Text, image, or both','Buttons only'],
+ ans:2},
+
+{id:5, lec:5, type:'mcq', diff:'easy',
+ text:'Which method sets a tooltip on a JLabel?',
+ opts:['setHint()','setToolTipText()','setTip()','addToolTip()'],
+ ans:1},
+
+{id:6, lec:5, type:'mcq', diff:'easy',
+ text:'JPasswordField is a subclass of ___.',
+ opts:['JLabel','JButton','JTextField','JComponent'],
+ ans:2},
+
+{id:7, lec:5, type:'mcq', diff:'easy',
+ text:'JPasswordField hides the characters entered by the user by displaying ___.',
+ opts:['Blank spaces','Asterisks (*)','Dots','Hash signs'],
+ ans:1},
+
+{id:8, lec:5, type:'mcq', diff:'easy',
+ text:'Which event type is generated when the user presses Enter inside a JTextField?',
+ opts:['KeyEvent','ItemEvent','ActionEvent','MouseEvent'],
+ ans:2},
+
+{id:9, lec:5, type:'mcq', diff:'easy',
+ text:'The method <code>addActionListener()</code> is used to register a listener for ___.',
+ opts:['Mouse events','Action events','Item events','Focus events'],
+ ans:1},
+
+{id:10, lec:5, type:'mcq', diff:'easy',
+ text:'Which interface must be implemented to handle ActionEvents?',
+ opts:['MouseListener','ItemListener','ActionListener','EventListener'],
+ ans:2},
+
+// ─── LECTURE 5 · MCQ · MEDIUM ───
+{id:11, lec:5, type:'mcq', diff:'medium',
+ text:'The method <code>actionPerformed()</code> is defined in which interface?',
+ opts:['MouseListener','ItemListener','ActionListener','KeyListener'],
+ ans:2},
+
+{id:12, lec:5, type:'mcq', diff:'medium',
+ text:'JButton generates which type of event when clicked?',
+ opts:['ItemEvent','ActionEvent','MouseEvent','WindowEvent'],
+ ans:1},
+
+{id:13, lec:5, type:'mcq', diff:'medium',
+ text:'Which method can set a rollover icon on a JButton?',
+ opts:['setHoverIcon()','setMouseIcon()','setRolloverIcon()','setOverIcon()'],
+ ans:2},
+
+{id:14, lec:5, type:'mcq', diff:'medium',
+ text:'Which class is the direct superclass of JButton, JCheckBox, and JRadioButton?',
+ opts:['JComponent','Container','AbstractButton','JToggleButton'],
+ ans:2},
+
+{id:15, lec:5, type:'mcq', diff:'medium',
+ text:'What does <code>event.getActionCommand()</code> return for a JButton?',
+ opts:["The button's icon","The text label of the button","The button's ID","The event type"],
+ ans:1},
+
+// ─── LECTURE 5 · MCQ · HARD ───
+{id:16, lec:5, type:'mcq', diff:'hard',
+ text:'Which superclass hierarchy is correct for JButton?',
+ opts:[
+   'Object→Component→Container→JComponent→AbstractButton→JButton',
+   'Object→JComponent→AbstractButton→JButton',
+   'Object→Component→JComponent→AbstractButton→JButton',
+   'Object→Container→AbstractButton→JButton'],
+ ans:2},
+
+{id:17, lec:5, type:'mcq', diff:'hard',
+ text:'Which statement CORRECTLY registers a ButtonHandler for two buttons?',
+ opts:[
+   'handler.add(b1); handler.add(b2);',
+   'b1.addActionListener(handler); b2.addActionListener(handler);',
+   'addListener(b1,handler); addListener(b2,handler);',
+   'b1.setListener(handler); b2.setListener(handler);'],
+ ans:1},
+
+{id:18, lec:5, type:'mcq', diff:'hard',
+ text:'An event listener must be ___ before it receives events from a component.',
+ opts:['Extended','Registered (added) with the component','Instantiated only','Declared static'],
+ ans:1},
+
+// ─── LECTURE 5 · T/F ───
+{id:19, lec:5, type:'tf', diff:'easy',
+ text:'Swing components are located in the package <code>javax.swing</code>.',
+ ans:true},
+
+{id:20, lec:5, type:'tf', diff:'easy',
+ text:'JPasswordField extends JTextField.',
+ ans:true},
+
+{id:21, lec:5, type:'tf', diff:'easy',
+ text:'JLabel can display both text and an image at the same time.',
+ ans:true},
+
+{id:22, lec:5, type:'tf', diff:'easy',
+ text:'JButton generates an ItemEvent when clicked.',
+ ans:false, explain:'False — it generates an ActionEvent.'},
+
+{id:23, lec:5, type:'tf', diff:'medium',
+ text:'The method <code>addActionListener()</code> is used to register a listener for mouse events.',
+ ans:false, explain:'False — it registers for ActionEvents, not mouse events.'},
+
+{id:24, lec:5, type:'tf', diff:'medium',
+ text:'Swing components are called "lightweight" because they are written completely in Java with no native OS code.',
+ ans:true},
+
+{id:25, lec:5, type:'tf', diff:'hard',
+ text:'An anonymous inner class can be used directly inside <code>addItemListener()</code> to handle JComboBox events.',
+ ans:true},
+
+{id:26, lec:5, type:'tf', diff:'hard',
+ text:'JPasswordField.getPassword() returns a String containing the entered password.',
+ ans:false, explain:'False — it returns a char array for security reasons.'},
+
+// ─── LECTURE 5 · ESSAY ───
+{id:27, lec:5, type:'essay', diff:'medium',
+ text:'Explain the Java event-handling model. Define the three parts (event source, event object, event listener) and describe the two tasks a programmer must perform.',
+ modelAnswer:'(1) Event source — the GUI component the user interacts with (e.g., JButton). (2) Event object — encapsulates information about the event (e.g., ActionEvent). (3) Event listener — receives the event and responds (implements ActionListener). The programmer must: (a) register the listener using addActionListener(handler), and (b) implement the event-handler method actionPerformed().'},
+
+{id:28, lec:5, type:'essay', diff:'hard',
+ text:'Compare Swing and AWT in Java GUI programming. Discuss lightweight vs heavyweight components and the role of JComponent.',
+ modelAnswer:'AWT (java.awt) uses native OS widgets (heavyweight). Swing (javax.swing) provides lightweight components written entirely in Java — no native OS rendering — giving a consistent cross-platform look. Hierarchy: Object → Component (paint()) → Container (add()) → JComponent (pluggable look-and-feel, mnemonics, tooltips). All Swing components extend JComponent.'},
+
+// ─── LECTURE 5 · CODING ───
+{id:29, lec:5, type:'code', diff:'medium',
+ text:'What is the output/behavior of the following code when the user types "hello" and presses Enter in textField1?',
+ code:`JTextField textField1 = new JTextField(10);
+TextFieldHandler handler = new TextFieldHandler();
+textField1.addActionListener(handler);
+
+// Inside TextFieldHandler:
+public void actionPerformed(ActionEvent event) {
+    if (event.getSource() == textField1)
+        JOptionPane.showMessageDialog(null,
+          "textField1: " + event.getActionCommand());
+}`,
+ modelAnswer:'A JOptionPane dialog appears with the message: "textField1: hello". The getActionCommand() on a JTextField returns the current text in the field.'},
+
+{id:30, lec:5, type:'code', diff:'hard',
+ text:'Write a complete inner class that handles two JButtons (btnRed, btnBlue) and changes the background color of a JPanel named panel accordingly.',
+ modelAnswer:`private class ColorHandler implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == btnRed)
+            panel.setBackground(Color.RED);
+        else if (e.getSource() == btnBlue)
+            panel.setBackground(Color.BLUE);
+        panel.repaint();
+    }
+}
+// Registration:
+btnRed.addActionListener(new ColorHandler());
+btnBlue.addActionListener(new ColorHandler());`},
+
+// ─── LECTURE 6 · MCQ · EASY ───
+{id:31, lec:6, type:'mcq', diff:'easy',
+ text:'How many types of state buttons exist in Java Swing?',
+ opts:['2','3','4','5'],
+ ans:1, explain:'JToggleButton, JCheckBox, JRadioButton'},
+
+{id:32, lec:6, type:'mcq', diff:'easy',
+ text:'JCheckBox generates which event when its state changes?',
+ opts:['ActionEvent','ItemEvent','MouseEvent','ChangeEvent'],
+ ans:1},
+
+{id:33, lec:6, type:'mcq', diff:'easy',
+ text:'Which class is used to group JRadioButtons so only one can be selected at a time?',
+ opts:['RadioGroup','ButtonGroup','GroupManager','SelectionGroup'],
+ ans:1},
+
+{id:34, lec:6, type:'mcq', diff:'easy',
+ text:'JComboBox is also known as ___.',
+ opts:['List box','Drop-down list','Radio group','Spinner'],
+ ans:1},
+
+{id:35, lec:6, type:'mcq', diff:'easy',
+ text:'Which method sets the maximum number of visible rows in a JComboBox?',
+ opts:['setRows()','setVisibleCount()','setMaximumRowCount()','setDropDownRows()'],
+ ans:2},
+
+// ─── LECTURE 6 · MCQ · MEDIUM ───
+{id:36, lec:6, type:'mcq', diff:'medium',
+ text:'The method <code>itemStateChanged()</code> belongs to which interface?',
+ opts:['ActionListener','MouseListener','ItemListener','ChangeListener'],
+ ans:2},
+
+{id:37, lec:6, type:'mcq', diff:'medium',
+ text:'How do you check if a JCheckBox was SELECTED in <code>itemStateChanged()</code>?',
+ opts:[
+   'event.isSelected()',
+   'event.getState() == true',
+   'event.getStateChange() == ItemEvent.SELECTED',
+   'event.getSource().isChecked()'],
+ ans:2},
+
+{id:38, lec:6, type:'mcq', diff:'medium',
+ text:'Which method of JPasswordField retrieves the password as a char array?',
+ opts:['getText()','getPassword()','getChars()','readPassword()'],
+ ans:1},
+
+{id:39, lec:6, type:'mcq', diff:'medium',
+ text:'<code>textField.setEditable(false)</code> makes the field ___.',
+ opts:['Invisible','Read-only (user cannot edit)','Disabled','Hidden'],
+ ans:1},
+
+{id:40, lec:6, type:'mcq', diff:'medium',
+ text:'Event-listener interfaces for mouse events are: MouseListener and ___.',
+ opts:['MouseEventListener','MouseClickListener','MouseMotionListener','MouseMoveListener'],
+ ans:2},
+
+// ─── LECTURE 6 · MCQ · HARD ───
+{id:41, lec:6, type:'mcq', diff:'hard',
+ text:'Which method is called by MouseListener when the mouse button is pressed AND released WITHOUT moving?',
+ opts:['mousePressed()','mouseReleased()','mouseClicked()','mouseMoved()'],
+ ans:2},
+
+{id:42, lec:6, type:'mcq', diff:'hard',
+ text:'Which method is part of MouseMotionListener (NOT MouseListener)?',
+ opts:['mouseClicked()','mouseEntered()','mouseDragged()','mouseExited()'],
+ ans:2},
+
+{id:43, lec:6, type:'mcq', diff:'hard',
+ text:'Which event is always preceded by a <code>mousePressed</code> event?',
+ opts:['mouseClicked','mouseDragged','mouseReleased','mouseEntered'],
+ ans:2, explain:'mouseReleased is always preceded by mousePressed.'},
+
+{id:44, lec:6, type:'mcq', diff:'hard',
+ text:'<code>JComboBox.getSelectedIndex()</code> returns ___.',
+ opts:["The selected item's text","The selected item's zero-based index","The number of items","The component ID"],
+ ans:1},
+
+// ─── LECTURE 6 · T/F ───
+{id:45, lec:6, type:'tf', diff:'easy',
+ text:'FlowLayout is the default layout manager for JPanel.',
+ ans:true},
+
+{id:46, lec:6, type:'tf', diff:'easy',
+ text:'JCheckBox and JRadioButton both use ItemListener to handle state-change events.',
+ ans:true},
+
+{id:47, lec:6, type:'tf', diff:'medium',
+ text:'A ButtonGroup prevents multiple JRadioButtons in the same group from being selected at the same time.',
+ ans:true},
+
+{id:48, lec:6, type:'tf', diff:'medium',
+ text:'mouseReleased() is always preceded by a mouseClicked() event.',
+ ans:false, explain:'False — mouseReleased() is always preceded by mousePressed(), not mouseClicked().'},
+
+{id:49, lec:6, type:'tf', diff:'medium',
+ text:'mouseDragged() is a method of MouseListener.',
+ ans:false, explain:'False — mouseDragged() belongs to MouseMotionListener.'},
+
+{id:50, lec:6, type:'tf', diff:'hard',
+ text:'The same event listener object can be registered with multiple components simultaneously.',
+ ans:true},
+
+{id:51, lec:6, type:'tf', diff:'hard',
+ text:'mouseEntered() is invoked when a mouse button is pressed inside a component.',
+ ans:false, explain:'False — mouseEntered() is called when the cursor enters the component\'s bounds, regardless of button state.'},
+
+// ─── LECTURE 6 · ESSAY ───
+{id:52, lec:6, type:'essay', diff:'medium',
+ text:'Explain the difference between JCheckBox and JRadioButton. When should each be used? Describe how ButtonGroup enforces mutual exclusion.',
+ modelAnswer:'JCheckBox: allows multiple independent on/off selections; use when options are not mutually exclusive. JRadioButton: used in a group where only one option can be active; use when exactly one choice must be made. ButtonGroup enforces mutual exclusion — adding JRadioButtons to a ButtonGroup ensures selecting one automatically deselects the others. Both fire ItemEvents handled by ItemListener.itemStateChanged().'},
+
+{id:53, lec:6, type:'essay', diff:'hard',
+ text:'List all 7 methods of MouseListener and MouseMotionListener interfaces and describe what triggers each.',
+ modelAnswer:'MouseListener: (1) mouseClicked() — pressed+released without moving; (2) mousePressed() — button pressed; (3) mouseReleased() — always after mousePressed; (4) mouseEntered() — cursor enters component bounds; (5) mouseExited() — cursor leaves bounds. MouseMotionListener: (6) mouseDragged() — mouse moved with button held (always after mousePressed); (7) mouseMoved() — mouse moved without any button pressed.'},
+
+// ─── LECTURE 6 · CODING ───
+{id:54, lec:6, type:'code', diff:'medium',
+ text:'Trace this CheckBox event code. What font will the JTextField display after the user checks BOTH Bold and Italic checkboxes?',
+ code:`int valBold = Font.PLAIN;    // = 0
+int valItalic = Font.PLAIN;  // = 0
+
+// After checking Bold:   valBold = Font.BOLD   (1)
+// After checking Italic: valItalic = Font.ITALIC (2)
+
+field.setFont(new Font("Serif", valBold + valItalic, 14));`,
+ modelAnswer:'Font.BOLD=1, Font.ITALIC=2, so valBold + valItalic = 3 = Font.BOLD+Font.ITALIC. The field displays Serif, Bold+Italic, 14pt.'},
+
+{id:55, lec:6, type:'code', diff:'hard',
+ text:'Write the itemStateChanged() method that handles a JCheckBox and displays "Selected" or "Not Selected" in a JLabel named labelCh.',
+ modelAnswer:`@Override
+public void itemStateChanged(ItemEvent event) {
+    if (event.getStateChange() == ItemEvent.SELECTED) {
+        labelCh.setText("Selected");
+    } else {
+        labelCh.setText("Not Selected");
+    }
+}`},
+
+// ─── LECTURE 7 · MCQ · EASY ───
+{id:56, lec:7, type:'mcq', diff:'easy',
+ text:'Which layout manager arranges components horizontally or vertically in a single line?',
+ opts:['FlowLayout','GridLayout','BoxLayout','CardLayout'],
+ ans:2},
+
+{id:57, lec:7, type:'mcq', diff:'easy',
+ text:'CardLayout stacks components like ___.',
+ opts:['A grid','A deck of cards','A column','A flow'],
+ ans:1},
+
+{id:58, lec:7, type:'mcq', diff:'easy',
+ text:'Which method of CardLayout shows the first card?',
+ opts:['showFirst()','start()','first()','top()'],
+ ans:2},
+
+{id:59, lec:7, type:'mcq', diff:'easy',
+ text:'In CardLayout, only ___ component(s) is/are visible at any time.',
+ opts:['All','Two','One (the top card)','Three'],
+ ans:2},
+
+{id:60, lec:7, type:'mcq', diff:'easy',
+ text:'FlowLayout arranges components ___.',
+ opts:['In a grid','Top to bottom','Left to right, wrapping as needed','In a deck'],
+ ans:2},
+
+// ─── LECTURE 7 · MCQ · MEDIUM ───
+{id:61, lec:7, type:'mcq', diff:'medium',
+ text:'GridBagLayout uses which helper class to specify component placement?',
+ opts:['GridBagHelper','GridBagConstraints','LayoutConstraints','GridConstraints'],
+ ans:1},
+
+{id:62, lec:7, type:'mcq', diff:'medium',
+ text:'The GridBagConstraints field <code>gridx</code> specifies ___.',
+ opts:['Row of the component','Column of the component','Width in pixels','Height in pixels'],
+ ans:1},
+
+{id:63, lec:7, type:'mcq', diff:'medium',
+ text:'In BoxLayout, <code>Box.Y_AXIS</code> arranges components ___.',
+ opts:['Horizontally','Diagonally','Vertically','In a grid'],
+ ans:2},
+
+{id:64, lec:7, type:'mcq', diff:'medium',
+ text:'<code>Box.createHorizontalGlue()</code> creates ___ space between components.',
+ opts:['Fixed','Expandable (flexible)','Zero','Negative'],
+ ans:1},
+
+{id:65, lec:7, type:'mcq', diff:'medium',
+ text:'<code>cardManager.next(deck)</code> shows ___.',
+ opts:['The first card','The last card','The next card in the deck','A random card'],
+ ans:2},
+
+// ─── LECTURE 7 · MCQ · HARD ───
+{id:66, lec:7, type:'mcq', diff:'hard',
+ text:'Which layout manager allows components to span multiple rows and columns?',
+ opts:['FlowLayout','GridLayout','BorderLayout','GridBagLayout'],
+ ans:3},
+
+{id:67, lec:7, type:'mcq', diff:'hard',
+ text:'In GridBagConstraints, setting <code>weightx=1000</code> and <code>weighty=1</code> causes the component to ___.',
+ opts:[
+   'Not resize',
+   'Expand mostly horizontally when container is resized',
+   'Expand only vertically',
+   'Shrink proportionally'],
+ ans:1},
+
+{id:68, lec:7, type:'mcq', diff:'hard',
+ text:'What does GridBagConstraints.BOTH mean for the fill field?',
+ opts:[
+   'Fill only horizontally',
+   'Fill only vertically',
+   'Fill the entire allocated cell in both directions',
+   'No fill'],
+ ans:2},
+
+{id:69, lec:7, type:'mcq', diff:'hard',
+ text:'<code>Box.createRigidArea(new Dimension(12, 8))</code> guarantees ___.',
+ opts:[
+   'Flexible width only',
+   'A fixed-size gap of exactly 12×8 pixels',
+   'Vertical space only',
+   'Expandable space'],
+ ans:1},
+
+// ─── LECTURE 7 · T/F ───
+{id:70, lec:7, type:'tf', diff:'easy',
+ text:'BoxLayout can arrange components either horizontally or vertically.',
+ ans:true},
+
+{id:71, lec:7, type:'tf', diff:'easy',
+ text:'CardLayout can display all cards simultaneously.',
+ ans:false, explain:'False — only the top card is visible at any time.'},
+
+{id:72, lec:7, type:'tf', diff:'medium',
+ text:'In GridBagLayout, a component can occupy multiple rows and columns.',
+ ans:true},
+
+{id:73, lec:7, type:'tf', diff:'medium',
+ text:'GridBagConstraints.gridx specifies the row of a component.',
+ ans:false, explain:'False — gridx specifies the column; gridy specifies the row.'},
+
+{id:74, lec:7, type:'tf', diff:'medium',
+ text:'Box.createVerticalStrut(25) guarantees at least 25 pixels of vertical space.',
+ ans:true},
+
+{id:75, lec:7, type:'tf', diff:'hard',
+ text:'In GridBagLayout, components must be added in column order from left to right.',
+ ans:false, explain:'False — GridBagLayout allows components to be added in any order.'},
+
+{id:76, lec:7, type:'tf', diff:'hard',
+ text:'Each card in a CardLayout container can use its own independent layout manager.',
+ ans:true},
+
+// ─── LECTURE 7 · ESSAY ───
+{id:77, lec:7, type:'essay', diff:'medium',
+ text:'Compare and contrast FlowLayout, BoxLayout, CardLayout, and GridBagLayout. Give a real-world use case for each.',
+ modelAnswer:'FlowLayout: left-to-right wrap; good for toolbars. BoxLayout: single row (X_AXIS) or column (Y_AXIS); good for vertical menus. CardLayout: stacks panels one-at-a-time; ideal for wizard/tabbed navigation. GridBagLayout: most flexible — components span rows/columns, vary in size, added in any order; suited for complex forms.'},
+
+{id:78, lec:7, type:'essay', diff:'hard',
+ text:'Explain the GridBagConstraints fields: gridx, gridy, gridwidth, gridheight, weightx, weighty, and fill. When would you use fill=BOTH?',
+ modelAnswer:'gridx/gridy: column/row where component is placed. gridwidth/gridheight: number of columns/rows spanned. weightx/weighty: portion of extra space allocated horizontally/vertically (0=no growth). fill: how component fills its cell — NONE, HORIZONTAL, VERTICAL, or BOTH. Use fill=BOTH when a component (e.g., JTextArea) should stretch in all directions as the container is resized.'},
+
+// ─── LECTURE 7 · CODING ───
+{id:79, lec:7, type:'code', diff:'medium',
+ text:'Trace the following CardLayout code. What card is displayed after each method call?',
+ code:`// Deck has 3 panels: p1="First", p2="Second", p3="Third"
+CardLayout cl = new CardLayout();
+JPanel deck = new JPanel(cl);
+deck.add(p1,"First"); deck.add(p2,"Second"); deck.add(p3,"Third");
+
+cl.first(deck);    // State A: ?
+cl.next(deck);     // State B: ?
+cl.next(deck);     // State C: ?
+cl.previous(deck); // State D: ?
+cl.last(deck);     // State E: ?`,
+ modelAnswer:'State A: p1 (First). State B: p2 (Second). State C: p3 (Third). State D: p2 (Second). State E: p3 (Third/Last).'},
+
+{id:80, lec:7, type:'code', diff:'hard',
+ text:'Write the code to place a JTextArea at row 0, column 0, spanning 3 rows using GridBagLayout. The component should fill both directions when the container is resized.',
+ modelAnswer:`GridBagLayout layout = new GridBagLayout();
+GridBagConstraints c = new GridBagConstraints();
+container.setLayout(layout);
+
+JTextArea textArea = new JTextArea("Text", 5, 10);
+c.fill = GridBagConstraints.BOTH;   // fill both directions
+c.gridx = 0;      // column 0
+c.gridy = 0;      // row 0
+c.gridwidth = 1;  // 1 column wide
+c.gridheight = 3; // spans 3 rows
+layout.setConstraints(textArea, c);
+container.add(textArea);`},
+
+// ─── GENERAL · MCQ ───
+{id:81, lec:5, type:'mcq', diff:'easy',
+ text:'Swing GUI components originate from which original Java GUI package?',
+ opts:['javax.swing','java.gui','java.awt','java.component'],
+ ans:2},
+
+{id:82, lec:5, type:'mcq', diff:'medium',
+ text:'Which Swing class provides pluggable look and feel, mnemonics, and common event-handling capabilities?',
+ opts:['Component','Container','JComponent','JFrame'],
+ ans:2},
+
+{id:83, lec:7, type:'mcq', diff:'medium',
+ text:'To make a JFrame visible after building the GUI, you call ___.',
+ opts:['show()','display()','setVisible(true)','render()'],
+ ans:2},
+];
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let state = {
+  answers: {},     // qId -> { correct: bool, essay: bool }
+  lec: 'all',
+  diff: 'all',
+  type: 'all'
+};
+
+const LECColors = { 5:'#4f9eff', 6:'#a855f7', 7:'#f97316' };
+const LECNames  = { 5:'LEC 5', 6:'LEC 6', 7:'LEC 7' };
+
+// ═══════════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════════
+function setLec(v, btn) {
+  state.lec = v;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function setDiff(v, btn) {
+  state.diff = v;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function setType(v, btn) {
+  state.type = v;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function filteredQs() {
+  return QUESTIONS.filter(q => {
+    if (state.lec  !== 'all' && q.lec  !== parseInt(state.lec))  return false;
+    if (state.diff !== 'all' && q.diff !== state.diff)             return false;
+    if (state.type !== 'all' && q.type !== state.type)             return false;
+    return true;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════
+function render() {
+  const qs = filteredQs();
+  const area = document.getElementById('quizArea');
+
+  if (!qs.length) {
+    area.innerHTML = `<div class="empty-state"><div class="empty-icon">◌</div><p>No questions match the selected filters.</p></div>`;
+    updateScoreBar();
+    return;
+  }
+
+  // Group by: lecture → type
+  const groups = {};
+  qs.forEach(q => {
+    const k = `lec${q.lec}_${q.type}`;
+    if (!groups[k]) groups[k] = { lec:q.lec, type:q.type, qs:[] };
+    groups[k].qs.push(q);
+  });
+
+  const typeLabel = { mcq:'Multiple Choice', tf:'True / False', essay:'Essay', code:'Coding' };
+  const typeIcon  = { mcq:'◈', tf:'◉', essay:'◎', code:'⌘' };
+
+  let html = '';
+  const sortedKeys = Object.keys(groups).sort();
+  sortedKeys.forEach(key => {
+    const g = groups[key];
+    const col = LECColors[g.lec] || '#4f9eff';
+    html += `
+      <div class="section-header">
+        <div class="section-dot" style="background:${col}"></div>
+        <div class="section-title">${LECNames[g.lec]} · ${typeLabel[g.type]}</div>
+        <div class="section-line"></div>
+        <div class="section-count">${g.qs.length}q</div>
+      </div>`;
+    g.qs.forEach(q => { html += renderCard(q, col); });
+  });
+
+  area.innerHTML = html;
+  updateScoreBar();
+}
+
+function renderCard(q, col) {
+  const s = state.answers[q.id];
+  let cardClass = '';
+  if (s) {
+    if (s.essay) cardClass = 'answered-essay';
+    else if (s.correct) cardClass = 'answered-correct';
+    else cardClass = 'answered-wrong';
+  }
+
+  const statusIcon = s
+    ? (s.essay ? '📝' : s.correct ? '✅' : '❌')
+    : '';
+
+  const diffCls   = `diff-${q.diff}`;
+  const typeLabel = { mcq:'MCQ', tf:'T/F', essay:'Essay', code:'Code' };
+  const typeIcon  = { mcq:'◈', tf:'◉', essay:'◎', code:'⌘' };
+
+  let body = '';
+
+  if (q.type === 'mcq') {
+    body = renderMCQ(q, s);
+  } else if (q.type === 'tf') {
+    body = renderTF(q, s);
+  } else if (q.type === 'essay') {
+    body = renderEssay(q, s);
+  } else if (q.type === 'code') {
+    body = renderCode(q, s);
+  }
+
+  return `
+  <div class="q-card ${cardClass}" id="card${q.id}" style="--lec-color:${col}">
+    <div class="q-meta">
+      <span class="q-num">#${q.id}</span>
+      <span class="q-lec-tag" style="color:${col};background:${col}18">${LECNames[q.lec]}</span>
+      <span class="q-diff-tag ${diffCls}">${q.diff}</span>
+      <span class="q-type-tag">${typeIcon[q.type]} ${typeLabel[q.type]}</span>
+      <span class="status-icon">${statusIcon}</span>
+    </div>
+    <div class="q-text">${q.text}</div>
+    ${body}
+  </div>`;
+}
+
+function renderMCQ(q, s) {
+  let opts = '';
+  q.opts.forEach((o, i) => {
+    let cls = '';
+    if (s) {
+      if (i === q.ans) cls = 'correct-reveal';
+      if (s.chosen === i) cls = s.correct ? 'selected-correct' : 'selected-wrong';
+    }
+    const letters = ['a','b','c','d'];
+    opts += `<div class="option ${cls} ${s ? 'disabled' : ''}" onclick="${s ? '' : `chooseMCQ(${q.id},${i})`}">
+      <span class="opt-letter">${letters[i]}</span>
+      <span>${o}</span>
+    </div>`;
+  });
+  let reveal = '';
+  if (s && q.explain) {
+    reveal = `<div class="answer-reveal show"><strong>💡 Note</strong>${q.explain}</div>`;
+  }
+  return `<div class="options">${opts}</div>${reveal}`;
+}
+
+function renderTF(q, s) {
+  const trueClass  = s ? (q.ans === true  ? 'correct-reveal' : '') + (s.chosen === true  ? (s.correct ? ' selected-correct' : ' selected-wrong') : '') : '';
+  const falseClass = s ? (q.ans === false ? 'correct-reveal' : '') + (s.chosen === false ? (s.correct ? ' selected-correct' : ' selected-wrong') : '') : '';
+  const dis = s ? 'disabled' : '';
+  let reveal = '';
+  if (s && !s.correct && q.explain) {
+    reveal = `<div class="answer-reveal show"><strong>💡 Explanation</strong>${q.explain}</div>`;
+  }
+  return `
+  <div class="tf-buttons">
+    <button class="tf-btn ${trueClass} ${dis}"  onclick="${s ? '' : `chooseTF(${q.id},true)`}">✓ True</button>
+    <button class="tf-btn ${falseClass} ${dis}" onclick="${s ? '' : `chooseTF(${q.id},false)`}">✗ False</button>
+  </div>
+  ${reveal}`;
+}
+
+function renderEssay(q, s) {
+  const revealed = s && s.essay;
+  return `
+  <textarea class="essay-area" id="ea${q.id}" placeholder="Type your answer here..." rows="4">${revealed ? (document.getElementById('ea'+q.id)||{}).value || '' : ''}</textarea>
+  <button class="essay-submit" onclick="submitEssay(${q.id})">Show Model Answer</button>
+  <div class="answer-reveal ${revealed ? 'show' : ''}" id="reveal${q.id}">
+    <strong>📖 Model Answer</strong>${q.modelAnswer}
+  </div>`;
+}
+
+function renderCode(q, s) {
+  const codeHtml = syntaxHighlight(q.code || '');
+  const revealed = s && s.essay;
+  return `
+  <div class="code-block">${codeHtml}</div>
+  <textarea class="essay-area" id="ea${q.id}" placeholder="Your answer / trace..." rows="3"></textarea>
+  <button class="essay-submit" onclick="submitEssay(${q.id})">Show Answer</button>
+  <div class="answer-reveal ${revealed ? 'show' : ''}" id="reveal${q.id}">
+    <strong>✅ Answer</strong><pre style="margin:0;white-space:pre-wrap;font-family:'Space Mono',monospace;font-size:12px">${q.modelAnswer}</pre>
+  </div>`;
+}
+
+function syntaxHighlight(code) {
+  return code
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\b(new|if|else|return|public|private|void|class|this|int|boolean|true|false|null|override|implements|extends)\b/g,'<span class="code-kw">$1</span>')
+    .replace(/\b(JButton|JPanel|JTextField|JLabel|JComboBox|JCheckBox|JRadioButton|ButtonGroup|ActionListener|ItemListener|ActionEvent|ItemEvent|Font|Color|GridBagLayout|GridBagConstraints|CardLayout|BoxLayout|FlowLayout|Container|JFrame|JTextArea|JPasswordField)\b/g,'<span class="code-type">$1</span>')
+    .replace(/"([^"]*)"/g,'<span class="code-str">"$1"</span>')
+    .replace(/\/\/.*/g,'<span class="code-cmt">$&</span>')
+    .replace(/\b(\d+)\b/g,'<span class="code-num">$1</span>');
+}
+
+// ═══════════════════════════════════════════════════════
+//  INTERACTION
+// ═══════════════════════════════════════════════════════
+function chooseMCQ(id, chosen) {
+  const q = QUESTIONS.find(x => x.id === id);
+  if (!q) return;
+  const correct = chosen === q.ans;
+  state.answers[id] = { correct, chosen, essay:false };
+  rerenderCard(q);
+  updateScoreBar();
+}
+
+function chooseTF(id, chosen) {
+  const q = QUESTIONS.find(x => x.id === id);
+  if (!q) return;
+  const correct = chosen === q.ans;
+  state.answers[id] = { correct, chosen, essay:false };
+  rerenderCard(q);
+  updateScoreBar();
+}
+
+function submitEssay(id) {
+  state.answers[id] = { correct:false, essay:true };
+  const revEl = document.getElementById('reveal'+id);
+  if (revEl) revEl.classList.add('show');
+  const card = document.getElementById('card'+id);
+  if (card) { card.classList.remove('answered-correct','answered-wrong'); card.classList.add('answered-essay'); }
+  const metaIcons = card.querySelectorAll('.status-icon');
+  metaIcons.forEach(el => el.textContent = '📝');
+  updateScoreBar();
+}
+
+function rerenderCard(q) {
+  const card = document.getElementById('card'+q.id);
+  if (!card) return;
+  const col = LECColors[q.lec] || '#4f9eff';
+  card.outerHTML = renderCard(q, col);
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCORE BAR
+// ═══════════════════════════════════════════════════════
+function updateScoreBar() {
+  const qs = filteredQs();
+  let correct=0, wrong=0, essay=0;
+  qs.forEach(q => {
+    const s = state.answers[q.id];
+    if (!s) return;
+    if (s.essay) essay++;
+    else if (s.correct) correct++;
+    else wrong++;
+  });
+  const total = qs.length;
+  const answered = correct + wrong + essay;
+
+  document.getElementById('correctCount').textContent = correct;
+  document.getElementById('wrongCount').textContent = wrong;
+  document.getElementById('essayCount').textContent = essay;
+  document.getElementById('progressFill').style.width = total ? ((answered/total)*100)+'%' : '0%';
+  document.getElementById('progressText').textContent = `${answered} / ${total}`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════════════════
+function resetAll() {
+  if (!confirm('Reset all answers?')) return;
+  state.answers = {};
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCORE MODAL
+// ═══════════════════════════════════════════════════════
+function showScore() {
+  const qs = filteredQs().filter(q => q.type==='mcq' || q.type==='tf');
+  let correct=0, total=qs.length;
+  qs.forEach(q => { if (state.answers[q.id]?.correct) correct++; });
+  const pct = total ? Math.round((correct/total)*100) : 0;
+  let grade, gradeColor;
+  if (pct>=90){grade='Excellent A+';gradeColor='#22c55e';}
+  else if (pct>=80){grade='Very Good A';gradeColor='#22c55e';}
+  else if (pct>=70){grade='Good B';gradeColor='#4f9eff';}
+  else if (pct>=60){grade='Pass C';gradeColor='#f59e0b';}
+  else{grade='Needs Review';gradeColor='#ef4444';}
+  document.getElementById('modalScore').textContent = pct+'%';
+  document.getElementById('modalScore').style.color = gradeColor;
+  document.getElementById('modalGrade').textContent = grade;
+  document.getElementById('modalGrade').style.color = gradeColor;
+  document.getElementById('modalSub').textContent = `${correct} correct out of ${total} MCQ/T-F questions`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>

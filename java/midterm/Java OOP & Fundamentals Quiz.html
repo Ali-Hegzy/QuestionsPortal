@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java OOP &amp; Fundamentals Quiz</title>
+<link href="Java%20OOP%20&amp;%20Fundamentals%20Quiz_files/css2.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel2: #21262d;
+  --border: #30363d;
+  --border2: #3d444d;
+  --accent: #58a6ff;
+  --accent-dim: rgba(88,166,255,0.12);
+  --orange: #f0883e;
+  --orange-dim: rgba(240,136,62,0.12);
+  --green: #3fb950;
+  --green-dim: rgba(63,185,80,0.12);
+  --red: #f85149;
+  --red-dim: rgba(248,81,73,0.1);
+  --purple: #bc8cff;
+  --yellow: #e3b341;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --text-dim: #6e7681;
+  --code-bg: #0d1117;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Subtle noise overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ============ SPLASH ============ */
+#splash {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2rem; padding: 2rem;
+  text-align: center;
+}
+
+.splash-tag {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 100px; padding: 0.4rem 1rem;
+  font-family: 'Fira Code', monospace; font-size: 0.72rem;
+  color: var(--green); letter-spacing: 0.05em;
+}
+
+.tag-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.8s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.splash-h {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  font-weight: 800; line-height: 1;
+  color: var(--text);
+}
+
+.splash-h .hl { color: var(--accent); }
+
+.splash-sub {
+  max-width: 500px; font-size: 1rem; font-weight: 400;
+  color: var(--text-muted); line-height: 1.65;
+}
+
+.tag-row {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+}
+
+.tag-badge {
+  padding: 0.3rem 0.8rem; border-radius: 6px;
+  font-family: 'Fira Code', monospace; font-size: 0.7rem;
+  font-weight: 600; border: 1px solid;
+}
+
+.tb-blue { background: var(--accent-dim); color: var(--accent); border-color: rgba(88,166,255,0.3); }
+.tb-orange { background: var(--orange-dim); color: var(--orange); border-color: rgba(240,136,62,0.3); }
+.tb-green { background: var(--green-dim); color: var(--green); border-color: rgba(63,185,80,0.3); }
+.tb-purple { background: rgba(188,140,255,0.1); color: var(--purple); border-color: rgba(188,140,255,0.3); }
+
+.splash-stats {
+  display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center;
+}
+
+.sstat { text-align: center; }
+.sstat-n { font-size: 2.8rem; font-weight: 800; color: var(--accent); line-height: 1; }
+.sstat-l {
+  font-family: 'Fira Code', monospace; font-size: 0.6rem;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+.go-btn {
+  background: var(--accent); color: var(--bg);
+  border: none; padding: 1rem 3rem; border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.02em;
+  box-shadow: 0 0 0 0 rgba(88,166,255,0.4);
+}
+.go-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(88,166,255,0.35);
+}
+
+/* ============ APP ============ */
+#app {
+  display: none; position: relative; z-index: 1;
+  max-width: 800px; margin: 0 auto;
+  padding: 1.75rem 1.25rem 6rem;
+}
+
+/* Top bar */
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.tb-left {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem; color: var(--green);
+  letter-spacing: 0.06em;
+}
+
+.tb-center { text-align: center; }
+
+.timer-big {
+  font-family: 'Fira Code', monospace;
+  font-size: 1.2rem; font-weight: 700; color: var(--text);
+}
+.timer-big.warn { color: var(--yellow); }
+.timer-big.danger { color: var(--red); animation: pulse .5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+.tb-right {
+  display: flex; gap: 0.75rem; justify-content: flex-end;
+}
+
+.live-pill {
+  font-family: 'Fira Code', monospace; font-size: 0.72rem;
+  padding: 0.25rem 0.6rem; border-radius: 5px; font-weight: 700;
+}
+.lp-ok { background: var(--green-dim); color: var(--green); }
+.lp-bad { background: var(--red-dim); color: var(--red); }
+
+/* Progress */
+.prog { margin-bottom: 1.5rem; }
+.prog-top { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+.prog-lbl {
+  font-family: 'Fira Code', monospace; font-size: 0.62rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+}
+.prog-num { font-weight: 700; font-size: 0.82rem; }
+.prog-bg { height: 5px; background: var(--panel2); border-radius: 3px; overflow: hidden; }
+.prog-bar {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  transition: width 0.45s cubic-bezier(.4,0,.2,1);
+}
+
+/* Categories */
+.cats {
+  display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.4rem;
+}
+.cat {
+  padding: 0.3rem 0.75rem; border-radius: 6px;
+  border: 1px solid var(--border);
+  font-family: 'Fira Code', monospace; font-size: 0.62rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-dim); background: transparent; cursor: pointer; transition: all .15s;
+}
+.cat:hover:not(.on) { border-color: var(--accent); color: var(--accent); }
+.cat.on { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
+
+/* Map */
+.map-wrap {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.9rem; margin-bottom: 1.5rem;
+  display: flex; flex-wrap: wrap; gap: 5px;
+}
+.mp {
+  width: 32px; height: 32px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace; font-size: 0.6rem; font-weight: 700;
+  cursor: pointer; transition: all .12s; user-select: none;
+  border: 1px solid var(--border2); color: var(--text-dim); background: var(--panel2);
+}
+.mp:hover { border-color: var(--accent); color: var(--accent); }
+.mp.cur { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+.mp.good { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.mp.fail { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+.mp.grey { opacity: 0.35; }
+
+/* Question card */
+.qcard {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.75rem;
+  position: relative; overflow: hidden;
+  animation: rise .28s ease;
+  margin-bottom: 1.2rem;
+}
+@keyframes rise { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+.qcard::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--stripe, var(--accent));
+  border-radius: 12px 12px 0 0;
+}
+
+.qmeta {
+  display: flex; align-items: center; gap: 0.55rem;
+  margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.qnum {
+  font-family: 'Fira Code', monospace; font-size: 0.62rem;
+  color: var(--text-dim); letter-spacing: 0.1em;
+}
+.qtype {
+  font-family: 'Fira Code', monospace; font-size: 0.58rem;
+  font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.qt-mcq { background: var(--accent-dim); color: var(--accent); }
+.qt-tf { background: var(--orange-dim); color: var(--orange); }
+
+.qcat-badge {
+  font-family: 'Fira Code', monospace; font-size: 0.58rem;
+  padding: 0.18rem 0.5rem; border-radius: 4px;
+  background: rgba(188,140,255,0.1); color: var(--purple);
+}
+.qdiff {
+  font-family: 'Fira Code', monospace; font-size: 0.58rem;
+  font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-left: auto;
+}
+.d-e { background: var(--green-dim); color: var(--green); }
+.d-m { background: rgba(227,179,65,0.12); color: var(--yellow); }
+.d-h { background: var(--red-dim); color: var(--red); }
+
+.qtext {
+  font-size: 1.02rem; font-weight: 600; line-height: 1.68; color: var(--text);
+  margin-bottom: 1.4rem;
+}
+
+/* Code blocks */
+.codeblock {
+  font-family: 'Fira Code', monospace;
+  background: #0d1117; border: 1px solid var(--border2);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+  font-size: 0.8rem; line-height: 1.75; color: #cdd6f4;
+  margin: 0.6rem 0 1.2rem; overflow-x: auto; white-space: pre;
+}
+
+code {
+  font-family: 'Fira Code', monospace;
+  background: var(--panel2); color: var(--accent);
+  padding: 0.1em 0.38em; border-radius: 4px; font-size: 0.87em;
+}
+
+/* Options */
+.opts { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.opt {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.85rem 1rem; border-radius: 8px;
+  border: 1px solid var(--border2); background: var(--panel2);
+  cursor: pointer; transition: all .14s; user-select: none;
+}
+.opt:hover:not(.lk) { border-color: var(--accent); background: var(--accent-dim); }
+.opt.sel:not(.ok):not(.ng) { border-color: var(--accent); background: var(--accent-dim); }
+.opt.ok  { border-color: var(--green); background: var(--green-dim); }
+.opt.ng  { border-color: var(--red);   background: var(--red-dim); }
+.opt.rev { border-color: rgba(63,185,80,0.4); background: rgba(63,185,80,0.05); }
+
+.opt-k {
+  width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace; font-size: 0.68rem; font-weight: 700;
+  background: var(--border2); color: var(--text-dim); transition: all .14s;
+}
+.opt.sel:not(.ok):not(.ng) .opt-k { background: var(--accent); color: var(--bg); }
+.opt.ok  .opt-k { background: var(--green); color: var(--bg); }
+.opt.ng  .opt-k { background: var(--red);   color: #fff; }
+.opt.rev .opt-k { background: rgba(63,185,80,.25); color: var(--green); }
+
+.opt-t { font-size: 0.92rem; line-height: 1.5; color: var(--text-muted); padding-top: 3px; }
+.opt.ok .opt-t,.opt.rev .opt-t { color: var(--green); font-weight: 600; }
+.opt.ng .opt-t { color: var(--red); }
+
+/* T/F */
+.tf-row { display: flex; gap: 0.6rem; }
+.tfb {
+  flex: 1; padding: 1rem; border-radius: 8px;
+  border: 1px solid var(--border2); background: var(--panel2);
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: all .14s; text-align: center; color: var(--text-muted);
+}
+.tfb:hover:not(.lk) { border-color: var(--accent); }
+.tfb.sel:not(.ok):not(.ng) { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.tfb.ok  { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.tfb.ng  { border-color: var(--red);   color: var(--red);   background: var(--red-dim); }
+.tfb.rev { border-color: var(--green); color: var(--green); background: rgba(63,185,80,.05); }
+
+/* Explanation */
+.exp {
+  margin-top: 1.1rem; padding: 0.9rem 1.1rem;
+  background: rgba(88,166,255,0.07); border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 8px; font-size: 0.84rem; line-height: 1.65;
+  color: var(--text-muted); display: none;
+}
+.exp.on { display: block; animation: fade .2s ease; }
+@keyframes fade { from{opacity:0} to{opacity:1} }
+.exp b { color: var(--accent); }
+
+/* Nav */
+.nav {
+  display: flex; align-items: center; gap: 0.75rem;
+  flex-wrap: wrap; margin-top: 0.5rem;
+}
+.nbtn {
+  padding: 0.72rem 1.5rem; border-radius: 7px;
+  border: 1px solid var(--border2); background: var(--panel);
+  color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all .14s;
+}
+.nbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.nbtn:disabled { opacity: .3; cursor: not-allowed; }
+.nbtn.nxt { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.nbtn.nxt:hover { box-shadow: 0 4px 20px rgba(88,166,255,.3); }
+.nbtn.fin { background: var(--green); border-color: var(--green); color: var(--bg); display:none; }
+.nbtn.fin:hover { box-shadow: 0 4px 20px rgba(63,185,80,.3); }
+
+/* ============ RESULTS ============ */
+#results {
+  display: none; position: relative; z-index: 1;
+  max-width: 800px; margin: 0 auto;
+  padding: 3rem 1.25rem 5rem;
+}
+
+.res-top { text-align: center; margin-bottom: 2.5rem; }
+.res-em { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.res-t { font-size: clamp(1.8rem,5vw,3rem); font-weight: 800; margin-bottom: 0.5rem; }
+.res-pct {
+  font-size: 5.5rem; font-weight: 800; line-height: 1;
+  color: var(--accent);
+  font-family: 'Fira Code', monospace;
+}
+.res-msg { color: var(--text-muted); font-size: 1rem; margin-top: 0.5rem; }
+
+.res-cards {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
+  gap: 0.8rem; margin-bottom: 2rem;
+}
+.rcard {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.25rem; text-align: center;
+}
+.rcard-v { font-size: 2.2rem; font-weight: 800; line-height: 1; font-family: 'Fira Code', monospace; }
+.rcard-l {
+  font-family: 'Fira Code', monospace; font-size: 0.58rem;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-top: .25rem;
+}
+
+.bd-box {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.4rem; margin-bottom: 1.25rem;
+}
+.bd-hd {
+  font-family: 'Fira Code', monospace; font-size: 0.62rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1.2rem;
+}
+.bd-row { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.8rem; }
+.bd-lbl { font-size: 0.82rem; font-weight: 600; min-width: 110px; color: var(--text-muted); }
+.bd-track { flex: 1; height: 7px; background: var(--panel2); border-radius: 4px; overflow: hidden; }
+.bd-fill { height: 100%; border-radius: 4px; transition: width .9s ease .2s; }
+.bd-pct { font-family: 'Fira Code', monospace; font-size: 0.75rem; font-weight: 700; min-width: 38px; text-align: right; }
+
+.rev-tog {
+  width: 100%; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.85rem 1.2rem;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; font-weight: 700;
+  color: var(--text); cursor: pointer; text-align: left;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.75rem;
+}
+.rev-list { display: none; }
+.rev-list.open { display: block; }
+.rev-item {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 0.5rem;
+}
+.rev-q { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
+.rev-a { font-family: 'Fira Code', monospace; font-size: 0.76rem; }
+.rev-c { color: var(--green); }
+.rev-w { color: var(--red); }
+
+.retry-btn {
+  display: block; margin: 2rem auto 0;
+  padding: 1rem 3rem; background: var(--accent); color: var(--bg);
+  border: none; border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem; font-weight: 800;
+  cursor: pointer; transition: all .2s;
+  box-shadow: 0 0 20px rgba(88,166,255,.25);
+}
+.retry-btn:hover { transform: translateY(-2px); box-shadow: 0 0 35px rgba(88,166,255,.4); }
+
+@media(max-width:560px){
+  .qcard{padding:1.1rem;}
+  .qtext{font-size:0.95rem;}
+  .tf-row{flex-direction:column;}
+  .topbar{grid-template-columns:1fr 1fr; grid-template-rows: auto auto;}
+  .tb-center{grid-column:1/-1; order:-1;}
+}
+</style>
+</head>
+<body data-new-gr-c-s-check-loaded="8.936.0" data-gr-ext-installed="">
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-tag"><div class="tag-dot"></div> Java · OOP &amp; Fundamentals</div>
+  <div class="splash-h">Java <span class="hl">OOP</span><br>Master Quiz</div>
+  <div class="splash-sub">Covers syntax, arrays, strings, classes, inheritance, encapsulation, polymorphism, abstract classes, packages &amp; more.</div>
+  <div class="tag-row">
+    <span class="tag-badge tb-blue">MCQ</span>
+    <span class="tag-badge tb-orange">True / False</span>
+    <span class="tag-badge tb-green">Code Snippets</span>
+    <span class="tag-badge tb-purple">Instant Feedback</span>
+  </div>
+  <div class="splash-stats">
+    <div class="sstat"><div class="sstat-n">many</div><div class="sstat-l">Questions</div></div>
+    <div class="sstat"><div class="sstat-n">2</div><div class="sstat-l">Types</div></div>
+    <div class="sstat"><div class="sstat-n">8</div><div class="sstat-l">Topics</div></div>
+    <div class="sstat"><div class="sstat-n">60</div><div class="sstat-l">Min Timer</div></div>
+  </div>
+  <button class="go-btn" onclick="start()">▶ &nbsp; Start Quiz</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-left" id="tb-topic">// Java OOP Quiz</div>
+    <div class="tb-center"><div class="timer-big" id="timer">60:00</div></div>
+    <div class="tb-right">
+      <span class="live-pill lp-ok" id="lp-ok">✓ 0</span>
+      <span class="live-pill lp-bad" id="lp-bad">✗ 0</span>
+    </div>
+  </div>
+
+  <div class="prog">
+    <div class="prog-top">
+      <span class="prog-lbl">Progress</span>
+      <span class="prog-num" id="prog-n">0 / 80</span>
+    </div>
+    <div class="prog-bg"><div class="prog-bar" id="prog-b" style="width:0%"></div></div>
+  </div>
+
+  <div class="cats" id="cats">
+    <button class="cat on" onclick="jmp(0,this)">All</button>
+    <button class="cat" onclick="jmp(0,this,'Syntax')">Syntax</button>
+    <button class="cat" onclick="jmp(0,this,'OOP')">OOP</button>
+    <button class="cat" onclick="jmp(0,this,'Inheritance')">Inheritance</button>
+    <button class="cat" onclick="jmp(0,this,'Encapsulation')">Encapsulation</button>
+    <button class="cat" onclick="jmp(0,this,'Abstract')">Abstract</button>
+    <button class="cat" onclick="jmp(0,this,'Packages')">Packages</button>
+  </div>
+
+  <div class="map-wrap" id="mapw"></div>
+  <div id="qa"></div>
+
+  <div class="nav">
+    <button class="nbtn" id="bp" onclick="go(cur-1)">← Prev</button>
+    <button class="nbtn nxt" id="bn" onclick="go(cur+1)">Next →</button>
+    <button class="nbtn fin" id="bf" onclick="showRes()">✓ Finish</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="res-top">
+    <div class="res-em" id="r-em">🎉</div>
+    <div class="res-t">Quiz Complete!</div>
+    <div class="res-pct" id="r-pct">0%</div>
+    <div class="res-msg" id="r-msg"></div>
+  </div>
+  <div class="res-cards">
+    <div class="rcard"><div class="rcard-v" style="color:var(--green)" id="r-c">0</div><div class="rcard-l">Correct</div></div>
+    <div class="rcard"><div class="rcard-v" style="color:var(--red)" id="r-w">0</div><div class="rcard-l">Wrong</div></div>
+    <div class="rcard"><div class="rcard-v" style="color:var(--yellow)" id="r-s">0</div><div class="rcard-l">Skipped</div></div>
+    <div class="rcard"><div class="rcard-v" style="color:var(--accent)" id="r-t">--</div><div class="rcard-l">Time</div></div>
+  </div>
+
+  <div class="bd-box">
+    <div class="bd-hd">Score by Topic</div>
+    <div id="bd-rows"></div>
+  </div>
+
+  <div class="bd-box">
+    <div class="bd-hd">Score by Type</div>
+    <div class="bd-row">
+      <div class="bd-lbl">MCQ</div>
+      <div class="bd-track"><div class="bd-fill" id="bar-mcq" style="width:0%;background:var(--accent)"></div></div>
+      <div class="bd-pct" id="pct-mcq" style="color:var(--accent)">0%</div>
+    </div>
+    <div class="bd-row">
+      <div class="bd-lbl">True / False</div>
+      <div class="bd-track"><div class="bd-fill" id="bar-tf" style="width:0%;background:var(--orange)"></div></div>
+      <div class="bd-pct" id="pct-tf" style="color:var(--orange)">0%</div>
+    </div>
+  </div>
+
+  <button class="rev-tog" onclick="togRev(this)">📋 Review All Answers <span>▼</span></button>
+  <div class="review-list rev-list" id="rev-list"></div>
+
+  <button class="retry-btn" onclick="retry()">↩ Retake Quiz</button>
+</div>
+
+<script>
+// ================================================================
+// QUESTION BANK — 80 questions
+// ================================================================
+const QS = [
+// ── SYNTAX & BASICS ─────────────────────────────────────────────
+{id:1,cat:'Syntax',type:'mcq',diff:'e',
+ q:'What operator is used for String concatenation in Java?',
+ opts:['&','.', ',','+'],ans:3,
+ exp:'The <code>+</code> operator concatenates strings in Java. It also works with numbers, converting them to strings automatically when one operand is a String.'},
+
+{id:2,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which looping construct is best suited for iterating over every element of a collection?',
+ opts:['while loop','do-while loop','for loop','for-each loop'],ans:3,
+ exp:'The <b>for-each</b> (enhanced for) loop <code>for(Type item : collection)</code> is designed specifically for iterating over all elements of arrays and collections cleanly.'},
+
+{id:3,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Methods that are directly called by <code>main</code> must use which keyword?',
+ opts:['public','final','static','void'],ans:2,
+ exp:'<code>main</code> is a static method. It can only directly call other <b>static</b> methods without creating an object. Non-static methods require an object instance.'},
+
+{id:4,cat:'Syntax',type:'mcq',diff:'m',
+ q:'How are multidimensional arrays implemented in Java?',
+ opts:['As a matrix object','As arrays of arrays','As a two-dimensional pointer','As a special type'],ans:1,
+ exp:'Java implements multidimensional arrays as <b>arrays of arrays</b>. A 2D array is an array where each element is itself a 1D array — allowing ragged (non-rectangular) arrays.'},
+
+{id:5,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which method converts a String to an integer in Java?',
+ opts:['Integer.convert()','Integer.toInt()','Integer.valueOf()','Integer.parseInt()'],ans:3,
+ exp:'<code>Integer.parseInt(String s)</code> parses the string and returns a primitive <code>int</code>. <code>Integer.valueOf()</code> returns an <code>Integer</code> object (wrapper type).'},
+
+{id:6,cat:'Syntax',type:'mcq',diff:'e',
+ q:'In Eclipse, which shortcut inserts <code>System.out.println()</code>?',
+ opts:['Type "print" then hit Ctrl+Space','Type "sysout" then hit Ctrl+Space','Type "println" then hit Ctrl+Space','Type "out" then hit Ctrl+Space'],ans:1,
+ exp:'In Eclipse, typing <b>sysout</b> then pressing <b>Ctrl+Space</b> auto-completes to <code>System.out.println();</code> — a popular productivity shortcut.'},
+
+{id:7,cat:'Syntax',type:'tf',diff:'e',
+ q:'<code>Math.random()</code> can return the value 1.0.',
+ ans:false,
+ exp:'<b>FALSE.</b> <code>Math.random()</code> returns a double in the range <code>[0.0, 1.0)</code> — that is, 0.0 is possible but 1.0 is <em>never</em> returned (the upper bound is exclusive).'},
+
+{id:8,cat:'OOP',type:'mcq',diff:'e',
+ q:'In Java, where are all objects allocated?',
+ opts:['Stack','Static memory','Registers','Heap'],ans:3,
+ exp:'All objects in Java are allocated on the <b>heap</b>. Primitive local variables and references live on the stack, but the actual object data is always on the heap, managed by the garbage collector.'},
+
+{id:9,cat:'OOP',type:'mcq',diff:'e',
+ q:'How do you access an instance variable of an object in Java?',
+ opts:['objectName->fieldName','objectName::fieldName','objectName.fieldName','objectName[fieldName]'],ans:2,
+ exp:'Java uses the <b>dot operator</b> <code>objectName.fieldName</code> to access instance variables and call methods. The <code>-></code> syntax is from C/C++, not Java.'},
+
+{id:10,cat:'OOP',type:'mcq',diff:'e',
+ q:'What is the purpose of the <code>this</code> keyword in Java?',
+ opts:['To refer to the parent class','To refer to the current object','To create a new object','To call a static method'],ans:1,
+ exp:'<code>this</code> refers to the <b>current object instance</b> inside an instance method or constructor. It is commonly used to disambiguate between instance variables and parameters with the same name.'},
+
+{id:11,cat:'OOP',type:'mcq',diff:'e',
+ q:'Which is a common use of the <code>this</code> reference in a constructor?',
+ opts:['To call the parent constructor','To resolve name conflicts between local variables and instance variables','To return the current object from a method','To access static methods'],ans:1,
+ exp:'When a constructor parameter has the same name as an instance variable, <code>this.fieldName = fieldName</code> resolves the ambiguity — <code>this.fieldName</code> refers to the instance variable.'},
+
+{id:12,cat:'OOP',type:'mcq',diff:'e',
+ q:'How do you call a static method in Java?',
+ opts:['objectName.methodName()','this.methodName()','ClassName.methodName()','super.methodName()'],ans:2,
+ exp:'Static methods belong to the class, not instances. They are called via <code>ClassName.methodName()</code>. You can also call them through an object reference, but that is discouraged.'},
+
+{id:13,cat:'OOP',type:'mcq',diff:'e',
+ q:'What happens when you call a private method from outside its class?',
+ opts:['It runs but issues a warning','It returns null','It causes a compile-time error','It causes a runtime error'],ans:2,
+ exp:'<code>private</code> methods are visible <em>only</em> within the class that defines them. Calling one from outside causes a <b>compile-time error</b> — the compiler enforces this access restriction.'},
+
+{id:14,cat:'Encapsulation',type:'tf',diff:'e',
+ q:'It is conventional and recommended to make instance variables private.',
+ ans:true,
+ exp:'<b>TRUE.</b> Encapsulation best practice dictates that instance variables should be <code>private</code>, with access controlled through public getter/setter methods — hiding internal implementation details.'},
+
+// ── OOP / METHODS ────────────────────────────────────────────────
+{id:15,cat:'OOP',type:'mcq',diff:'m',
+ q:'What is method overloading in Java?',
+ opts:['Having a method with the same name in a subclass','Defining multiple methods with the same name but different argument signatures','Replacing a parent class method in a child class','Calling a method from a superclass'],ans:1,
+ exp:'<b>Method overloading</b> means defining multiple methods in the <em>same class</em> with the same name but different parameter lists (number or types). The compiler chooses the right one at compile time.'},
+
+{id:16,cat:'OOP',type:'mcq',diff:'e',
+ q:'What is the main motivation for overloading constructors?',
+ opts:['To allow building instances in different ways','To prevent inheritance','To hide instance variables','To improve performance'],ans:0,
+ exp:'Overloaded constructors let you create objects with different combinations of initial data — e.g., <code>new Point()</code>, <code>new Point(x,y)</code>, or <code>new Point(x,y,label)</code>.'},
+
+{id:17,cat:'Encapsulation',type:'mcq',diff:'e',
+ q:'What is the purpose of getter and setter methods?',
+ opts:['To provide public access to private instance variables','To override parent class methods','To implement interfaces','To define abstract methods'],ans:0,
+ exp:'Getters (<code>getX()</code>) and setters (<code>setX(v)</code>) provide controlled public access to private fields — enforcing validation, enabling encapsulation, and hiding internal representation.'},
+
+// ── INHERITANCE ───────────────────────────────────────────────────
+{id:18,cat:'Inheritance',type:'mcq',diff:'e',
+ q:'A child class has access to which methods of the parent class?',
+ opts:['Only public methods','All non-private methods','Only protected methods','All methods including private'],ans:1,
+ exp:'A subclass inherits all <b>non-private</b> members: public, protected, and package-default. Private members exist in the object but are not directly accessible from the subclass.'},
+
+{id:19,cat:'Inheritance',type:'mcq',diff:'e',
+ q:'What is the primary motivation for using inheritance?',
+ opts:['To hide data from users','To enable code reuse and avoid writing the same code twice','To prevent method overriding','To allow multiple return types'],ans:1,
+ exp:'Inheritance promotes <b>code reuse</b> — a subclass inherits all non-private behaviour of the superclass, avoiding duplication and enabling the "is-a" relationship.'},
+
+{id:20,cat:'Inheritance',type:'mcq',diff:'e',
+ q:'What keyword is used to call the parent class constructor from a subclass constructor?',
+ opts:['parent()','base()','this()','super()'],ans:3,
+ exp:'<code>super()</code> calls the superclass constructor. It must be the <em>first</em> statement in the subclass constructor. <code>this()</code> calls another constructor in the same class.'},
+
+{id:21,cat:'Inheritance',type:'mcq',diff:'m',
+ q:'What does the <code>@Override</code> annotation do?',
+ opts:['Forces the method to run faster','Tells the compiler the method is intended to override a parent method','Prevents the method from being inherited','Makes the method static'],ans:1,
+ exp:'<code>@Override</code> is an informational annotation telling the compiler: "I intend to override a superclass method." If no such method exists in the parent, the compiler reports an error — catching typos early.'},
+
+{id:22,cat:'Inheritance',type:'mcq',diff:'m',
+ q:'What happens if you use <code>@Override</code> on a method that does NOT exist in the parent class?',
+ opts:['The code runs but gives a warning','The code compiles and overrides Object class methods only','A compile-time error occurs','The annotation is ignored'],ans:2,
+ exp:'The compiler enforces <code>@Override</code>: if the annotated method does not actually override a superclass method (e.g., due to a typo), a <b>compile-time error</b> is raised.'},
+
+{id:23,cat:'Abstract',type:'mcq',diff:'e',
+ q:'Which keyword declares an abstract method?',
+ opts:['final','static','abstract','virtual'],ans:2,
+ exp:'The <code>abstract</code> keyword declares a method with no body in an abstract class. Concrete subclasses <em>must</em> implement it. Java has no <code>virtual</code> keyword (all non-final instance methods are virtual by default).'},
+
+{id:24,cat:'Encapsulation',type:'mcq',diff:'e',
+ q:'Which visibility modifier allows access only from within the same class?',
+ opts:['public','protected','default','private'],ans:3,
+ exp:'<code>private</code> is the most restrictive modifier — only code inside the same class can access the member. <code>protected</code> adds access from subclasses and same-package classes.'},
+
+{id:25,cat:'Inheritance',type:'mcq',diff:'m',
+ q:'What does the <code>final</code> keyword mean when applied to a class?',
+ opts:['The class cannot be instantiated','The class cannot be subclassed','The class has no methods','The class is abstract'],ans:1,
+ exp:'A <code>final</code> class cannot be extended (subclassed). For example, <code>java.lang.String</code> is final. This is used to prevent inheritance for security or design reasons.'},
+
+{id:26,cat:'OOP',type:'mcq',diff:'m',
+ q:'In the constructor life-cycle, what is the correct order of phases?',
+ opts:[
+   'Execute constructor body → Initialize instance variables → Call superclass constructor',
+   'Initialize instance variables → Call superclass constructor → Execute constructor body',
+   'Call superclass constructor → Initialize instance variables → Execute constructor body',
+   'Call superclass constructor → Execute constructor body → Initialize instance variables'],ans:2,
+ exp:'Java constructor execution order: <b>(1)</b> Call superclass constructor (implicitly or via <code>super()</code>), <b>(2)</b> Initialize instance variable declarations, <b>(3)</b> Execute constructor body.'},
+
+{id:27,cat:'Inheritance',type:'mcq',diff:'m',
+ q:'What is method overriding?',
+ opts:[
+   'Defining a method with the same name but different parameters in the same class',
+   'Defining a method in a subclass with the same name, return type, and arguments as in the superclass',
+   'Calling a private method from outside the class',
+   'Making a method abstract in a subclass'],ans:1,
+ exp:'<b>Method overriding</b> occurs in a subclass: same name, same parameter list, same return type (or covariant) as the superclass method — providing a specialised implementation.'},
+
+{id:28,cat:'Inheritance',type:'mcq',diff:'m',
+ q:'Only which type of methods can be overridden in Java?',
+ opts:['Static methods only','Private methods only','Non-static methods','Final methods'],ans:2,
+ exp:'Only <b>non-static (instance) methods</b> can be overridden. Static methods are hidden (not overridden) when redefined in a subclass. Private methods are invisible to subclasses. Final methods cannot be overridden.'},
+
+{id:29,cat:'Encapsulation',type:'mcq',diff:'m',
+ q:'Which of the following is NOT a valid reason for encapsulation?',
+ opts:[
+   'Allows changing internal representation without affecting users',
+   'Allows putting constraints on values',
+   'Allows performing side effects transparently',
+   'Forces all methods to be static'],ans:3,
+ exp:'Encapsulation never forces methods to be static. Valid reasons include: hiding internal implementation, enabling validation in setters, allowing transparent side effects (e.g., logging), and safe refactoring.'},
+
+// ── SYNTAX CONTINUED ─────────────────────────────────────────────
+{id:30,cat:'Syntax',type:'tf',diff:'e',
+ q:'Routines are usually called "functions," not "methods," in object-oriented languages like Java.',
+ ans:false,
+ exp:'<b>FALSE.</b> In OOP languages like Java, they are called <b>methods</b> — functions defined inside a class. "Function" is the term used in procedural/functional languages.'},
+
+{id:31,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which line is correct for printing in Java?',
+ opts:['System.out.printf()','System.Out.print()','system.out.println()','System.Out.Printf()'],ans:0,
+ exp:'<code>System.out.printf()</code> is valid (formats and prints). Java is case-sensitive: <code>System</code> is a class (capital S), <code>out</code> is a field (lowercase), <code>printf</code> is a method (lowercase).'},
+
+{id:32,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which command is used to <em>compile</em> a .java file?',
+ opts:['javac MyFile.java','javac MyFile.Java','javac MyFile.class','java MyFile'],ans:0,
+ exp:'<code>javac MyFile.java</code> compiles the source file to bytecode (<code>.class</code>). The filename is case-sensitive and must have the exact <code>.java</code> extension.'},
+
+{id:33,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which command is used to <em>run</em> a compiled Java program?',
+ opts:['javac MyFile.java','javac MyFile.Java','java MyFile.class','java MyFile'],ans:3,
+ exp:'<code>java MyFile</code> runs the compiled bytecode. Note: do NOT include the <code>.class</code> extension when running. <code>javac</code> compiles; <code>java</code> executes.'},
+
+{id:34,cat:'Syntax',type:'tf',diff:'e',
+ q:'Compiling a Java file means executing it.',
+ ans:false,
+ exp:'<b>FALSE.</b> Compilation (<code>javac</code>) translates source code to bytecode (<code>.class</code>). Execution (<code>java</code>) runs the bytecode on the JVM. These are two separate steps.'},
+
+{id:35,cat:'Syntax',type:'mcq',diff:'e',
+ q:'The correct file extension for Java source files is:',
+ opts:['file.JAVA','file.Java','file.java','file.class'],ans:2,
+ exp:'Java source files must end with <b><code>.java</code></b> (all lowercase). The compiled output is <code>.class</code>. Java filenames are case-sensitive on most operating systems.'},
+
+{id:36,cat:'Packages',type:'mcq',diff:'e',
+ q:'___________ are subdirectories used to avoid name conflicts in Java.',
+ opts:['Packages','Classes','Static Classes','SubRoutines'],ans:0,
+ exp:'<b>Packages</b> are namespaces that map to directory structures. They prevent naming collisions (e.g., two different <code>Date</code> classes can coexist in different packages).'},
+
+{id:37,cat:'Packages',type:'tf',diff:'m',
+ q:'A Java class must have a "package subdirname;" declaration at the top.',
+ ans:true,
+ exp:'<b>TRUE</b> (as a convention/best-practice in professional code). Classes without a package declaration belong to the unnamed default package — acceptable for learning but not for production code.'},
+
+{id:38,cat:'Packages',type:'mcq',diff:'e',
+ q:'The name <code>com.xyz</code> refers to which Java concept?',
+ opts:['package name','class name','project name','routine name'],ans:0,
+ exp:'<code>com.xyz</code> is a <b>package name</b>. Java package names are typically reverse domain names (e.g., <code>com.google.maps</code>), mapping to nested subdirectory structures.'},
+
+{id:39,cat:'Syntax',type:'mcq',diff:'m',
+ q:'Programs given to end users should almost always contain:',
+ opts:['command-lines only','pop-ups and GUI to collect inputs','command-lines and GUI','text output only'],ans:1,
+ exp:'End-user applications should provide <b>GUI (graphical user interface)</b> elements — buttons, dialogs, forms — to collect inputs, rather than requiring command-line interaction.'},
+
+// ── CODE PROBLEM ─────────────────────────────────────────────────
+{id:40,cat:'Syntax',type:'mcq',diff:'m',
+ q:'What is the result of the following code?\n<div class="codeblock">int x[] = {1,5,6,8};\nfor(int i : x) {\n    System.out.print(i);\n}</div>',
+ opts:['1,5,6,8','1','1568','18'],ans:2,
+ exp:'The for-each loop prints each element without separator: <code>1</code>, then <code>5</code>, then <code>6</code>, then <code>8</code> — all on the same line → <b>1568</b>.'},
+
+{id:41,cat:'OOP',type:'mcq',diff:'m',
+ q:'The <code>==</code> operator tests when:',
+ opts:['two objects are identical (the same object)','they appear equal (same fields) only','numerical values only','string values only'],ans:0,
+ exp:'For objects, <code>==</code> tests <b>reference equality</b> — are both variables pointing to the exact same object in memory? Use <code>.equals()</code> for logical/value equality.'},
+
+{id:42,cat:'Syntax',type:'tf',diff:'e',
+ q:'We use <code>==</code> to test if two Strings have the same characters.',
+ ans:false,
+ exp:'<b>FALSE.</b> <code>==</code> on Strings tests if they are the <em>same object</em> in memory. Use <code>str1.equals(str2)</code> to compare their <em>content</em> (character sequence).'},
+
+{id:43,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which method is used to compare two String objects by content?',
+ opts:['== operator','= operator','"is" operator','.equals() method'],ans:3,
+ exp:'<code>str1.equals(str2)</code> compares the <b>character content</b> of two strings and returns <code>true</code> if they are identical. <code>equalsIgnoreCase()</code> does the same case-insensitively.'},
+
+{id:44,cat:'Syntax',type:'mcq',diff:'m',
+ q:'When defining an array, which of the following is <em>NOT</em> a valid Java syntax?',
+ opts:['int x [] = {1,2,3}','int [] x = {1,2,3}','int x[] = new int [3]','int x = [3]'],ans:3,
+ exp:'<code>int x = [3]</code> is invalid Java. Arrays must use either initializer syntax <code>{1,2,3}</code> or <code>new int[3]</code>. Square brackets must be part of the type or variable name, not the value.'},
+
+{id:45,cat:'Syntax',type:'mcq',diff:'e',
+ q:'Which command is used to accept user input in Java?',
+ opts:['new Scanner(System.in).nextInt()','System.in.print()','Scanner inputScanner = new Scanner(System.in)','import java.util.Scanner'],ans:0,
+ exp:'<code>new Scanner(System.in).nextInt()</code> creates a Scanner and immediately reads an integer. The import and scanner creation are setup steps, not input-reading commands by themselves.'},
+
+{id:46,cat:'Syntax',type:'mcq',diff:'m',
+ q:'Given <code>x==y</code> is true, what does the following expression print?\n<div class="codeblock">(x==y) ? System.out.print("5") : (x==z) ? System.out.print("2") : System.out.print("3")</div>',
+ opts:['5','3','x','error'],ans:0,
+ exp:'The ternary evaluates <code>x==y</code> first — since it is <code>true</code>, it executes <code>System.out.print("5")</code> and prints <b>5</b>. The rest is short-circuited.'},
+
+{id:47,cat:'Syntax',type:'tf',diff:'e',
+ q:'The <code>continue</code> statement means "skip the current iteration" in a loop.',
+ ans:true,
+ exp:'<b>TRUE.</b> <code>continue</code> skips the remainder of the current loop iteration and jumps to the next iteration. <code>break</code> exits the loop entirely.'},
+
+// ── INHERITANCE CONTINUED ─────────────────────────────────────────
+{id:48,cat:'Inheritance',type:'tf',diff:'e',
+ q:'Java supports single inheritance (a class can have only one direct parent).',
+ ans:true,
+ exp:'<b>TRUE.</b> Java classes support only <b>single inheritance</b> — a class can extend exactly one superclass. Multiple inheritance of classes was deliberately excluded to avoid the "diamond problem."'},
+
+{id:49,cat:'Inheritance',type:'tf',diff:'e',
+ q:'Java supports multiple inheritance (a class can directly extend more than one class).',
+ ans:false,
+ exp:'<b>FALSE.</b> Java does NOT allow a class to extend more than one class. However, a class can <em>implement</em> multiple interfaces — achieving a form of multiple inheritance of type.'},
+
+{id:50,cat:'Inheritance',type:'tf',diff:'m',
+ q:'Java supports multi-level inheritance (A extends B, B extends C).',
+ ans:true,
+ exp:'<b>TRUE.</b> Java supports multi-level (chained) inheritance: e.g., <code>class C extends B</code>, <code>class B extends A</code>. This creates a chain where C inherits from both B and A.'},
+
+{id:51,cat:'Inheritance',type:'tf',diff:'m',
+ q:'Java supports multiple inheritance through interfaces.',
+ ans:true,
+ exp:'<b>TRUE.</b> A Java class can implement multiple interfaces: <code>class Foo implements Bar, Baz</code>. This achieves multiple inheritance of <em>type</em> (and default methods since Java 8).'},
+
+// ── CONSTRUCTORS ─────────────────────────────────────────────────
+{id:52,cat:'OOP',type:'tf',diff:'e',
+ q:'Constructors must have exactly the same name as the class.',
+ ans:true,
+ exp:'<b>TRUE.</b> A constructor\'s name must match the class name exactly (case-sensitive). This is how the compiler identifies constructors — they also have no return type.'},
+
+{id:53,cat:'OOP',type:'tf',diff:'e',
+ q:'Constructors have a return data type.',
+ ans:false,
+ exp:'<b>FALSE.</b> Constructors have <em>no return type</em> — not even <code>void</code>. If you add a return type, the compiler treats it as a regular method, not a constructor.'},
+
+{id:54,cat:'OOP',type:'tf',diff:'m',
+ q:'Constructors can contain any line of code, but the <code>return</code> statement is not allowed.',
+ ans:true,
+ exp:'<b>TRUE.</b> Constructors can contain any executable code. However, <code>return</code> with a value is illegal. A bare <code>return;</code> (no value) is allowed to exit early, but returning a value is a compile error.'},
+
+{id:55,cat:'OOP',type:'mcq',diff:'e',
+ q:'Having multiple constructors in a class is an application of:',
+ opts:['Method overloading','Method overriding','Inheritance','Abstraction'],ans:0,
+ exp:'Multiple constructors with different parameter lists is <b>constructor overloading</b> — a specific application of <b>method overloading</b>. The compiler selects the right constructor based on the arguments provided.'},
+
+// ── MORE OOP ─────────────────────────────────────────────────────
+{id:56,cat:'OOP',type:'tf',diff:'m',
+ q:'The <code>null</code> value is a distinct type in Java and is not equal to zero.',
+ ans:true,
+ exp:'<b>TRUE.</b> <code>null</code> is a special literal representing the absence of an object reference. It is not an object, not an integer, and is only assignable to reference types — distinct from <code>0</code> or <code>false</code>.'},
+
+{id:57,cat:'OOP',type:'mcq',diff:'m',
+ q:'Which type of method produces only a side effect (and returns nothing)?',
+ opts:['void methods & constructors','object-typed methods','static methods','abstract methods'],ans:0,
+ exp:'<b>void</b> methods and <b>constructors</b> produce only side effects (modifying state, printing, etc.) — they do not return a value. Methods returning objects or primitives produce both a result and possibly side effects.'},
+
+{id:58,cat:'OOP',type:'tf',diff:'e',
+ q:'We can call static methods without creating an object of the class.',
+ ans:true,
+ exp:'<b>TRUE.</b> Static methods belong to the class itself: <code>ClassName.method()</code>. No instance is needed. <code>Math.sqrt()</code>, <code>Integer.parseInt()</code>, and <code>main()</code> are classic examples.'},
+
+{id:59,cat:'OOP',type:'tf',diff:'m',
+ q:'Static methods cannot access non-static methods or fields of another class without creating an object of that class.',
+ ans:true,
+ exp:'<b>TRUE.</b> Static context has no implicit <code>this</code>. To call a non-static method or access a non-static field, you must first instantiate the class: <code>MyClass obj = new MyClass(); obj.method();</code>'},
+
+{id:60,cat:'OOP',type:'mcq',diff:'m',
+ q:'To enforce that all instances of a class have certain properties, we use:',
+ opts:['setters','constructors (and final fields sometimes)','a field name with a dot operator','static fields'],ans:1,
+ exp:'<b>Constructors</b> enforce that every object is created with required data. Marking the field <code>final</code> additionally prevents it from being changed after construction — guaranteeing the constraint holds permanently.'},
+
+{id:61,cat:'OOP',type:'tf',diff:'m',
+ q:'Java automatically provides a zero-argument (default) constructor if and only if the class does not define its own constructor.',
+ ans:true,
+ exp:'<b>TRUE.</b> If you define <em>any</em> constructor, Java no longer provides the default no-arg constructor. This is a common bug: adding a parameterised constructor and then forgetting to also provide a no-arg one.'},
+
+{id:62,cat:'OOP',type:'tf',diff:'e',
+ q:'Classes can have more than one method with the same name.',
+ ans:true,
+ exp:'<b>TRUE.</b> This is method overloading — multiple methods sharing a name but differing in their parameter signature. The compiler distinguishes them by the number and types of arguments.'},
+
+{id:63,cat:'OOP',type:'tf',diff:'m',
+ q:'A method signature only requires a different number OR different types of arguments — not necessarily both.',
+ ans:false,
+ exp:'<b>FALSE.</b> A signature can differ by having a different number of parameters, different types, or a different order of types. It is NOT limited to just one of those — any change creates a distinct signature. The statement "but not both" is incorrect.'},
+
+// ── ENCAPSULATION ────────────────────────────────────────────────
+{id:64,cat:'Encapsulation',type:'mcq',diff:'m',
+ q:'If you put constraints on values without users of your class needing to change their code, this concept is called:',
+ opts:['Encapsulation','Abstraction','Polymorphism','Access modifiers'],ans:0,
+ exp:'<b>Encapsulation</b>: by using setters you can add validation without changing the public API. Users keep calling <code>setAge(v)</code> — they do not know or care that you added a check inside.'},
+
+{id:65,cat:'Encapsulation',type:'mcq',diff:'e',
+ q:'An immutable field should be declared as:',
+ opts:['final','static','abstract','private'],ans:0,
+ exp:'The <code>final</code> keyword on a field means it can only be assigned once (in the declaration or constructor). This makes it immutable after construction. <code>static final</code> creates a class-level constant.'},
+
+// ── ABSTRACT / INHERITANCE ────────────────────────────────────────
+{id:66,cat:'Abstract',type:'mcq',diff:'m',
+ q:'Which class type is designed primarily for inheritance?',
+ opts:['abstract','static','final','private'],ans:0,
+ exp:'An <code>abstract</code> class cannot be instantiated directly — it is designed as a base class. It may contain abstract methods (no body) that concrete subclasses must implement.'},
+
+{id:67,cat:'Inheritance',type:'tf',diff:'e',
+ q:'A class can only have one direct parent class.',
+ ans:true,
+ exp:'<b>TRUE.</b> Java enforces <b>single inheritance</b> for classes. Every class extends exactly one class (implicitly <code>Object</code> if not specified). Multiple parents are not allowed for classes.'},
+
+{id:68,cat:'Inheritance',type:'tf',diff:'e',
+ q:'Only non-static methods can be overridden in Java.',
+ ans:true,
+ exp:'<b>TRUE.</b> Static methods are hidden, not overridden — the method called depends on the reference type, not the runtime type. Private methods are invisible to subclasses. Only non-static (virtual) methods are truly overridden.'},
+
+{id:69,cat:'Abstract',type:'tf',diff:'e',
+ q:'An abstract class is a class that you cannot directly instantiate.',
+ ans:true,
+ exp:'<b>TRUE.</b> <code>new AbstractClass()</code> causes a compile-time error. You must subclass an abstract class and implement all abstract methods before you can instantiate it.'},
+
+{id:70,cat:'Abstract',type:'mcq',diff:'m',
+ q:'To guarantee that all subclasses will have certain methods, we use:',
+ opts:['abstract class or interface','static class','public class','final class'],ans:0,
+ exp:'<b>Abstract classes</b> force subclasses to implement abstract methods. <b>Interfaces</b> do the same — any class implementing the interface must provide all method implementations. Both enforce a contract.'},
+
+{id:71,cat:'Abstract',type:'tf',diff:'m',
+ q:'An abstract class can contain both concrete methods (with implementations) and abstract methods (without implementations).',
+ ans:true,
+ exp:'<b>TRUE.</b> Abstract classes can have a mix: concrete methods with full bodies (shared implementation) and abstract methods (no body, must be overridden). This is more flexible than interfaces (pre-Java 8).'},
+
+// ── PACKAGES ─────────────────────────────────────────────────────
+{id:72,cat:'Packages',type:'mcq',diff:'e',
+ q:'Which tool organizes classes into groups in Java?',
+ opts:['CLASSPATH','Packages','JavaDoc','Javac'],ans:1,
+ exp:'<b>Packages</b> organize classes into logical groups and map to directory structures on disk. They provide namespace management and access control (package-private visibility).'},
+
+{id:73,cat:'Packages',type:'tf',diff:'m',
+ q:'Fields with the default (package-private) modifier are accessible from the same package AND from subclasses outside the package.',
+ ans:false,
+ exp:'<b>FALSE.</b> <b>Default</b> (no modifier) is accessible only within the <em>same package</em>. Subclasses in <em>different</em> packages cannot access it. <code>protected</code> is needed for cross-package subclass access.'},
+
+{id:74,cat:'Packages',type:'tf',diff:'m',
+ q:'Fields with the <code>protected</code> modifier are accessible from the same package AND from subclasses (even outside the package).',
+ ans:true,
+ exp:'<b>TRUE.</b> <code>protected</code> = accessible within the same package + accessible in subclasses regardless of package. This is more permissive than default but less than public.'},
+
+// ── FINAL / STATIC ───────────────────────────────────────────────
+{id:75,cat:'OOP',type:'tf',diff:'e',
+ q:'A <code>final</code> variable\'s value can be changed after initial assignment.',
+ ans:false,
+ exp:'<b>FALSE.</b> A <code>final</code> variable is a constant — once assigned, its value cannot be changed. Attempting to reassign it causes a compile-time error.'},
+
+{id:76,cat:'OOP',type:'tf',diff:'e',
+ q:'A <code>static</code> variable\'s value can be changed after initial assignment.',
+ ans:true,
+ exp:'<b>TRUE.</b> <code>static</code> variables belong to the class (shared across all instances) but are mutable by default. Only <code>static final</code> variables are constants that cannot be changed.'},
+
+// ── EXTRA TOPICS ────────────────────────────────────────────────
+{id:77,cat:'OOP',type:'mcq',diff:'m',
+ q:'Which of the following correctly describes polymorphism in Java?',
+ opts:[
+   'A class implementing multiple interfaces',
+   'The ability to treat objects of different subclasses through a common superclass reference',
+   'Hiding instance variables with getters/setters',
+   'Defining multiple constructors in one class'],ans:1,
+ exp:'<b>Polymorphism</b>: a superclass reference can hold a subclass object, and the correct overridden method is called at runtime. E.g., <code>Animal a = new Dog(); a.speak();</code> calls Dog\'s <code>speak()</code>.'},
+
+{id:78,cat:'Inheritance',type:'mcq',diff:'h',
+ q:'Which combination correctly summarises what is inherited by a subclass from its superclass?',
+ opts:[
+   'All fields and methods (including private)',
+   'All public and protected fields and methods only',
+   'All non-private fields, methods, and nested classes',
+   'Only public static methods'],ans:2,
+ exp:'Subclasses inherit all <b>non-private</b> members: public, protected, and package-default fields, methods, and nested classes. Private members physically exist in the object but are not directly accessible.'},
+
+{id:79,cat:'OOP',type:'mcq',diff:'h',
+ q:'What is the result of the following?\n<div class="codeblock">String a = "hello";\nString b = "hello";\nSystem.out.println(a == b);\nSystem.out.println(a.equals(b));</div>',
+ opts:['false / false','true / true','true / false','false / true'],ans:1,
+ exp:'Because of <b>string interning</b>, both literals point to the same object in the string pool → <code>a == b</code> is <code>true</code>. <code>a.equals(b)</code> is also <code>true</code> (same content). Output: <b>true / true</b>.'},
+
+{id:80,cat:'Abstract',type:'mcq',diff:'h',
+ q:'Which statement about interfaces in Java is TRUE?',
+ opts:[
+   'A class can implement only one interface',
+   'An interface can have constructor definitions',
+   'A class can implement multiple interfaces',
+   'Interfaces cannot have default methods'],ans:2,
+ exp:'A Java class can <code>implement</code> multiple interfaces — this is how Java achieves a form of multiple inheritance. Since Java 8, interfaces can also have <code>default</code> and <code>static</code> methods with bodies.'}
+];
+
+// ================================================================
+// STATE
+// ================================================================
+let cur = 0;
+let ans = new Array(QS.length).fill(null);
+let lkd = new Array(QS.length).fill(false);
+let tLeft = 60 * 60, tUsed = 0;
+let tInt = null;
+
+// ================================================================
+// HELPERS
+// ================================================================
+const $  = id => document.getElementById(id);
+const iC = i => ans[i] !== null && ans[i] === QS[i].ans;
+
+// ================================================================
+// START
+// ================================================================
+function start() {
+  $('splash').style.display = 'none';
+  $('app').style.display = 'block';
+  buildMap();
+  go(0);
+  tInt = setInterval(() => {
+    tLeft--; tUsed++;
+    const m = String(Math.floor(tLeft/60)).padStart(2,'0');
+    const s = String(tLeft%60).padStart(2,'0');
+    const el = $('timer');
+    el.textContent = `${m}:${s}`;
+    el.className = 'timer-big' + (tLeft<120?' danger':tLeft<300?' warn':'');
+    if (tLeft <= 0) { clearInterval(tInt); showRes(); }
+  }, 1000);
+}
+
+// ================================================================
+// MAP
+// ================================================================
+function buildMap() {
+  const w = $('mapw'); w.innerHTML = '';
+  QS.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'mp grey'; d.id = `m${i}`;
+    d.textContent = i+1; d.onclick = () => go(i);
+    w.appendChild(d);
+  });
+}
+
+function refreshMap() {
+  QS.forEach((_,i) => {
+    const d = $(`m${i}`);
+    d.className = 'mp';
+    if (i === cur) d.classList.add('cur');
+    else if (ans[i] !== null) d.classList.add(iC(i) ? 'good' : 'fail');
+    else d.classList.add('grey');
+  });
+  let c=0,w=0;
+  ans.forEach((a,i)=>{ if(a!==null){ iC(i)?c++:w++; }});
+  $('lp-ok').textContent = `✓ ${c}`;
+  $('lp-bad').textContent = `✗ ${w}`;
+  $('tb-topic').textContent = `// ${QS[cur].cat}`;
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function go(idx) {
+  if (idx < 0 || idx >= QS.length) return;
+  cur = idx;
+  refreshMap();
+  updateProg();
+  renderQ();
+  updateNav();
+}
+
+function updateProg() {
+  const done = ans.filter(a=>a!==null).length;
+  $('prog-n').textContent = `${done} / ${QS.length}`;
+  $('prog-b').style.width = `${(done/QS.length)*100}%`;
+}
+
+function updateNav() {
+  $('bp').disabled = cur === 0;
+  $('bn').disabled = cur === QS.length - 1;
+  $('bf').style.display = ans.every(a=>a!==null) ? 'inline-block' : 'none';
+}
+
+function jmp(idx, btn) {
+  document.querySelectorAll('.cat').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  go(Math.min(idx, QS.length-1));
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function renderQ() {
+  const q = QS[cur];
+  const lk = lkd[cur];
+  const sel = ans[cur];
+
+  const stripe = q.type==='tf' ? 'var(--orange)' : 'var(--accent)';
+  const diffCls = q.diff==='e'?'d-e':q.diff==='m'?'d-m':'d-h';
+  const diffLbl = q.diff==='e'?'Easy':q.diff==='m'?'Medium':'Hard';
+
+  let body = '';
+  if (q.type === 'tf') {
+    const tC = tfC(sel, true, q.ans, lk);
+    const fC = tfC(sel, false, q.ans, lk);
+    const lkCls = lk ? ' lk' : '';
+    body = `<div class="tf-row">
+      <div class="tfb${lkCls} ${tC}" onclick="pickTF(true)">✓ &nbsp; True</div>
+      <div class="tfb${lkCls} ${fC}" onclick="pickTF(false)">✗ &nbsp; False</div>
+    </div>`;
+  } else {
+    const keys = ['A','B','C','D'];
+    body = `<div class="opts">${q.opts.map((o,i) => {
+      const cls = optC(sel,i,q.ans,lk);
+      const lkCls = lk ? ' lk' : '';
+      return `<div class="opt${lkCls} ${cls}" onclick="pickOpt(${i})">
+        <div class="opt-k">${keys[i]}</div>
+        <div class="opt-t">${o}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  $('qa').innerHTML = `
+    <div class="qcard" style="--stripe:${stripe}">
+      <div class="qmeta">
+        <span class="qnum">Q ${cur+1} / ${QS.length}</span>
+        <span class="qtype ${q.type==='tf'?'qt-tf':'qt-mcq'}">${q.type==='tf'?'True / False':'MCQ'}</span>
+        <span class="qcat-badge">${q.cat}</span>
+        <span class="qdiff ${diffCls}">${diffLbl}</span>
+      </div>
+      <div class="qtext">${q.q}</div>
+      ${body}
+      <div class="exp${lk?' on':''}">${q.exp}</div>
+    </div>`;
+}
+
+function optC(sel,idx,correct,lk) {
+  if (!lk) return sel===idx?'sel':'';
+  if (idx===correct) return 'ok';
+  if (sel===idx && idx!==correct) return 'ng';
+  return '';
+}
+
+function tfC(sel,val,correct,lk) {
+  if (!lk) return sel===val?'sel':'';
+  if (val===correct) return 'ok';
+  if (sel===val && val!==correct) return 'ng';
+  return '';
+}
+
+function pickOpt(idx) {
+  if (lkd[cur]) return;
+  ans[cur] = idx; lkd[cur] = true;
+  renderQ(); updateProg(); updateNav(); refreshMap();
+  setTimeout(() => { if (cur < QS.length-1) go(cur+1); }, 1500);
+}
+
+function pickTF(val) {
+  if (lkd[cur]) return;
+  ans[cur] = val; lkd[cur] = true;
+  renderQ(); updateProg(); updateNav(); refreshMap();
+  setTimeout(() => { if (cur < QS.length-1) go(cur+1); }, 1500);
+}
+
+// ================================================================
+// RESULTS
+// ================================================================
+function showRes() {
+  clearInterval(tInt);
+  $('app').style.display = 'none';
+  $('results').style.display = 'block';
+  window.scrollTo(0,0);
+
+  let correct=0, skip=0;
+  let mcqC=0,mcqT=0, tfC2=0,tfT=0;
+  const cats = {};
+
+  QS.forEach((q,i) => {
+    const a = ans[i];
+    const c = a !== null && a === q.ans;
+    if (a === null) skip++;
+    if (c) correct++;
+    if (q.type==='mcq') { mcqT++; if(c) mcqC++; }
+    else { tfT++; if(c) tfC2++; }
+    if (!cats[q.cat]) cats[q.cat] = {c:0,t:0};
+    cats[q.cat].t++;
+    if (c) cats[q.cat].c++;
+  });
+
+  const wrong = QS.length - correct - skip;
+  const pct = Math.round((correct/QS.length)*100);
+
+  $('r-pct').textContent = pct+'%';
+  $('r-c').textContent = correct;
+  $('r-w').textContent = wrong;
+  $('r-s').textContent = skip;
+  const um = String(Math.floor(tUsed/60)).padStart(2,'0');
+  const us = String(tUsed%60).padStart(2,'0');
+  $('r-t').textContent = `${um}:${us}`;
+
+  const em = pct>=90?'🏆':pct>=75?'🎯':pct>=60?'📚':pct>=50?'⚠️':'❌';
+  const msg = pct>=90?'Outstanding! You\'ve mastered Java OOP!':
+              pct>=75?'Great work! Solid understanding of Java.':
+              pct>=60?'Good effort — review the weaker topics.':
+              pct>=50?'Passing, but keep practising!':'More study needed — you can do it!';
+  $('r-em').textContent = em;
+  $('r-msg').textContent = msg;
+
+  // Category breakdown
+  const colors = ['var(--accent)','var(--orange)','var(--green)','var(--purple)','var(--yellow)','#ff6b9d','#00d4ff','#a8ff3e'];
+  const bdRows = $('bd-rows');
+  bdRows.innerHTML = '';
+  Object.entries(cats).forEach(([cat,{c,t}],i) => {
+    const p = Math.round((c/t)*100);
+    const col = colors[i % colors.length];
+    bdRows.innerHTML += `<div class="bd-row">
+      <div class="bd-lbl">${cat}</div>
+      <div class="bd-track"><div class="bd-fill" id="bdf-${i}" style="width:0%;background:${col}"></div></div>
+      <div class="bd-pct" style="color:${col}">${p}%</div>
+    </div>`;
+    setTimeout(() => {
+      const el = document.getElementById(`bdf-${i}`);
+      if (el) el.style.width = p+'%';
+    }, 200 + i*80);
+  });
+
+  // MCQ / TF bars
+  const setBar = (bar,pct2,p) => {
+    document.getElementById(pct2).textContent = p+'%';
+    setTimeout(()=>document.getElementById(bar).style.width=p+'%', 300);
+  };
+  setBar('bar-mcq','pct-mcq', mcqT>0?Math.round((mcqC/mcqT)*100):0);
+  setBar('bar-tf','pct-tf',   tfT>0?Math.round((tfC2/tfT)*100):0);
+
+  // Review list
+  const keys = ['A','B','C','D'];
+  $('rev-list').innerHTML = QS.map((q,i) => {
+    const a = ans[i];
+    const c = a !== null && a === q.ans;
+    const yourAns = a===null ? 'Skipped' : q.type==='tf' ? (a?'True':'False') : `${keys[a]}) ${q.opts[a]}`;
+    const corrAns = q.type==='tf' ? (q.ans?'True':'False') : `${keys[q.ans]}) ${q.opts[q.ans]}`;
+    return `<div class="rev-item">
+      <div class="rev-q">Q${i+1}. ${q.q.replace(/<[^>]+>/g,'').substring(0,120)}</div>
+      <div class="rev-a ${c?'rev-c':'rev-w'}">Your answer: ${yourAns}</div>
+      ${!c?`<div class="rev-a rev-c">Correct: ${corrAns}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function togRev(btn) {
+  const list = $('rev-list');
+  const open = list.classList.toggle('open');
+  btn.querySelector('span').textContent = open?'▲':'▼';
+}
+
+function retry() {
+  ans = new Array(QS.length).fill(null);
+  lkd = new Array(QS.length).fill(false);
+  cur=0; tLeft=60*60; tUsed=0;
+  $('results').style.display='none';
+  $('app').style.display='block';
+  buildMap(); go(0);
+  tInt = setInterval(()=>{
+    tLeft--; tUsed++;
+    const m=String(Math.floor(tLeft/60)).padStart(2,'0');
+    const s=String(tLeft%60).padStart(2,'0');
+    const el=$('timer');
+    el.textContent=`${m}:${s}`;
+    el.className='timer-big'+(tLeft<120?' danger':tLeft<300?' warn':'');
+    if(tLeft<=0){clearInterval(tInt);showRes();}
+  },1000);
+}
+</script>
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

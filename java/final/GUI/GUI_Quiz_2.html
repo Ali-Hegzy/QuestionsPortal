@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java GUI Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --surface3: #222d42;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e2e8f7;
+    --text2: #8892b0;
+    --text3: #4a5580;
+    --accent: #38bdf8;
+    --accent2: #0284c7;
+    --green: #34d399;
+    --red: #f87171;
+    --amber: #fbbf24;
+    --purple: #a78bfa;
+    --easy: #34d399;
+    --medium: #fbbf24;
+    --hard: #f87171;
+    --radius: 14px;
+    --radius-sm: 9px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(56,189,248,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(167,139,250,0.05) 0%, transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+  body::after {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events:none; z-index:0;
+  }
+
+  .app { position:relative; z-index:1; max-width:920px; margin:0 auto; padding:2rem 1.5rem 5rem; }
+
+  /* HEADER */
+  header { text-align:center; padding:3rem 0 2.5rem; }
+  .logo-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25);
+    border-radius:100px; padding:6px 18px; margin-bottom:1.5rem;
+  }
+  .logo-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.75)} }
+  .logo-badge span { font-size:11px; font-weight:700; color:var(--accent); letter-spacing:.1em; text-transform:uppercase; }
+  header h1 { font-family:'Space Mono',monospace; font-size:clamp(1.8rem,4vw,2.8rem); font-weight:700; letter-spacing:-1px; margin-bottom:.4rem; }
+  header h1 span { color:var(--accent); }
+  header p { color:var(--text2); font-size:.92rem; }
+
+  /* HOME */
+  .section-label {
+    font-family:'Space Mono',monospace; font-size:.68rem; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--text3);
+    margin-bottom:.9rem; display:flex; align-items:center; gap:10px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .cat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:9px; margin-bottom:2rem; }
+  .filter-chip {
+    padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border2);
+    background:var(--surface); color:var(--text2); font-size:.8rem; font-weight:500;
+    cursor:pointer; transition:all .15s; text-align:center; user-select:none;
+  }
+  .filter-chip .chip-icon { font-size:1.05rem; display:block; margin-bottom:3px; }
+  .filter-chip:hover { border-color:var(--accent); color:var(--text); }
+  .filter-chip.active { border-color:var(--accent); background:rgba(56,189,248,0.1); color:var(--text); box-shadow:0 0 0 1px var(--accent); }
+
+  .pill-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:2rem; }
+  .diff-pill {
+    padding:6px 18px; border-radius:100px; border:1px solid var(--border2);
+    background:var(--surface); color:var(--text2); font-size:.8rem; font-weight:600;
+    cursor:pointer; transition:all .15s;
+  }
+  .diff-pill[data-diff="easy"].active { border-color:var(--easy); background:rgba(52,211,153,.1); color:var(--easy); }
+  .diff-pill[data-diff="medium"].active { border-color:var(--amber); background:rgba(251,191,36,.1); color:var(--amber); }
+  .diff-pill[data-diff="hard"].active { border-color:var(--red); background:rgba(248,113,113,.1); color:var(--red); }
+
+  .type-pill {
+    padding:6px 18px; border-radius:100px; border:1px solid var(--border2);
+    background:var(--surface); color:var(--text2); font-size:.8rem; font-weight:500;
+    cursor:pointer; transition:all .15s;
+  }
+  .type-pill.active { border-color:var(--purple); background:rgba(167,139,250,.1); color:var(--purple); }
+
+  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:11px; margin-bottom:2.5rem; }
+  .stat-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:.9rem 1.1rem;
+  }
+  .stat-card .s-label { font-size:.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; margin-bottom:3px; }
+  .stat-card .s-val { font-family:'Space Mono',monospace; font-size:1.45rem; font-weight:700; color:var(--text); }
+  .stat-card .s-sub { font-size:.72rem; color:var(--text2); margin-top:1px; }
+
+  .start-btn {
+    width:100%; padding:15px; border-radius:var(--radius); border:none;
+    background:linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+    color:#fff; font-family:'Sora',sans-serif; font-size:.98rem; font-weight:700;
+    cursor:pointer; transition:all .2s; letter-spacing:.03em;
+  }
+  .start-btn:hover { transform:translateY(-2px); box-shadow:0 12px 36px rgba(56,189,248,.35); }
+  .start-btn:active { transform:translateY(0); }
+  .start-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  /* QUIZ */
+  .quiz-section { display:none; }
+  .quiz-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; gap:12px; }
+  .q-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .q-num { font-family:'Space Mono',monospace; font-size:.82rem; color:var(--text2); }
+  .diff-badge { padding:3px 10px; border-radius:100px; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
+  .diff-badge.easy { background:rgba(52,211,153,.15); color:var(--easy); }
+  .diff-badge.medium { background:rgba(251,191,36,.15); color:var(--amber); }
+  .diff-badge.hard { background:rgba(248,113,113,.15); color:var(--red); }
+  .cat-tag { padding:3px 10px; border-radius:100px; font-size:.7rem; font-weight:500; background:rgba(56,189,248,.1); color:var(--accent); border:1px solid rgba(56,189,248,.2); }
+  .progress-wrap { background:var(--surface2); border-radius:100px; height:4px; flex:1; }
+  .progress-bar { height:4px; border-radius:100px; background:linear-gradient(90deg,var(--accent),var(--purple)); transition:width .4s ease; }
+
+  .question-card {
+    background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius);
+    padding:1.8rem; margin-bottom:1.1rem; animation:fadeUp .3s ease;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .q-type-label { font-size:.68rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--text3); margin-bottom:.75rem; }
+  .q-text { font-size:1rem; line-height:1.7; color:var(--text); }
+  code, .code-block {
+    font-family:'Space Mono',monospace; background:var(--surface3); border:1px solid var(--border);
+    border-radius:6px; padding:2px 6px; font-size:.87em; color:#93c5fd;
+  }
+  .code-block { display:block; padding:13px 15px; margin:.9rem 0; font-size:.81rem; line-height:1.65; white-space:pre; overflow-x:auto; }
+
+  .options-grid { display:grid; gap:9px; margin-top:1.4rem; }
+  .option-btn {
+    display:flex; align-items:flex-start; gap:13px;
+    padding:13px 16px; border-radius:var(--radius-sm);
+    border:1px solid var(--border2); background:var(--surface2);
+    color:var(--text); font-size:.9rem; font-family:'Sora',sans-serif;
+    cursor:pointer; transition:all .14s; text-align:left; line-height:1.5;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:rgba(56,189,248,.07); }
+  .option-letter {
+    flex-shrink:0; width:25px; height:25px; border-radius:50%;
+    background:var(--surface3); border:1px solid var(--border2);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono',monospace; font-size:.72rem; font-weight:700;
+    color:var(--text2); transition:all .14s;
+  }
+  .option-btn.selected { border-color:var(--accent); background:rgba(56,189,248,.1); }
+  .option-btn.selected .option-letter { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .option-btn.correct { border-color:var(--green)!important; background:rgba(52,211,153,.09)!important; }
+  .option-btn.correct .option-letter { background:var(--green)!important; border-color:var(--green)!important; color:#fff!important; }
+  .option-btn.wrong { border-color:var(--red)!important; background:rgba(248,113,113,.07)!important; }
+  .option-btn.wrong .option-letter { background:var(--red)!important; border-color:var(--red)!important; color:#fff!important; }
+  .option-btn:disabled { cursor:default; }
+
+  .tf-grid { display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:1.4rem; }
+  .tf-btn {
+    padding:18px; border-radius:var(--radius-sm); border:1px solid var(--border2);
+    background:var(--surface2); color:var(--text); font-size:.98rem; font-weight:600;
+    cursor:pointer; transition:all .14s; font-family:'Sora',sans-serif;
+  }
+  .tf-btn.true-btn:hover:not(:disabled) { border-color:var(--green); background:rgba(52,211,153,.07); }
+  .tf-btn.false-btn:hover:not(:disabled) { border-color:var(--red); background:rgba(248,113,113,.07); }
+  .tf-btn.correct { border-color:var(--green)!important; background:rgba(52,211,153,.12)!important; color:var(--green)!important; }
+  .tf-btn.wrong { border-color:var(--red)!important; background:rgba(248,113,113,.07)!important; color:var(--red)!important; }
+  .tf-btn:disabled { cursor:default; }
+
+  .trace-area {
+    width:100%; margin-top:1.4rem; padding:13px 15px;
+    background:var(--surface3); border:1px solid var(--border2); border-radius:var(--radius-sm);
+    color:var(--text); font-family:'Space Mono',monospace; font-size:.83rem; line-height:1.7;
+    resize:vertical; min-height:110px; transition:border-color .15s;
+  }
+  .trace-area:focus { outline:none; border-color:var(--accent); }
+  .reveal-btn {
+    margin-top:.8rem; padding:9px 20px; border-radius:var(--radius-sm);
+    border:1px solid var(--border2); background:transparent;
+    color:var(--text2); font-family:'Sora',sans-serif; font-size:.85rem; font-weight:500;
+    cursor:pointer; transition:all .14s;
+  }
+  .reveal-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .answer-reveal {
+    display:none; margin-top:.9rem; padding:15px 16px;
+    background:rgba(52,211,153,.05); border:1px solid rgba(52,211,153,.22);
+    border-radius:var(--radius-sm); font-size:.88rem; line-height:1.65; color:var(--green);
+  }
+  .answer-reveal.show { display:block; animation:fadeUp .22s ease; }
+
+  .feedback-bar {
+    display:none; align-items:flex-start; gap:13px; padding:15px 18px;
+    border-radius:var(--radius-sm); margin-top:.9rem; animation:fadeUp .22s ease;
+  }
+  .feedback-bar.show { display:flex; }
+  .feedback-bar.correct-fb { background:rgba(52,211,153,.07); border:1px solid rgba(52,211,153,.22); }
+  .feedback-bar.wrong-fb { background:rgba(248,113,113,.05); border:1px solid rgba(248,113,113,.18); }
+  .fb-icon { font-size:1.15rem; flex-shrink:0; margin-top:1px; }
+  .fb-text { font-size:.87rem; line-height:1.55; }
+  .fb-text strong { display:block; margin-bottom:3px; }
+  .feedback-bar.correct-fb .fb-text strong { color:var(--green); }
+  .feedback-bar.wrong-fb .fb-text strong { color:var(--red); }
+
+  .quiz-nav { display:flex; justify-content:space-between; align-items:center; gap:11px; margin-top:1.4rem; }
+  .nav-btn {
+    padding:12px 26px; border-radius:var(--radius-sm); border:1px solid var(--border2);
+    background:var(--surface); color:var(--text); font-family:'Sora',sans-serif;
+    font-size:.88rem; font-weight:500; cursor:pointer; transition:all .14s;
+  }
+  .nav-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .nav-btn.primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff; font-weight:700; }
+  .nav-btn.primary:hover { box-shadow:0 8px 22px rgba(56,189,248,.3); transform:translateY(-1px); }
+  .nav-btn:disabled { opacity:.4; cursor:default; transform:none!important; box-shadow:none!important; }
+
+  /* RESULTS */
+  .results-section { display:none; animation:fadeUp .4s ease; }
+  .score-hero {
+    text-align:center; padding:2.5rem 2rem;
+    background:var(--surface); border:1px solid var(--border2);
+    border-radius:var(--radius); margin-bottom:1.4rem; position:relative; overflow:hidden;
+  }
+  .score-hero::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% -10%, rgba(56,189,248,.12), transparent 65%);
+  }
+  .score-ring {
+    width:120px; height:120px; border-radius:50%; margin:0 auto 1.3rem;
+    display:flex; align-items:center; justify-content:center; position:relative; z-index:1;
+    background:conic-gradient(var(--accent) calc(var(--pct) * 3.6deg), var(--surface3) 0deg);
+  }
+  .score-ring-inner {
+    width:94px; height:94px; border-radius:50%; background:var(--surface);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  .score-pct { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--text); }
+  .score-lbl { font-size:.68rem; color:var(--text2); }
+  .score-title { font-family:'Space Mono',monospace; font-size:1.3rem; font-weight:700; margin-bottom:.4rem; position:relative; z-index:1; }
+  .score-msg { color:var(--text2); font-size:.88rem; position:relative; z-index:1; }
+
+  .results-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:9px; margin-bottom:1.4rem; }
+  .res-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:.9rem 1.1rem; text-align:center; }
+  .res-card .r-val { font-family:'Space Mono',monospace; font-size:1.5rem; font-weight:700; }
+  .res-card .r-label { font-size:.72rem; color:var(--text2); margin-top:3px; }
+  .res-card.green .r-val { color:var(--green); }
+  .res-card.red .r-val { color:var(--red); }
+  .res-card.amber .r-val { color:var(--amber); }
+
+  .breakdown { background:var(--surface); border:1px solid var(--border2); border-radius:var(--radius); padding:1.4rem; margin-bottom:1.4rem; }
+  .breakdown h3 { font-family:'Space Mono',monospace; font-size:.72rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text3); margin-bottom:.9rem; }
+  .cat-row { display:flex; align-items:center; gap:11px; padding:7px 0; border-bottom:1px solid var(--border); }
+  .cat-row:last-child { border-bottom:none; }
+  .cat-name { flex:1; font-size:.86rem; color:var(--text2); }
+  .cat-bar-wrap { flex:2; background:var(--surface3); border-radius:100px; height:5px; }
+  .cat-bar { height:5px; border-radius:100px; transition:width .5s ease; }
+  .cat-score { font-family:'Space Mono',monospace; font-size:.78rem; color:var(--text); min-width:38px; text-align:right; }
+
+  .results-actions { display:flex; gap:9px; }
+  .results-actions .nav-btn { flex:1; padding:13px; font-size:.9rem; text-align:center; }
+
+  @media(max-width:520px) {
+    .stats-row { grid-template-columns:1fr 1fr; }
+    .tf-grid { grid-template-columns:1fr; }
+    .results-actions { flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo-badge"><div class="logo-dot"></div><span>CS Faculty · Java GUI</span></div>
+    <h1>Java <span>GUI</span> Quiz</h1>
+    <p>Swing · AWT · Event Handling · Layout Managers</p>
+  </header>
+
+  <!-- HOME -->
+  <div id="homeSection">
+    <div class="section-label">Choose Topics</div>
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="section-label">Difficulty</div>
+    <div class="pill-row">
+      <button class="diff-pill active" data-diff="easy">🟢 Easy</button>
+      <button class="diff-pill active" data-diff="medium">🟡 Medium</button>
+      <button class="diff-pill active" data-diff="hard">🔴 Hard</button>
+    </div>
+
+    <div class="section-label">Question Type</div>
+    <div class="pill-row">
+      <button class="type-pill active" data-type="mcq">Multiple Choice</button>
+      <button class="type-pill active" data-type="tf">True / False</button>
+      <button class="type-pill active" data-type="trace">Code / Essay</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="s-label">Available</div><div class="s-val" id="qCount">0</div><div class="s-sub">questions</div></div>
+      <div class="stat-card"><div class="s-label">Topics</div><div class="s-val" id="catCount">0</div><div class="s-sub">categories</div></div>
+      <div class="stat-card"><div class="s-label">Est. Time</div><div class="s-val" id="timeEst">0m</div><div class="s-sub">minutes</div></div>
+    </div>
+    <button class="start-btn" id="startBtn" onclick="startQuiz()">Start Quiz →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-section" id="quizSection">
+    <div class="quiz-header">
+      <div class="q-meta">
+        <span class="q-num" id="qNumLabel">Q1 / 20</span>
+        <span class="diff-badge" id="qDiffBadge">Easy</span>
+        <span class="cat-tag" id="qCatTag">Events</span>
+      </div>
+      <div class="progress-wrap" style="flex:1;max-width:220px">
+        <div class="progress-bar" id="progressBar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="question-card" id="questionCard"></div>
+    <div class="feedback-bar" id="feedbackBar">
+      <span class="fb-icon" id="fbIcon"></span>
+      <div class="fb-text"><strong id="fbTitle"></strong><span id="fbDetail"></span></div>
+    </div>
+    <div class="quiz-nav">
+      <button class="nav-btn" id="skipBtn" onclick="skipQ()">Skip</button>
+      <button class="nav-btn primary" id="nextBtn" onclick="nextQ()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-section" id="resultsSection">
+    <div class="score-hero">
+      <div class="score-ring" id="scoreRing">
+        <div class="score-ring-inner">
+          <span class="score-pct" id="scorePct">0%</span>
+          <span class="score-lbl">Score</span>
+        </div>
+      </div>
+      <div class="score-title" id="scoreTitle"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+    </div>
+    <div class="results-grid">
+      <div class="res-card green"><div class="r-val" id="rCorrect">0</div><div class="r-label">Correct</div></div>
+      <div class="res-card red"><div class="r-val" id="rWrong">0</div><div class="r-label">Wrong</div></div>
+      <div class="res-card amber"><div class="r-val" id="rSkipped">0</div><div class="r-label">Skipped</div></div>
+      <div class="res-card"><div class="r-val" id="rTotal">0</div><div class="r-label">Total</div></div>
+    </div>
+    <div class="breakdown" id="catBreakdown"></div>
+    <div class="results-actions">
+      <button class="nav-btn" onclick="goHome()">← Home</button>
+      <button class="nav-btn primary" id="reviewBtn" onclick="reviewWrong()">Review Wrong ↗</button>
+    </div>
+  </div>
+
+</div>
+<script>
+const CATS = {
+  "Swing Basics":       "🖼️",
+  "AWT & Packages":     "📦",
+  "Event Handling":     "⚡",
+  "Buttons & State":    "🔘",
+  "Text Components":    "✏️",
+  "Layout Managers":    "📐",
+  "Mouse Events":       "🖱️",
+  "Combo & Lists":      "📋",
+  "JFrame & Dialogs":   "🪟",
+  "Code Tracing":       "🔍"
+};
+
+const QS = [
+  // ── SWING BASICS ──────────────────────────────────────────────
+  {id:1,type:'mcq',cat:'Swing Basics',diff:'easy',
+   q:'Which package contains Java Swing GUI components?',
+   opts:['java.awt','javax.swing','java.gui','java.swing'],ans:1,
+   ex:'Swing lives in <code>javax.swing</code>; AWT lives in <code>java.awt</code>.'},
+
+  {id:2,type:'mcq',cat:'Swing Basics',diff:'easy',
+   q:'Which class provides the method <code>paint()</code> for drawing a component on screen?',
+   opts:['JComponent','Container','Component','JPanel'],ans:2,
+   ex:'<code>Component</code> (in java.awt) defines <code>paint()</code>. All GUI classes ultimately extend it.'},
+
+  {id:3,type:'mcq',cat:'Swing Basics',diff:'medium',
+   q:'Which statement about Swing is TRUE?',
+   opts:['Swing components use native OS widgets','Swing is part of java.awt','Swing components are lightweight and written in pure Java','Swing has no event model'],ans:2,
+   ex:'Swing components are lightweight — they render themselves in Java, not using native OS widgets.'},
+
+  {id:4,type:'mcq',cat:'Swing Basics',diff:'medium',
+   q:'Which Swing class provides pluggable look-and-feel, mnemonics, and common event-handling?',
+   opts:['Component','Container','JComponent','JFrame'],ans:2,
+   ex:'<code>JComponent</code> is the root of all Swing widgets and provides pluggable look-and-feel support.'},
+
+  {id:5,type:'mcq',cat:'Swing Basics',diff:'easy',
+   q:'Which method is used to add a component to a Container?',
+   opts:['insert()','place()','add()','append()'],ans:2,
+   ex:'<code>container.add(component)</code> is the standard way to place a component inside a container.'},
+
+  {id:6,type:'tf',cat:'Swing Basics',diff:'easy',
+   q:'Swing components are located in the package <code>javax.swing</code>.',
+   ans:true, ex:'Correct — <code>javax.swing</code> is the Swing package.'},
+
+  {id:7,type:'tf',cat:'Swing Basics',diff:'medium',
+   q:'Swing GUI components originate from AWT and build upon it.',
+   ans:true, ex:'Swing extends and enhances AWT; it does not replace it entirely.'},
+
+  // ── AWT & PACKAGES ────────────────────────────────────────────
+  {id:8,type:'mcq',cat:'AWT & Packages',diff:'easy',
+   q:'Which package contains <code>AWTEvent</code>?',
+   opts:['javax.swing','java.event','java.awt','java.gui'],ans:2,
+   ex:'All AWT classes, including <code>AWTEvent</code>, are in <code>java.awt</code>.'},
+
+  {id:9,type:'mcq',cat:'AWT & Packages',diff:'medium',
+   q:'Which correctly describes the difference between AWT and Swing?',
+   opts:['AWT uses lightweight Java-drawn widgets','Swing uses native OS widgets','AWT uses native OS widgets; Swing is pure Java and lightweight','They are identical'],ans:2,
+   ex:'AWT is heavyweight (native OS); Swing is lightweight (pure Java), giving consistent cross-platform look.'},
+
+  {id:10,type:'tf',cat:'AWT & Packages',diff:'easy',
+   q:'<code>FlowLayout</code> is the default layout manager for <code>JPanel</code>.',
+   ans:true, ex:'JPanel defaults to FlowLayout; JFrame defaults to BorderLayout.'},
+
+  // ── EVENT HANDLING ────────────────────────────────────────────
+  {id:11,type:'mcq',cat:'Event Handling',diff:'easy',
+   q:'The event-handling model in Java consists of how many parts?',
+   opts:['Two','Three','Four','Five'],ans:1,
+   ex:'Three parts: event source, event object, and event listener.'},
+
+  {id:12,type:'mcq',cat:'Event Handling',diff:'easy',
+   q:'An event <strong>source</strong> is:',
+   opts:['The method that handles events','The GUI component the user interacts with','The event class','The listener interface'],ans:1,
+   ex:'The source is the component (e.g. a JButton) that fires the event.'},
+
+  {id:13,type:'mcq',cat:'Event Handling',diff:'easy',
+   q:'An event object (the parameter of the event method):',
+   opts:['Registers the listener','Encapsulates information about the event that occurred','Draws the component','Handles keyboard input'],ans:1,
+   ex:'Event objects like <code>ActionEvent</code> carry info about what happened and on which component.'},
+
+  {id:14,type:'mcq',cat:'Event Handling',diff:'easy',
+   q:'Which interface must be implemented to handle <code>ActionEvent</code>s?',
+   opts:['MouseListener','ItemListener','ActionListener','EventListener'],ans:2,
+   ex:'<code>ActionListener</code> requires implementing <code>actionPerformed(ActionEvent e)</code>.'},
+
+  {id:15,type:'mcq',cat:'Event Handling',diff:'easy',
+   q:'The method <code>actionPerformed()</code> is defined in which interface?',
+   opts:['MouseListener','ItemListener','ActionListener','KeyListener'],ans:2,
+   ex:'<code>ActionListener</code> has exactly one method: <code>actionPerformed(ActionEvent e)</code>.'},
+
+  {id:16,type:'mcq',cat:'Event Handling',diff:'medium',
+   q:'Which statement CORRECTLY registers one handler for two buttons?',
+   opts:['handler.add(b1); handler.add(b2);',
+         'b1.addActionListener(handler); b2.addActionListener(handler);',
+         'addListener(b1,handler); addListener(b2,handler);',
+         'b1.setListener(handler); b2.setListener(handler);'],ans:1,
+   ex:'You register the listener ON each component using <code>addActionListener()</code>.'},
+
+  {id:17,type:'mcq',cat:'Event Handling',diff:'medium',
+   q:'<code>event.getSource()</code> is used to:',
+   opts:['Get the event type','Identify which component triggered the event','Cancel the event','Get mouse coordinates'],ans:1,
+   ex:'<code>getSource()</code> returns the object that fired the event, so you can distinguish multiple components.'},
+
+  {id:18,type:'mcq',cat:'Event Handling',diff:'easy',
+   q:'The method <code>addActionListener()</code> is used to register a listener for:',
+   opts:['Mouse events','Action events','Item events','Focus events'],ans:1,
+   ex:'Action events cover button clicks, Enter key in text fields, menu selections, etc.'},
+
+  {id:19,type:'mcq',cat:'Event Handling',diff:'hard',
+   q:'An event listener must be ___ before it receives events from a component.',
+   opts:['Extended','Registered (added) with the component','Instantiated only','Declared static'],ans:1,
+   ex:'Instantiating a listener is not enough — it must be added to the component with <code>addXxxListener()</code>.'},
+
+  {id:20,type:'tf',cat:'Event Handling',diff:'easy',
+   q:'An event listener must be registered with a component before it can receive that component\'s events.',
+   ans:true, ex:'Registration connects the listener to the source component.'},
+
+  {id:21,type:'tf',cat:'Event Handling',diff:'medium',
+   q:'The same event listener object can be registered with multiple components simultaneously.',
+   ans:true, ex:'One handler can serve many sources; use <code>getSource()</code> to distinguish them.'},
+
+  {id:22,type:'tf',cat:'Event Handling',diff:'easy',
+   q:'The method <code>addActionListener()</code> registers a listener for mouse events.',
+   ans:false, ex:'<code>addActionListener()</code> registers for <code>ActionEvent</code>, not mouse events.'},
+
+  // ── BUTTONS & STATE ───────────────────────────────────────────
+  {id:23,type:'mcq',cat:'Buttons & State',diff:'easy',
+   q:'JButton generates which type of event when clicked?',
+   opts:['ItemEvent','ActionEvent','MouseEvent','WindowEvent'],ans:1,
+   ex:'A button click fires an <code>ActionEvent</code>, handled by <code>ActionListener</code>.'},
+
+  {id:24,type:'mcq',cat:'Buttons & State',diff:'medium',
+   q:'How many types of state buttons exist in Java Swing?',
+   opts:['2','3','4','5'],ans:1,
+   ex:'Three state buttons: <code>JToggleButton</code>, <code>JCheckBox</code>, <code>JRadioButton</code>.'},
+
+  {id:25,type:'mcq',cat:'Buttons & State',diff:'easy',
+   q:'JCheckBox generates which event when its state changes?',
+   opts:['ActionEvent','ItemEvent','MouseEvent','ChangeEvent'],ans:1,
+   ex:'<code>JCheckBox</code> fires <code>ItemEvent</code>, handled by <code>ItemListener.itemStateChanged()</code>.'},
+
+  {id:26,type:'mcq',cat:'Buttons & State',diff:'medium',
+   q:'In <code>RadioButtonTest</code>, why are all JRadioButtons added to a <code>ButtonGroup</code>?',
+   opts:['To apply the same font','To ensure only one can be selected at a time','To group their events','To display them in a row'],ans:1,
+   ex:'<code>ButtonGroup</code> enforces mutual exclusion — selecting one deselects the others.'},
+
+  {id:27,type:'mcq',cat:'Buttons & State',diff:'hard',
+   q:'Which superclass hierarchy is correct for JButton?',
+   opts:['Object→Component→Container→JComponent→AbstractButton→JButton',
+         'Object→JComponent→AbstractButton→JButton',
+         'Object→Component→JComponent→AbstractButton→JButton',
+         'Object→Container→AbstractButton→JButton'],ans:2,
+   ex:'<code>JButton</code> inherits from <code>AbstractButton → JComponent → Component → Object</code>.'},
+
+  {id:28,type:'mcq',cat:'Buttons & State',diff:'medium',
+   q:'Which method can set a rollover icon on a JButton?',
+   opts:['setHoverIcon()','setMouseIcon()','setRolloverIcon()','setOverIcon()'],ans:2,
+   ex:'<code>setRolloverIcon(icon)</code> shows a different image when the mouse hovers over the button.'},
+
+  {id:29,type:'mcq',cat:'Buttons & State',diff:'medium',
+   q:'How do you check if a JCheckBox was SELECTED inside <code>itemStateChanged()</code>?',
+   opts:['event.isSelected()','event.getState() == true','event.getStateChange() == ItemEvent.SELECTED','event.getSource().isChecked()'],ans:2,
+   ex:'<code>ItemEvent.SELECTED</code> is the constant used to test the new state of a check box.'},
+
+  {id:30,type:'mcq',cat:'Buttons & State',diff:'easy',
+   q:'The method <code>itemStateChanged()</code> belongs to which interface?',
+   opts:['ActionListener','MouseListener','ItemListener','ChangeListener'],ans:2,
+   ex:'<code>ItemListener</code> has one method: <code>itemStateChanged(ItemEvent e)</code>.'},
+
+  {id:31,type:'tf',cat:'Buttons & State',diff:'easy',
+   q:'JButton generates an ItemEvent when clicked.',
+   ans:false, ex:'JButton fires an <code>ActionEvent</code>, not an <code>ItemEvent</code>.'},
+
+  {id:32,type:'tf',cat:'Buttons & State',diff:'medium',
+   q:'JCheckBox and JRadioButton both use ItemListener to handle state-change events.',
+   ans:true, ex:'Both fire <code>ItemEvent</code> when toggled.'},
+
+  {id:33,type:'tf',cat:'Buttons & State',diff:'medium',
+   q:'A ButtonGroup prevents multiple JRadioButtons in the same group from being selected simultaneously.',
+   ans:true, ex:'<code>ButtonGroup</code> enforces mutual exclusion among radio buttons.'},
+
+  // ── TEXT COMPONENTS ───────────────────────────────────────────
+  {id:34,type:'mcq',cat:'Text Components',diff:'easy',
+   q:'JPasswordField is a subclass of:',
+   opts:['JLabel','JButton','JTextField','JComponent'],ans:2,
+   ex:'<code>JPasswordField extends JTextField</code>, inheriting all text-field behaviour.'},
+
+  {id:35,type:'mcq',cat:'Text Components',diff:'easy',
+   q:'JPasswordField hides characters by displaying:',
+   opts:['Blank spaces','Asterisks (*)','Dots','Hash signs'],ans:1,
+   ex:'By default, <code>JPasswordField</code> echoes asterisks for each typed character.'},
+
+  {id:36,type:'mcq',cat:'Text Components',diff:'medium',
+   q:'Which method of JPasswordField retrieves the password as a char array?',
+   opts:['getText()','getPassword()','getChars()','readPassword()'],ans:1,
+   ex:'<code>getPassword()</code> returns <code>char[]</code> for security; <code>getText()</code> is deprecated for passwords.'},
+
+  {id:37,type:'mcq',cat:'Text Components',diff:'medium',
+   q:'Which event type is generated when the user presses Enter inside a JTextField?',
+   opts:['KeyEvent','ItemEvent','ActionEvent','MouseEvent'],ans:2,
+   ex:'Pressing Enter in a text field fires an <code>ActionEvent</code>.'},
+
+  {id:38,type:'mcq',cat:'Text Components',diff:'easy',
+   q:'<code>textField.setEditable(false)</code> makes the field:',
+   opts:['Invisible','Read-only (user cannot edit)','Disabled','Hidden'],ans:1,
+   ex:'The field still shows its content but rejects user input.'},
+
+  {id:39,type:'mcq',cat:'Text Components',diff:'easy',
+   q:'JLabel can display:',
+   opts:['Text only','Image only','Text, image, or both','Buttons only'],ans:2,
+   ex:'<code>JLabel</code> accepts text, an <code>Icon</code>, or both simultaneously.'},
+
+  {id:40,type:'mcq',cat:'Text Components',diff:'easy',
+   q:'Which method sets a tooltip on a JLabel?',
+   opts:['setHint()','setToolTipText()','setTip()','addToolTip()'],ans:1,
+   ex:'<code>setToolTipText()</code> is inherited from <code>JComponent</code> and works on all Swing widgets.'},
+
+  {id:41,type:'tf',cat:'Text Components',diff:'easy',
+   q:'<code>JPasswordField</code> extends <code>JTextField</code>.',
+   ans:true, ex:'<code>JPasswordField</code> is a specialised text field that masks input.'},
+
+  {id:42,type:'tf',cat:'Text Components',diff:'easy',
+   q:'<code>JLabel</code> can display both text and an image at the same time.',
+   ans:true, ex:'You can pass both a string and an <code>Icon</code> to a <code>JLabel</code>.'},
+
+  {id:43,type:'tf',cat:'Text Components',diff:'medium',
+   q:'<code>JPasswordField.getPassword()</code> returns a <code>String</code> containing the entered password.',
+   ans:false, ex:'It returns <code>char[]</code> — storing passwords as strings is a security risk.'},
+
+  {id:44,type:'tf',cat:'Text Components',diff:'medium',
+   q:'<code>setEditable(false)</code> on a JTextField makes the field invisible.',
+   ans:false, ex:'It makes the field read-only; the text is still visible.'},
+
+  // ── LAYOUT MANAGERS ───────────────────────────────────────────
+  {id:45,type:'mcq',cat:'Layout Managers',diff:'easy',
+   q:'Which layout manager arranges components left to right, wrapping as needed?',
+   opts:['FlowLayout','GridLayout','BoxLayout','CardLayout'],ans:0,
+   ex:'<code>FlowLayout</code> places components in a row and wraps to the next row when space runs out.'},
+
+  {id:46,type:'mcq',cat:'Layout Managers',diff:'easy',
+   q:'Which layout manager arranges components horizontally OR vertically in a single line?',
+   opts:['FlowLayout','GridLayout','BoxLayout','CardLayout'],ans:2,
+   ex:'<code>BoxLayout</code> uses <code>X_AXIS</code> for horizontal and <code>Y_AXIS</code> for vertical arrangement.'},
+
+  {id:47,type:'mcq',cat:'Layout Managers',diff:'easy',
+   q:'CardLayout stacks components like:',
+   opts:['A grid','A deck of cards','A column','A flow'],ans:1,
+   ex:'Only the top "card" (panel) is visible at any time.'},
+
+  {id:48,type:'mcq',cat:'Layout Managers',diff:'medium',
+   q:'Which method of CardLayout shows the first card?',
+   opts:['showFirst()','start()','first()','top()'],ans:2,
+   ex:'<code>cardLayout.first(container)</code> flips to the first card in the deck.'},
+
+  {id:49,type:'mcq',cat:'Layout Managers',diff:'medium',
+   q:'In CardLayout, how many component(s) is/are visible at any time?',
+   opts:['All','Two','One (the top card)','Three'],ans:2,
+   ex:'CardLayout is a single-visible-panel layout — only the active card shows.'},
+
+  {id:50,type:'mcq',cat:'Layout Managers',diff:'medium',
+   q:'<code>cardManager.next(deck)</code> shows:',
+   opts:['The first card','The last card','The next card in the deck','A random card'],ans:2,
+   ex:'<code>next()</code> cycles to the following card, wrapping around at the end.'},
+
+  {id:51,type:'mcq',cat:'Layout Managers',diff:'medium',
+   q:'In BoxLayout, <code>Box.Y_AXIS</code> arranges components:',
+   opts:['Horizontally','Diagonally','Vertically','In a grid'],ans:2,
+   ex:'<code>Y_AXIS</code> = top-to-bottom column. <code>X_AXIS</code> = left-to-right row.'},
+
+  {id:52,type:'mcq',cat:'Layout Managers',diff:'hard',
+   q:'Which layout manager allows components to span multiple rows and columns?',
+   opts:['FlowLayout','GridLayout','BorderLayout','GridBagLayout'],ans:3,
+   ex:'<code>GridBagLayout</code> uses <code>GridBagConstraints</code> to give fine-grained row/column spanning control.'},
+
+  {id:53,type:'tf',cat:'Layout Managers',diff:'easy',
+   q:'<code>BoxLayout</code> can arrange components either horizontally or vertically.',
+   ans:true, ex:'Use <code>BoxLayout.X_AXIS</code> or <code>BoxLayout.Y_AXIS</code>.'},
+
+  {id:54,type:'tf',cat:'Layout Managers',diff:'easy',
+   q:'<code>CardLayout</code> can display all its cards simultaneously.',
+   ans:false, ex:'CardLayout shows exactly one card at a time.'},
+
+  // ── MOUSE EVENTS ──────────────────────────────────────────────
+  {id:55,type:'mcq',cat:'Mouse Events',diff:'medium',
+   q:'Which method is called by MouseListener when the button is pressed AND released without moving?',
+   opts:['mousePressed()','mouseReleased()','mouseClicked()','mouseMoved()'],ans:2,
+   ex:'<code>mouseClicked()</code> fires only if press and release happen at the same position.'},
+
+  {id:56,type:'mcq',cat:'Mouse Events',diff:'medium',
+   q:'Which method is part of <code>MouseMotionListener</code> (NOT <code>MouseListener</code>)?',
+   opts:['mouseClicked()','mouseEntered()','mouseDragged()','mouseExited()'],ans:2,
+   ex:'<code>mouseDragged()</code> and <code>mouseMoved()</code> belong to <code>MouseMotionListener</code>.'},
+
+  {id:57,type:'mcq',cat:'Mouse Events',diff:'easy',
+   q:'To listen to mouse events on a JFrame, you call:',
+   opts:['addMouseHandler()','addMouseListener()','registerMouse()','setMouseEvent()'],ans:1,
+   ex:'<code>addMouseListener(listener)</code> is the standard registration method.'},
+
+  {id:58,type:'mcq',cat:'Mouse Events',diff:'easy',
+   q:'Which method of MouseEvent returns the x-coordinate of the event?',
+   opts:['getPoint()','getX()','xCoordinate()','posX()'],ans:1,
+   ex:'<code>event.getX()</code> and <code>event.getY()</code> return the cursor coordinates.'},
+
+  {id:59,type:'mcq',cat:'Mouse Events',diff:'medium',
+   q:'<code>mouseEntered()</code> is invoked when:',
+   opts:['A mouse button is pressed','The mouse cursor enters the bounds of a component','The mouse is dragged','The mouse wheel is scrolled'],ans:1,
+   ex:'<code>mouseEntered()</code> fires as soon as the cursor crosses into the component\'s area.'},
+
+  {id:60,type:'mcq',cat:'Mouse Events',diff:'hard',
+   q:'Which event is always preceded by a <code>mousePressed</code> event?',
+   opts:['mouseClicked','mouseDragged','mouseReleased','mouseEntered'],ans:2,
+   ex:'The sequence is always: mousePressed → mouseReleased. <code>mouseClicked</code> only fires if press/release are at the same spot.'},
+
+  {id:61,type:'mcq',cat:'Mouse Events',diff:'hard',
+   q:'Which of the following is NOT a method of the <code>MouseListener</code> interface?',
+   opts:['mouseClicked()','mouseDragged()','mousePressed()','mouseExited()'],ans:1,
+   ex:'<code>mouseDragged()</code> belongs to <code>MouseMotionListener</code>, not <code>MouseListener</code>.'},
+
+  {id:62,type:'tf',cat:'Mouse Events',diff:'medium',
+   q:'<code>mouseReleased()</code> is always preceded by a <code>mouseClicked()</code> event.',
+   ans:false, ex:'<code>mouseReleased()</code> is preceded by <code>mousePressed()</code>, not <code>mouseClicked()</code>.'},
+
+  {id:63,type:'tf',cat:'Mouse Events',diff:'medium',
+   q:'<code>mouseDragged()</code> is a method of <code>MouseListener</code>.',
+   ans:false, ex:'<code>mouseDragged()</code> is in <code>MouseMotionListener</code>.'},
+
+  // ── COMBO & LISTS ─────────────────────────────────────────────
+  {id:64,type:'mcq',cat:'Combo & Lists',diff:'easy',
+   q:'JComboBox is also known as:',
+   opts:['List box','Drop-down list','Radio group','Spinner'],ans:1,
+   ex:'A <code>JComboBox</code> presents a drop-down of choices, optionally editable.'},
+
+  {id:65,type:'mcq',cat:'Combo & Lists',diff:'medium',
+   q:'Which method sets the maximum number of visible rows in a JComboBox dropdown?',
+   opts:['setRows()','setVisibleCount()','setMaximumRowCount()','setDropDownRows()'],ans:2,
+   ex:'<code>setMaximumRowCount(n)</code> limits how many items show before a scrollbar appears.'},
+
+  {id:66,type:'mcq',cat:'Combo & Lists',diff:'medium',
+   q:'<code>JComboBox.getSelectedIndex()</code> returns:',
+   opts:['The selected item\'s text','The selected item\'s zero-based index','The number of items','The component ID'],ans:1,
+   ex:'Index 0 = first item. Use <code>getSelectedItem()</code> if you need the actual object.'},
+
+  {id:67,type:'mcq',cat:'Combo & Lists',diff:'hard',
+   q:'When using an anonymous inner class for event handling in JComboBox, the listener is created:',
+   opts:['In a separate file','Inline inside addItemListener()','In the main() method','As a static method'],ans:1,
+   ex:'Anonymous inner classes are defined and instantiated in one expression, directly inside <code>addItemListener()</code>.'},
+
+  {id:68,type:'mcq',cat:'Combo & Lists',diff:'easy',
+   q:'Which interface must a class implement to receive <code>ItemEvent</code>s?',
+   opts:['ActionListener','ItemListener','EventListener','ChangeListener'],ans:1,
+   ex:'<code>ItemListener</code> handles events from checkboxes, radio buttons, and combo boxes.'},
+
+  {id:69,type:'tf',cat:'Combo & Lists',diff:'easy',
+   q:'<code>JComboBox</code> is also called a drop-down list.',
+   ans:true, ex:'Correct — it provides a compact list of selectable options.'},
+
+  // ── JFRAME & DIALOGS ──────────────────────────────────────────
+  {id:70,type:'mcq',cat:'JFrame & Dialogs',diff:'easy',
+   q:'To make a JFrame visible, you call:',
+   opts:['show()','display()','setVisible(true)','render()'],ans:2,
+   ex:'<code>setVisible(true)</code> is the standard way to show any Swing window.'},
+
+  {id:71,type:'mcq',cat:'JFrame & Dialogs',diff:'easy',
+   q:'<code>setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)</code> causes the program to:',
+   opts:['Minimize','Exit when the window is closed','Hide the window','Throw an exception'],ans:1,
+   ex:'Without this, closing the window would leave the JVM running in the background.'},
+
+  {id:72,type:'mcq',cat:'JFrame & Dialogs',diff:'medium',
+   q:'<code>JOptionPane.showMessageDialog()</code> displays:',
+   opts:['A frame','A panel','A modal dialog box with a message','A tooltip'],ans:2,
+   ex:'It blocks the parent window until dismissed — hence "modal".'},
+
+  {id:73,type:'mcq',cat:'JFrame & Dialogs',diff:'medium',
+   q:'Which layout is used in the JLabel demo (LabelTest)?',
+   opts:['BorderLayout','GridLayout','FlowLayout','BoxLayout'],ans:2,
+   ex:'The LabelTest example uses the default <code>FlowLayout</code> for its panel.'},
+
+  {id:74,type:'mcq',cat:'JFrame & Dialogs',diff:'hard',
+   q:'What does <code>new Font("Serif", Font.BOLD + Font.ITALIC, 14)</code> create?',
+   opts:['Bold Serif 14pt','Italic Serif 14pt','Bold and Italic Serif 14pt','Plain Serif 14pt'],ans:2,
+   ex:'<code>Font.BOLD + Font.ITALIC</code> combines both style flags (values 1 and 2 → 3).'},
+
+  // ── CODE TRACING ──────────────────────────────────────────────
+  {id:75,type:'trace',cat:'Code Tracing',diff:'medium',
+   q:'What does the following <code>actionPerformed</code> method do? Describe the effect for each button click.',
+   code:`@Override
+public void actionPerformed(ActionEvent event) {
+    if (event.getSource() == button1) {
+        panel2.setBackground(Color.RED);
+    } else if (event.getSource() == button2) {
+        panel2.setBackground(Color.BLUE);
+    } else if (event.getSource() == button3) {
+        panel2.setBackground(Color.GREEN);
+    }
+}`,
+   ans:`• Clicking button1 ("Red")  → panel2 background turns RED
+• Clicking button2 ("Blue") → panel2 background turns BLUE
+• Clicking button3 ("Green")→ panel2 background turns GREEN
+
+getSource() identifies which button was clicked, then sets
+the background color of panel2 accordingly.`,
+   ex:'This is a classic multi-button ActionListener pattern using <code>getSource()</code> to dispatch.'},
+
+  {id:76,type:'trace',cat:'Code Tracing',diff:'easy',
+   q:'What does the following <code>itemStateChanged</code> method do?',
+   code:`@Override
+public void itemStateChanged(ItemEvent event) {
+    if (event.getStateChange() == ItemEvent.SELECTED) {
+        labelCh.setText("Selected");
+    } else {
+        labelCh.setText("Not Selected");
+    }
+}`,
+   ans:`• When the checkbox is checked   → labelCh displays "Selected"
+• When the checkbox is unchecked → labelCh displays "Not Selected"
+
+ItemEvent.SELECTED is the constant for the checked state.
+ItemEvent.DESELECTED is the opposite.`,
+   ex:'<code>getStateChange()</code> returns either <code>ItemEvent.SELECTED</code> or <code>DESELECTED</code>.'},
+
+  {id:77,type:'trace',cat:'Code Tracing',diff:'hard',
+   q:'Identify the three parts of the Java event-handling model and give a concrete example of each.',
+   code:`JButton btn = new JButton("Click Me");   // ?
+ActionEvent e;                               // ?
+class Handler implements ActionListener {    // ?
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("Clicked!");
+    }
+}
+btn.addActionListener(new Handler());`,
+   ans:`1. Event Source  → JButton btn
+   (the component the user interacts with)
+
+2. Event Object  → ActionEvent e
+   (encapsulates info about the click)
+
+3. Event Listener → Handler (implements ActionListener)
+   (receives the event and responds)`,
+   ex:'The source fires events, the object carries data, and the listener reacts.'},
+
+  {id:78,type:'trace',cat:'Code Tracing',diff:'medium',
+   q:'Trace the CardLayout navigation below. What is shown after each call?',
+   code:`JPanel deck = new JPanel();
+CardLayout cl = new CardLayout();
+deck.setLayout(cl);
+
+deck.add(new JLabel("Card A"), "A");
+deck.add(new JLabel("Card B"), "B");
+deck.add(new JLabel("Card C"), "C");
+
+cl.first(deck);   // Step 1
+cl.next(deck);    // Step 2
+cl.next(deck);    // Step 3
+cl.next(deck);    // Step 4
+cl.last(deck);    // Step 5`,
+   ans:`Step 1: first(deck)  → Card A visible
+Step 2: next(deck)   → Card B visible
+Step 3: next(deck)   → Card C visible
+Step 4: next(deck)   → Card A visible (wraps around)
+Step 5: last(deck)   → Card C visible`,
+   ex:'CardLayout cycles through cards in insertion order and wraps at the end.'}
+];
+
+// ── State ──────────────────────────────────────────────────────
+let selCats = new Set(Object.keys(CATS));
+let selDiffs = new Set(['easy','medium','hard']);
+let selTypes = new Set(['mcq','tf','trace']);
+let quiz=[], idx=0, score=0, skipped=0, answered=0;
+let catScores={}, wrong=[], answered_ids=new Set(), reviewMode=false;
+
+// ── Init ───────────────────────────────────────────────────────
+function initCats() {
+  const g = document.getElementById('catGrid'); g.innerHTML='';
+  Object.entries(CATS).forEach(([name,icon])=>{
+    const b=document.createElement('button');
+    b.className='filter-chip active'; b.dataset.cat=name;
+    b.innerHTML=`<span class="chip-icon">${icon}</span>${name}`;
+    b.onclick=()=>toggleCat(b,name);
+    g.appendChild(b);
+  });
+}
+function toggleCat(b,n){
+  if(selCats.has(n)){if(selCats.size===1)return;selCats.delete(n);b.classList.remove('active');}
+  else{selCats.add(n);b.classList.add('active');}
+  updateStats();
+}
+document.querySelectorAll('.diff-pill').forEach(b=>{
+  b.onclick=()=>{
+    const d=b.dataset.diff;
+    if(selDiffs.has(d)){if(selDiffs.size===1)return;selDiffs.delete(d);b.classList.remove('active');}
+    else{selDiffs.add(d);b.classList.add('active');}
+    updateStats();
+  };
+});
+document.querySelectorAll('.type-pill').forEach(b=>{
+  b.onclick=()=>{
+    const t=b.dataset.type;
+    if(selTypes.has(t)){if(selTypes.size===1)return;selTypes.delete(t);b.classList.remove('active');}
+    else{selTypes.add(t);b.classList.add('active');}
+    updateStats();
+  };
+});
+function filtered(){return QS.filter(q=>selCats.has(q.cat)&&selDiffs.has(q.diff)&&selTypes.has(q.type));}
+function updateStats(){
+  const qs=filtered();
+  document.getElementById('qCount').textContent=qs.length;
+  document.getElementById('catCount').textContent=new Set(qs.map(q=>q.cat)).size;
+  document.getElementById('timeEst').textContent=Math.ceil(qs.length*1.2)+'m';
+  document.getElementById('startBtn').disabled=qs.length===0;
+}
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+
+function startQuiz(useWrong=false){
+  reviewMode=useWrong;
+  quiz=shuffle(useWrong?wrong:filtered());
+  idx=0;score=0;skipped=0;answered=0;catScores={};wrong=[];answered_ids=new Set();
+  quiz.forEach(q=>{if(!catScores[q.cat])catScores[q.cat]={c:0,t:0};catScores[q.cat].t++;});
+  document.getElementById('homeSection').style.display='none';
+  document.getElementById('resultsSection').style.display='none';
+  document.getElementById('quizSection').style.display='block';
+  renderQ();
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderQ(){
+  const q=quiz[idx]; const total=quiz.length;
+  document.getElementById('qNumLabel').textContent=`Q${idx+1} / ${total}`;
+  document.getElementById('progressBar').style.width=`${(idx/total)*100}%`;
+  const db=document.getElementById('qDiffBadge');
+  db.textContent=q.diff[0].toUpperCase()+q.diff.slice(1); db.className=`diff-badge ${q.diff}`;
+  document.getElementById('qCatTag').textContent=q.cat;
+
+  let html=`<div class="q-type-label">${q.type==='mcq'?'Multiple Choice':q.type==='tf'?'True / False':'Code Trace / Essay'}</div>`;
+  html+=`<div class="q-text">${q.q}</div>`;
+  if(q.code) html+=`<code class="code-block">${esc(q.code)}</code>`;
+
+  if(q.type==='mcq'){
+    html+='<div class="options-grid">';
+    ['A','B','C','D'].forEach((l,i)=>{
+      html+=`<button class="option-btn" onclick="pickMCQ(this,${i})" data-idx="${i}">
+        <span class="option-letter">${l}</span><span>${q.opts[i]}</span></button>`;
+    });
+    html+='</div>';
+  } else if(q.type==='tf'){
+    html+=`<div class="tf-grid">
+      <button class="tf-btn true-btn" onclick="pickTF(this,true)">✓ TRUE</button>
+      <button class="tf-btn false-btn" onclick="pickTF(this,false)">✗ FALSE</button>
+    </div>`;
+  } else {
+    html+=`<textarea class="trace-area" id="traceInput" placeholder="Write your answer here..."></textarea>`;
+    html+=`<button class="reveal-btn" onclick="revealTrace()">Reveal Answer</button>`;
+    html+=`<div class="answer-reveal" id="ansRev"><strong>Model Answer:</strong><br>
+      <code class="code-block" style="margin-top:.5rem">${esc(q.ans)}</code>
+      <p style="margin-top:.5rem;font-size:.84rem">${q.ex}</p></div>`;
+  }
+  document.getElementById('questionCard').innerHTML=html;
+  clearFB();
+  document.getElementById('skipBtn').style.display=q.type==='trace'?'none':'';
+  document.getElementById('nextBtn').textContent=idx===quiz.length-1?'Finish ✓':'Next →';
+  document.getElementById('nextBtn').disabled=q.type!=='trace';
+}
+
+function pickMCQ(btn,i){
+  const q=quiz[idx]; if(answered_ids.has(q.id))return;
+  answered_ids.add(q.id);
+  document.querySelectorAll('.option-btn').forEach(b=>b.disabled=true);
+  const ok=i===q.ans;
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok){document.querySelectorAll('.option-btn')[q.ans].classList.add('correct');wrong.push(q);}
+  else{score++;catScores[q.cat].c++;}
+  answered++;
+  showFB(ok,q.ex);
+  document.getElementById('nextBtn').disabled=false;
+}
+function pickTF(btn,v){
+  const q=quiz[idx]; if(answered_ids.has(q.id))return;
+  answered_ids.add(q.id);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.disabled=true);
+  const ok=v===q.ans;
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok){
+    document.querySelectorAll('.tf-btn').forEach(b=>{
+      if((b.classList.contains('true-btn')&&q.ans===true)||(b.classList.contains('false-btn')&&q.ans===false))b.classList.add('correct');
+    });
+    wrong.push(q);
+  } else{score++;catScores[q.cat].c++;}
+  answered++;
+  showFB(ok,q.ex);
+  document.getElementById('nextBtn').disabled=false;
+}
+function revealTrace(){
+  const r=document.getElementById('ansRev'); if(r)r.classList.add('show');
+  document.getElementById('nextBtn').disabled=false;
+}
+function showFB(ok,ex){
+  const bar=document.getElementById('feedbackBar');
+  bar.className=`feedback-bar show ${ok?'correct-fb':'wrong-fb'}`;
+  document.getElementById('fbIcon').textContent=ok?'✓':'✗';
+  document.getElementById('fbTitle').textContent=ok?'Correct!':'Incorrect';
+  document.getElementById('fbDetail').innerHTML=ex||'';
+}
+function clearFB(){document.getElementById('feedbackBar').className='feedback-bar';}
+function skipQ(){const q=quiz[idx];if(!answered_ids.has(q.id)){skipped++;wrong.push(q);}nextQ();}
+function nextQ(){if(idx>=quiz.length-1)showResults();else{idx++;renderQ();}}
+
+function showResults(){
+  document.getElementById('quizSection').style.display='none';
+  document.getElementById('resultsSection').style.display='block';
+  const total=quiz.length, pct=total>0?Math.round((score/total)*100):0;
+  document.getElementById('scorePct').textContent=pct+'%';
+  document.getElementById('scoreRing').style.setProperty('--pct',pct);
+  document.getElementById('rCorrect').textContent=score;
+  document.getElementById('rWrong').textContent=total-score-skipped;
+  document.getElementById('rSkipped').textContent=skipped;
+  document.getElementById('rTotal').textContent=total;
+  let t,m;
+  if(pct>=90){t='🎉 Excellent!';m='Outstanding — you have mastered Java GUI programming!';}
+  else if(pct>=75){t='👍 Great Job!';m='Solid understanding. Review the questions you missed.';}
+  else if(pct>=60){t='📖 Almost There!';m='Good foundation. A bit more study will get you there.';}
+  else{t='💡 Keep Practicing!';m='Review the material and try again — persistence pays off!';}
+  document.getElementById('scoreTitle').textContent=t;
+  document.getElementById('scoreMsg').textContent=m;
+  let bHTML='<h3>Performance by Category</h3>';
+  Object.entries(catScores).forEach(([cat,d])=>{
+    const p=d.t>0?Math.round((d.c/d.t)*100):0;
+    const col=p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    bHTML+=`<div class="cat-row">
+      <span class="cat-name">${cat}</span>
+      <div class="cat-bar-wrap"><div class="cat-bar" style="width:${p}%;background:${col}"></div></div>
+      <span class="cat-score">${d.c}/${d.t}</span></div>`;
+  });
+  document.getElementById('catBreakdown').innerHTML=bHTML;
+  document.getElementById('reviewBtn').style.display=wrong.length>0?'':'none';
+}
+function goHome(){
+  document.getElementById('resultsSection').style.display='none';
+  document.getElementById('homeSection').style.display='block';
+  updateStats();
+}
+function reviewWrong(){if(wrong.length>0)startQuiz(true);}
+
+initCats(); updateStats();
+</script>
+</body>
+</html>

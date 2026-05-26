@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Programming Quiz — Java Graphics &amp; 2D API</title>
+<link href="Visual%20Programming%20Quiz%20%E2%80%94%20Java%20Graphics%20&amp;%202D%20API_files/css2.css" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --surface2: #f4f3ef;
+    --border: #e5e2d9;
+    --accent: #5c6bc0;
+    --accent-light: #e8eaf6;
+    --accent2: #ef6c00;
+    --accent2-light: #fff3e0;
+    --correct: #2e7d32;
+    --correct-light: #e8f5e9;
+    --wrong: #c62828;
+    --wrong-light: #ffebee;
+    --text: #1a1a2e;
+    --text-muted: #6b6880;
+    --text-dim: #9e9bb5;
+    --easy: #388e3c;
+    --medium: #f57c00;
+    --hard: #c62828;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Dot grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: radial-gradient(circle, #c8c5d0 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
+  /* ===== SPLASH ===== */
+  #splash {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1.75rem; padding: 2rem; text-align: center;
+  }
+
+  .splash-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-light);
+    padding: 0.35rem 1.1rem; border-radius: 100px;
+  }
+
+  .splash-title {
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 800; line-height: 1.05; color: var(--text);
+  }
+
+  .splash-title span { color: var(--accent); }
+
+  .splash-desc {
+    max-width: 480px; color: var(--text-muted);
+    font-size: 1rem; font-weight: 400; line-height: 1.6;
+  }
+
+  .splash-pills {
+    display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center;
+  }
+
+  .pill {
+    padding: 0.4rem 1rem; border-radius: 100px;
+    font-size: 0.82rem; font-weight: 600;
+    border: 1.5px solid;
+  }
+
+  .pill-blue { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .pill-orange { border-color: var(--accent2); color: var(--accent2); background: var(--accent2-light); }
+  .pill-green { border-color: var(--easy); color: var(--easy); background: var(--correct-light); }
+
+  .splash-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1rem; max-width: 360px; width: 100%;
+  }
+
+  .splash-stat {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 1rem 0.75rem; text-align: center;
+  }
+
+  .splash-stat-num {
+    font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1;
+  }
+
+  .splash-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-top: 0.25rem;
+  }
+
+  .start-btn {
+    background: var(--accent); color: #fff; border: none;
+    padding: 1rem 3rem; border-radius: 10px;
+    font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(92,107,192,0.3);
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(92,107,192,0.4); }
+
+  /* ===== QUIZ APP ===== */
+  #quiz-app {
+    display: none; position: relative; z-index: 1;
+    max-width: 780px; margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+
+  /* Header */
+  .quiz-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 1rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+
+  .quiz-title-sm {
+    font-size: 0.8rem; font-weight: 700; color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .quiz-header-right {
+    display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap;
+  }
+
+  .hdr-chip {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.8rem; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .hdr-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Progress */
+  .prog-wrap { margin-bottom: 1.75rem; }
+  .prog-top { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  .prog-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .prog-num { font-weight: 700; font-size: 0.85rem; color: var(--text); }
+  .prog-track { height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .prog-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Breadcrumb tabs */
+  .q-tabs {
+    display: flex; gap: 0.4rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+  }
+  .q-tab {
+    padding: 0.35rem 0.9rem; border-radius: 100px;
+    border: 1.5px solid var(--border); background: transparent;
+    color: var(--text-muted); font-size: 0.7rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;
+  }
+  .q-tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+  .q-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* Mini map */
+  .mini-map {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    margin-bottom: 1.75rem;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 1rem;
+  }
+
+  .m-dot {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.12s;
+    border: 1.5px solid var(--border); background: var(--surface2);
+    color: var(--text-muted);
+  }
+  .m-dot:hover { border-color: var(--accent); }
+  .m-dot.cur { border-color: var(--accent2); color: var(--accent2); background: var(--accent2-light); }
+  .m-dot.ok { border-color: var(--easy); color: var(--easy); background: var(--correct-light); }
+  .m-dot.bad { border-color: var(--wrong); color: var(--wrong); background: var(--wrong-light); }
+  .m-dot.skip { opacity: 0.4; }
+
+  /* Question card */
+  .q-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 2rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    margin-bottom: 1.25rem;
+    animation: slideUp 0.28s ease;
+    position: relative; overflow: hidden;
+  }
+
+  .q-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: var(--card-accent, var(--accent));
+    border-radius: 16px 16px 0 0;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-bottom: 1.25rem; flex-wrap: wrap;
+  }
+
+  .q-idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.1em;
+  }
+
+  .type-chip {
+    font-size: 0.6rem; font-weight: 700; padding: 0.2rem 0.55rem;
+    border-radius: 100px; text-transform: uppercase;
+    letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace;
+  }
+
+  .chip-mcq { background: var(--accent-light); color: var(--accent); }
+  .chip-tf { background: var(--accent2-light); color: var(--accent2); }
+
+  .diff-chip {
+    font-size: 0.6rem; font-weight: 700; padding: 0.2rem 0.55rem;
+    border-radius: 100px; text-transform: uppercase;
+    letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace;
+    margin-left: auto;
+  }
+
+  .d-easy { background: var(--correct-light); color: var(--easy); }
+  .d-medium { background: #fff8e1; color: var(--medium); }
+  .d-hard { background: var(--wrong-light); color: var(--hard); }
+
+  .q-text {
+    font-size: 1.05rem; font-weight: 600; line-height: 1.65;
+    color: var(--text); margin-bottom: 1.5rem;
+  }
+
+  /* Code snippet styling */
+  .code-block {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 10px; padding: 1rem 1.25rem;
+    font-size: 0.82rem; line-height: 1.7;
+    margin: 0.75rem 0 1.25rem;
+    overflow-x: auto; white-space: pre;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface2); color: var(--accent);
+    padding: 0.1em 0.4em; border-radius: 5px;
+    font-size: 0.87em;
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .opt {
+    display: flex; align-items: flex-start; gap: 0.8rem;
+    padding: 0.9rem 1.1rem; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--surface2);
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+
+  .opt:hover:not(.locked) { border-color: var(--accent); background: var(--accent-light); }
+  .opt.sel:not(.ok):not(.bad) { border-color: var(--accent); background: var(--accent-light); }
+  .opt.ok { border-color: var(--easy); background: var(--correct-light); }
+  .opt.bad { border-color: var(--wrong); background: var(--wrong-light); }
+  .opt.reveal { border-color: var(--easy); background: rgba(46,125,50,0.05); }
+
+  .opt-letter {
+    width: 26px; height: 26px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;
+    flex-shrink: 0; transition: all 0.15s;
+    background: var(--border); color: var(--text-muted);
+  }
+
+  .opt.sel:not(.ok):not(.bad) .opt-letter { background: var(--accent); color: #fff; }
+  .opt.ok .opt-letter { background: var(--easy); color: #fff; }
+  .opt.bad .opt-letter { background: var(--wrong); color: #fff; }
+  .opt.reveal .opt-letter { background: rgba(46,125,50,0.2); color: var(--easy); }
+
+  .opt-txt { font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); padding-top: 3px; }
+  .opt.ok .opt-txt, .opt.reveal .opt-txt { color: var(--correct); font-weight: 600; }
+  .opt.bad .opt-txt { color: var(--wrong); }
+
+  /* True/False */
+  .tf-row { display: flex; gap: 0.75rem; }
+  .tf-btn {
+    flex: 1; padding: 1rem; border-radius: 10px;
+    border: 1.5px solid var(--border); background: var(--surface2);
+    font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+    color: var(--text-muted);
+  }
+  .tf-btn:hover:not(.locked) { border-color: var(--accent); }
+  .tf-btn.sel:not(.ok):not(.bad) { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .tf-btn.ok { border-color: var(--easy); color: var(--easy); background: var(--correct-light); }
+  .tf-btn.bad { border-color: var(--wrong); color: var(--wrong); background: var(--wrong-light); }
+  .tf-btn.reveal { border-color: var(--easy); color: var(--easy); background: rgba(46,125,50,0.06); }
+
+  /* Explanation */
+  .explain {
+    margin-top: 1.25rem; padding: 1rem 1.25rem;
+    background: #eef2ff; border: 1.5px solid #c5cae9;
+    border-radius: 10px; font-size: 0.87rem; line-height: 1.65;
+    color: #37474f; display: none;
+  }
+  .explain.show { display: block; animation: fadeIn 0.2s ease; }
+  .explain strong { color: var(--accent); }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Nav */
+  .nav-row {
+    display: flex; align-items: center; gap: 1rem;
+    flex-wrap: wrap; margin-top: 1rem;
+  }
+  .nav-btn {
+    padding: 0.75rem 1.6rem; border-radius: 9px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    color: var(--text); font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+  }
+  .nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .nav-btn.primary { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .nav-btn.primary:hover { box-shadow: 0 4px 20px rgba(239,108,0,0.3); }
+  .nav-btn.finish { background: var(--easy); border-color: var(--easy); color: #fff; display:none; }
+
+  /* Score bar (inline) */
+  .live-score {
+    margin-left: auto; display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+  }
+  .score-chip {
+    padding: 0.3rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.72rem;
+  }
+  .sc-ok { background: var(--correct-light); color: var(--easy); }
+  .sc-bad { background: var(--wrong-light); color: var(--wrong); }
+
+  /* ===== RESULTS ===== */
+  #results {
+    display: none; position: relative; z-index: 1;
+    max-width: 780px; margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+  }
+
+  .res-hero { text-align: center; margin-bottom: 2.5rem; }
+
+  .res-emoji { font-size: 4rem; margin-bottom: 0.75rem; }
+
+  .res-title {
+    font-size: clamp(1.8rem,5vw,3rem); font-weight: 800; color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .res-pct {
+    font-size: 5rem; font-weight: 800; line-height: 1;
+    color: var(--accent);
+  }
+
+  .res-msg { color: var(--text-muted); font-size: 1rem; margin-top: 0.4rem; }
+
+  .res-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+    gap: 0.9rem; margin-bottom: 2rem;
+  }
+
+  .res-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 1.25rem; text-align: center;
+  }
+
+  .res-val { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .res-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-muted); margin-top: 0.25rem;
+  }
+
+  .breakdown {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem;
+  }
+
+  .bd-title {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace; margin-bottom: 1.25rem;
+  }
+
+  .bd-row {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem;
+  }
+
+  .bd-label { font-size: 0.85rem; font-weight: 600; min-width: 100px; }
+  .bd-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .bd-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease 0.3s; }
+  .bd-pct { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; min-width: 36px; text-align: right; }
+
+  /* Review section */
+  .review-toggle {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 0.85rem 1.25rem;
+    font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700;
+    cursor: pointer; width: 100%; text-align: left;
+    color: var(--text); margin-bottom: 0.75rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .review-list { display: none; }
+  .review-list.open { display: block; }
+
+  .rev-item {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 0.6rem;
+  }
+
+  .rev-q { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .rev-ans { font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+  .rev-correct { color: var(--easy); }
+  .rev-wrong { color: var(--wrong); }
+
+  .retry-btn {
+    display: block; margin: 1.5rem auto 0;
+    padding: 1rem 3rem; background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; font-family: 'Outfit', sans-serif;
+    font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(92,107,192,0.3);
+  }
+  .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(92,107,192,0.4); }
+
+  /* Timer */
+  .timer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem; color: var(--text-muted);
+  }
+  .timer.warn { color: var(--medium); }
+  .timer.danger { color: var(--wrong); animation: blink 0.6s infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+  @media(max-width:580px){
+    .q-card{padding:1.25rem;}
+    .q-text{font-size:0.95rem;}
+    .tf-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body data-new-gr-c-s-check-loaded="8.936.0" data-gr-ext-installed="">
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-eyebrow">Visual Programming · Java Graphics &amp; 2D API</div>
+  <div class="splash-title">Java <span>Graphics</span><br>Quiz</div>
+  <div class="splash-desc">Test your knowledge of Java AWT, Graphics, Graphics2D, colors, fonts, shapes, and the Java 2D API.</div>
+  <div class="splash-pills">
+    <span class="pill pill-blue">MCQ</span>
+    <span class="pill pill-orange">True / False</span>
+    <span class="pill pill-green">Instant Feedback</span>
+  </div>
+  <div class="splash-grid">
+    <div class="splash-stat">
+      <div class="splash-stat-num">many</div>
+      <div class="splash-stat-label">Questions</div>
+    </div>
+    <div class="splash-stat">
+      <div class="splash-stat-num">2</div>
+      <div class="splash-stat-label">Types</div>
+    </div>
+    <div class="splash-stat">
+      <div class="splash-stat-num">30</div>
+      <div class="splash-stat-label">Min Timer</div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">▶ &nbsp; Start Quiz</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-app">
+  <div class="quiz-header">
+    <div class="quiz-title-sm">Java Graphics &amp; 2D API</div>
+    <div class="quiz-header-right">
+      <div class="hdr-chip"><div class="hdr-dot" style="background:var(--accent)"></div> MCQ</div>
+      <div class="hdr-chip"><div class="hdr-dot" style="background:var(--accent2)"></div> T/F</div>
+      <div class="timer" id="timer">⏱ 30:00</div>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-top">
+      <span class="prog-label">Progress</span>
+      <span class="prog-num" id="prog-count">0 / 24</span>
+    </div>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="q-tabs">
+    <button class="q-tab active" onclick="jumpTo(0,this)">All (24)</button>
+    <button class="q-tab" onclick="jumpTo(0,this,'mcq')">MCQ (19)</button>
+    <button class="q-tab" onclick="jumpTo(19,this)">True/False (5)</button>
+  </div>
+
+  <div class="mini-map" id="mini-map"></div>
+
+  <div id="q-area"></div>
+
+  <div class="nav-row">
+    <button class="nav-btn" id="btn-prev" onclick="go(cur-1)">← Prev</button>
+    <div class="live-score">
+      <span class="score-chip sc-ok" id="sc-ok">✓ 0</span>
+      <span class="score-chip sc-bad" id="sc-bad">✗ 0</span>
+    </div>
+    <button class="nav-btn primary" id="btn-next" onclick="go(cur+1)">Next →</button>
+    <button class="nav-btn finish" id="btn-finish" onclick="showResults()">✓ Finish</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="res-hero">
+    <div class="res-emoji" id="res-emoji">🎉</div>
+    <div class="res-title">Quiz Complete!</div>
+    <div class="res-pct" id="res-pct">0%</div>
+    <div class="res-msg" id="res-msg"></div>
+  </div>
+
+  <div class="res-grid">
+    <div class="res-card">
+      <div class="res-val" style="color:var(--easy)" id="r-c">0</div>
+      <div class="res-lbl">Correct</div>
+    </div>
+    <div class="res-card">
+      <div class="res-val" style="color:var(--wrong)" id="r-w">0</div>
+      <div class="res-lbl">Wrong</div>
+    </div>
+    <div class="res-card">
+      <div class="res-val" style="color:var(--medium)" id="r-s">0</div>
+      <div class="res-lbl">Skipped</div>
+    </div>
+    <div class="res-card">
+      <div class="res-val" style="color:var(--accent)" id="r-t">--</div>
+      <div class="res-lbl">Time</div>
+    </div>
+  </div>
+
+  <div class="breakdown">
+    <div class="bd-title">Score Breakdown</div>
+    <div class="bd-row">
+      <div class="bd-label">MCQ</div>
+      <div class="bd-track"><div class="bd-bar" id="bar-mcq" style="width:0%;background:var(--accent)"></div></div>
+      <div class="bd-pct" id="pct-mcq" style="color:var(--accent)">0%</div>
+    </div>
+    <div class="bd-row">
+      <div class="bd-label">True/False</div>
+      <div class="bd-track"><div class="bd-bar" id="bar-tf" style="width:0%;background:var(--accent2)"></div></div>
+      <div class="bd-pct" id="pct-tf" style="color:var(--accent2)">0%</div>
+    </div>
+    <div class="bd-row">
+      <div class="bd-label">Overall</div>
+      <div class="bd-track"><div class="bd-bar" id="bar-all" style="width:0%;background:var(--easy)"></div></div>
+      <div class="bd-pct" id="pct-all" style="color:var(--easy)">0%</div>
+    </div>
+  </div>
+
+  <button class="review-toggle" onclick="toggleReview(this)">
+    📋 Review Answers <span>▼</span>
+  </button>
+  <div class="review-list" id="review-list"></div>
+
+  <button class="retry-btn" onclick="retry()">↩ Retake Quiz</button>
+</div>
+
+<script>
+// ============================================================
+// QUESTIONS
+// ============================================================
+const Qs = [
+// MCQ
+{id:1,type:'mcq',diff:'easy',
+ q:'What is the origin point of Java\'s coordinate system?',
+ opts:['(1, 1)','(0, 0)','(100, 100)','(0, 1)'],ans:1,
+ exp:'Java\'s coordinate system starts at <code>(0,0)</code> in the top-left corner of the component. X increases rightward, Y increases downward.'},
+
+{id:2,type:'mcq',diff:'easy',
+ q:'Which class is used to manage the graphics context in Java AWT?',
+ opts:['java.awt.Color','java.awt.Font','java.awt.Graphics','java.awt.Panel'],ans:2,
+ exp:'<code>java.awt.Graphics</code> is the abstract class that provides the graphics context — it is the base for all drawing operations in Java AWT.'},
+
+{id:3,type:'mcq',diff:'easy',
+ q:'Which method is used to draw on a component in Java AWT?',
+ opts:['draw()','render()','paint()','display()'],ans:2,
+ exp:'The <code>paint(Graphics g)</code> method is the standard callback for rendering a component. The AWT/Swing system calls it automatically when the component needs to be drawn.'},
+
+{id:4,type:'mcq',diff:'easy',
+ q:'How many arguments does the Font constructor take?',
+ opts:['1','2','3','4'],ans:2,
+ exp:'<code>new Font(String name, int style, int size)</code> takes 3 arguments: font name (e.g., "Arial"), style (Font.PLAIN / BOLD / ITALIC), and point size (e.g., 12).'},
+
+{id:5,type:'mcq',diff:'easy',
+ q:'Which method sets the current drawing color in a Graphics object?',
+ opts:['setColor()','applyColor()','changeColor()','useColor()'],ans:0,
+ exp:'<code>g.setColor(Color c)</code> sets the current color used for subsequent drawing operations on the <code>Graphics</code> context.'},
+
+{id:6,type:'mcq',diff:'easy',
+ q:'What is the RGB value for the color black?',
+ opts:['(255, 255, 255)','(128, 128, 128)','(0, 0, 0)','(64, 64, 64)'],ans:2,
+ exp:'Black is the complete ABSENCE of light in RGB: <code>(0, 0, 0)</code>. White is the maximum of all channels: <code>(255, 255, 255)</code>.'},
+
+{id:7,type:'mcq',diff:'easy',
+ q:'Which method draws only the border of a rectangle (not filled)?',
+ opts:['fillRect()','drawRect()','strokeRect()','outlineRect()'],ans:1,
+ exp:'<code>g.drawRect(x, y, width, height)</code> draws only the outline. <code>g.fillRect(x, y, width, height)</code> fills the interior. Java AWT has no <code>strokeRect()</code> method.'},
+
+{id:8,type:'mcq',diff:'medium',
+ q:'What parameters does <code>drawLine()</code> require?',
+ opts:['x, y, width, height','x1, y1, x2, y2','x, y, length, angle','x1, y1, length'],ans:1,
+ exp:'<code>g.drawLine(x1, y1, x2, y2)</code> draws a line from point <code>(x1,y1)</code> to point <code>(x2,y2)</code> — two coordinate pairs are needed.'},
+
+{id:9,type:'mcq',diff:'medium',
+ q:'Which method draws a filled 3D rectangle that appears raised or lowered?',
+ opts:['drawRoundRect()','fillRoundRect()','fill3DRect()','draw3DRect()'],ans:2,
+ exp:'<code>g.fill3DRect(x, y, width, height, raised)</code> draws a filled rectangle with a simulated 3D effect. The boolean <code>raised</code> parameter determines whether it looks raised or sunken.'},
+
+{id:10,type:'mcq',diff:'medium',
+ q:'Which class extends Graphics to provide Java 2D API capabilities?',
+ opts:['Graphics3D','Graphics2D','GraphicsContext','GraphicsPlus'],ans:1,
+ exp:'<code>java.awt.Graphics2D</code> extends <code>Graphics</code> and adds the full Java 2D API: anti-aliasing, affine transforms, stroke control, gradient painting, and more.'},
+
+{id:11,type:'mcq',diff:'medium',
+ q:'Which class is used to fill shapes with a gradient color effect in Java 2D?',
+ opts:['TexturePaint','GradientPaint','ColorFill','BasicStroke'],ans:1,
+ exp:'<code>GradientPaint</code> implements the <code>Paint</code> interface and fills shapes with a smooth gradient transition between two colors along a specified direction.'},
+
+{id:12,type:'mcq',diff:'medium',
+ q:'Which class in Java 2D is used to build custom shapes from lines and curves?',
+ opts:['CustomShape','Polygon','GeneralPath','PathBuilder'],ans:2,
+ exp:'<code>java.awt.geom.GeneralPath</code> lets you construct arbitrary shapes by moving to a point, drawing lines with <code>lineTo()</code>, and adding curves — then close with <code>closePath()</code>.'},
+
+{id:13,type:'mcq',diff:'medium',
+ q:'What method is used to close a GeneralPath shape?',
+ opts:['close()','finish()','end()','closePath()'],ans:3,
+ exp:'<code>path.closePath()</code> draws a straight line back to the starting point of the current subpath, closing the shape so it can be filled or stroked as a closed polygon.'},
+
+{id:14,type:'mcq',diff:'medium',
+ q:'Which method of Graphics2D is used to set the paint (color or pattern)?',
+ opts:['setColor()','setPaint()','setFill()','applyPaint()'],ans:1,
+ exp:'<code>g2d.setPaint(Paint p)</code> sets the paint attribute for rendering, accepting any <code>Paint</code> implementation: <code>Color</code>, <code>GradientPaint</code>, <code>TexturePaint</code>, etc.'},
+
+{id:15,type:'mcq',diff:'easy',
+ q:'Which method of Graphics2D fills the interior of a 2D shape?',
+ opts:['fill()','paint()','fillShape()','applyFill()'],ans:0,
+ exp:'<code>g2d.fill(Shape s)</code> fills the interior of any <code>Shape</code> (e.g., <code>Ellipse2D</code>, <code>Rectangle2D</code>, <code>GeneralPath</code>) using the current paint.'},
+
+{id:16,type:'mcq',diff:'medium',
+ q:'Which method of Graphics2D is used to rotate the coordinate system?',
+ opts:['spin()','turn()','rotate()','revolve()'],ans:2,
+ exp:'<code>g2d.rotate(double theta)</code> rotates the coordinate system by <code>theta</code> radians around the current origin. Combined with <code>translate()</code>, this enables drawing rotated shapes at any position.'},
+
+{id:17,type:'mcq',diff:'hard',
+ q:'Which Color constructor accepts float values for RGB components?',
+ opts:['new Color(int r, int g, int b)','new Color(float r, float g, float b)','new Color(double r, double g, double b)','new Color(byte r, byte g, byte b)'],ans:1,
+ exp:'<code>new Color(float r, float g, float b)</code> accepts values in the range <code>0.0f</code> to <code>1.0f</code>. The integer constructor uses 0–255 range. There is no double or byte variant in the standard AWT API.'},
+
+{id:18,type:'mcq',diff:'medium',
+ q:'Which method retrieves the red component value of a Color object?',
+ opts:['getR()','red()','getRed()','redValue()'],ans:2,
+ exp:'<code>color.getRed()</code> returns the red component as an integer in the range 0–255. Similarly, <code>getGreen()</code> and <code>getBlue()</code> return green and blue components.'},
+
+{id:19,type:'mcq',diff:'medium',
+ q:'Which method of Graphics2D translates (moves) the origin of the coordinate system?',
+ opts:['move()','shift()','translate()','offset()'],ans:2,
+ exp:'<code>g2d.translate(double tx, double ty)</code> shifts the current transform\'s origin by <code>(tx, ty)</code> pixels. Subsequent drawing operations are offset by this amount.'},
+
+// T/F
+{id:20,type:'tf',diff:'easy',
+ q:'The Font constructor in Java accepts font name, style, and size as its three parameters.',
+ ans:true,
+ exp:'TRUE. <code>new Font(String name, int style, int size)</code> — name (e.g., "Serif"), style (Font.PLAIN, Font.BOLD, Font.ITALIC, or combinations), and size in points.'},
+
+{id:21,type:'tf',diff:'easy',
+ q:'The class Graphics2D is a subclass (extends) of Graphics.',
+ ans:true,
+ exp:'TRUE. <code>Graphics2D extends Graphics</code>. You can obtain a Graphics2D by casting the Graphics parameter in <code>paint()</code>: <code>Graphics2D g2d = (Graphics2D) g;</code>'},
+
+{id:22,type:'tf',diff:'medium',
+ q:'The method clearRect() fills a rectangle using the current background color.',
+ ans:true,
+ exp:'TRUE. <code>g.clearRect(x, y, width, height)</code> fills the specified rectangle with the component\'s background color, effectively erasing any previous drawing in that area.'},
+
+{id:23,type:'tf',diff:'medium',
+ q:'GeneralPath can be used to create custom shapes using a series of connected points.',
+ ans:true,
+ exp:'TRUE. <code>GeneralPath</code> supports <code>moveTo()</code>, <code>lineTo()</code>, <code>quadTo()</code>, <code>curveTo()</code>, and <code>closePath()</code> to construct arbitrary custom shapes.'},
+
+{id:24,type:'tf',diff:'easy',
+ q:'Java 2D shapes such as Ellipse2D and Rectangle2D are found in the java.awt.geom package.',
+ ans:true,
+ exp:'TRUE. The <code>java.awt.geom</code> package contains all the geometric shape classes: <code>Ellipse2D</code>, <code>Rectangle2D</code>, <code>Arc2D</code>, <code>Line2D</code>, <code>GeneralPath</code>, etc.'}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let cur = 0;
+let answers = new Array(Qs.length).fill(null);
+let locked = new Array(Qs.length).fill(false);
+let timeLeft = 30 * 60;
+let timeUsed = 0;
+let timerInt = null;
+
+// ============================================================
+// START
+// ============================================================
+function startQuiz() {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('quiz-app').style.display = 'block';
+  buildMap();
+  go(0);
+  timerInt = setInterval(() => {
+    timeLeft--; timeUsed++;
+    const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+    const s = String(timeLeft%60).padStart(2,'0');
+    const el = document.getElementById('timer');
+    el.textContent = `⏱ ${m}:${s}`;
+    el.className = 'timer' + (timeLeft<120?' danger':timeLeft<300?' warn':'');
+    if (timeLeft <= 0) { clearInterval(timerInt); showResults(); }
+  }, 1000);
+}
+
+// ============================================================
+// MAP
+// ============================================================
+function buildMap() {
+  const el = document.getElementById('mini-map');
+  el.innerHTML = '';
+  Qs.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'm-dot skip'; d.id = `d${i}`;
+    d.textContent = i+1; d.onclick = () => go(i);
+    el.appendChild(d);
+  });
+}
+
+function refreshMap() {
+  Qs.forEach((_,i) => {
+    const d = document.getElementById(`d${i}`);
+    d.className = 'm-dot';
+    if (i === cur) d.classList.add('cur');
+    else if (answers[i] !== null) d.classList.add(isCorrect(i) ? 'ok' : 'bad');
+    else d.classList.add('skip');
+  });
+  // Live score
+  let c=0,w=0;
+  answers.forEach((a,i)=>{ if(a!==null){ if(isCorrect(i))c++;else w++; }});
+  document.getElementById('sc-ok').textContent = `✓ ${c}`;
+  document.getElementById('sc-bad').textContent = `✗ ${w}`;
+}
+
+function isCorrect(i) {
+  return answers[i] !== null && answers[i] === Qs[i].ans;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function go(idx) {
+  if (idx < 0 || idx >= Qs.length) return;
+  cur = idx;
+  refreshMap();
+  updateProgress();
+  renderQ();
+  updateNav();
+}
+
+function updateProgress() {
+  const done = answers.filter(a=>a!==null).length;
+  document.getElementById('prog-count').textContent = `${done} / ${Qs.length}`;
+  document.getElementById('prog-fill').style.width = `${(done/Qs.length)*100}%`;
+}
+
+function updateNav() {
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === Qs.length-1;
+  const all = answers.every(a=>a!==null);
+  document.getElementById('btn-finish').style.display = all ? 'inline-block' : 'none';
+}
+
+function renderQ() {
+  const q = Qs[cur];
+  const isLk = locked[cur];
+  const sel = answers[cur];
+
+  const diffCls = q.diff==='easy'?'d-easy':q.diff==='medium'?'d-medium':'d-hard';
+  const diffLabel = q.diff[0].toUpperCase()+q.diff.slice(1);
+  const cardAccent = q.type==='tf' ? 'var(--accent2)' : 'var(--accent)';
+
+  let body = '';
+  if (q.type === 'tf') {
+    const tC = tfCls(sel, true, q.ans, isLk);
+    const fC = tfCls(sel, false, q.ans, isLk);
+    const lk = isLk ? ' locked' : '';
+    body = `<div class="tf-row">
+      <div class="tf-btn${lk} ${tC}" onclick="pickTF(true)">✓ &nbsp; True</div>
+      <div class="tf-btn${lk} ${fC}" onclick="pickTF(false)">✗ &nbsp; False</div>
+    </div>`;
+  } else {
+    const keys = ['A','B','C','D'];
+    body = `<div class="options">${q.opts.map((o,i)=>{
+      const cls = optCls(sel,i,q.ans,isLk);
+      const lk = isLk ? ' locked' : '';
+      return `<div class="opt${lk} ${cls}" onclick="pickOpt(${i})">
+        <div class="opt-letter">${keys[i]}</div>
+        <div class="opt-txt">${o}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  const expShow = isLk ? 'show' : '';
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="q-card" style="--card-accent:${cardAccent}">
+      <div class="q-meta">
+        <span class="q-idx">Q ${cur+1} / ${Qs.length}</span>
+        <span class="type-chip ${q.type==='tf'?'chip-tf':'chip-mcq'}">${q.type==='tf'?'True / False':'MCQ'}</span>
+        <span class="diff-chip ${diffCls}">${diffLabel}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      ${body}
+      <div class="explain ${expShow}"><strong>💡 Explanation:</strong> ${q.exp}</div>
+    </div>`;
+}
+
+function optCls(sel, idx, ans, lk) {
+  if (!lk) return sel===idx ? 'sel' : '';
+  if (idx===ans) return 'ok';
+  if (sel===idx && idx!==ans) return 'bad';
+  return '';
+}
+
+function tfCls(sel, val, ans, lk) {
+  if (!lk) return sel===val ? 'sel' : '';
+  if (val===ans) return 'ok';
+  if (sel===val && val!==ans) return 'bad';
+  return '';
+}
+
+function pickOpt(idx) {
+  if (locked[cur]) return;
+  answers[cur] = idx; locked[cur] = true;
+  renderQ(); updateProgress(); updateNav(); refreshMap();
+  setTimeout(()=>{ if(cur<Qs.length-1) go(cur+1); }, 1500);
+}
+
+function pickTF(val) {
+  if (locked[cur]) return;
+  answers[cur] = val; locked[cur] = true;
+  renderQ(); updateProgress(); updateNav(); refreshMap();
+  setTimeout(()=>{ if(cur<Qs.length-1) go(cur+1); }, 1500);
+}
+
+function jumpTo(idx, btn) {
+  document.querySelectorAll('.q-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  go(Math.min(idx, Qs.length-1));
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function showResults() {
+  clearInterval(timerInt);
+  document.getElementById('quiz-app').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  window.scrollTo(0,0);
+
+  let correct=0, mcqC=0, mcqT=0, tfC=0, tfT=0;
+  Qs.forEach((q,i)=>{
+    const a = answers[i];
+    const c = a!==null && a===q.ans;
+    if(c) correct++;
+    if(q.type==='mcq'){mcqT++;if(c)mcqC++;}
+    else{tfT++;if(c)tfC++;}
+  });
+  const skip = answers.filter(a=>a===null).length;
+  const wrong = Qs.length - correct - skip;
+  const pct = Math.round((correct/Qs.length)*100);
+
+  document.getElementById('res-pct').textContent = pct+'%';
+  document.getElementById('r-c').textContent = correct;
+  document.getElementById('r-w').textContent = wrong;
+  document.getElementById('r-s').textContent = skip;
+  const um=String(Math.floor(timeUsed/60)).padStart(2,'0');
+  const us=String(timeUsed%60).padStart(2,'0');
+  document.getElementById('r-t').textContent = `${um}:${us}`;
+
+  const emoji = pct>=90?'🏆':pct>=75?'🎯':pct>=60?'📚':pct>=50?'⚠️':'❌';
+  const msg = pct>=90?'Excellent! Perfect mastery of Java Graphics!':
+              pct>=75?'Great work! Solid understanding of the API.':
+              pct>=60?'Good effort — review the Graphics2D methods.':
+              pct>=50?'Passing, but more practice needed.':'Keep studying the Java 2D API!';
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-msg').textContent = msg;
+
+  const setBar = (barId,pctId,c,t) => {
+    const p = t>0?Math.round((c/t)*100):0;
+    document.getElementById(pctId).textContent = p+'%';
+    setTimeout(()=>document.getElementById(barId).style.width=p+'%',150);
+  };
+  setBar('bar-mcq','pct-mcq',mcqC,mcqT);
+  setBar('bar-tf','pct-tf',tfC,tfT);
+  setBar('bar-all','pct-all',correct,Qs.length);
+
+  // Build review list
+  const rev = document.getElementById('review-list');
+  rev.innerHTML = Qs.map((q,i)=>{
+    const a = answers[i];
+    const c = a!==null && a===q.ans;
+    const keys=['A','B','C','D'];
+    const yourAns = a===null ? 'Skipped' : q.type==='tf' ? (a?'True':'False') : keys[a]+') '+q.opts[a];
+    const corrAns = q.type==='tf' ? (q.ans?'True':'False') : keys[q.ans]+') '+q.opts[q.ans];
+    return `<div class="rev-item">
+      <div class="rev-q">Q${i+1}. ${q.q}</div>
+      <div class="rev-ans ${c?'rev-correct':'rev-wrong'}">Your answer: ${yourAns}</div>
+      ${!c?`<div class="rev-ans rev-correct">Correct: ${corrAns}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function toggleReview(btn) {
+  const list = document.getElementById('review-list');
+  const open = list.classList.toggle('open');
+  btn.querySelector('span').textContent = open ? '▲' : '▼';
+}
+
+function retry() {
+  answers = new Array(Qs.length).fill(null);
+  locked = new Array(Qs.length).fill(false);
+  cur = 0; timeLeft = 30*60; timeUsed = 0;
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('quiz-app').style.display = 'block';
+  buildMap(); go(0);
+  timerInt = setInterval(()=>{
+    timeLeft--; timeUsed++;
+    const m=String(Math.floor(timeLeft/60)).padStart(2,'0');
+    const s=String(timeLeft%60).padStart(2,'0');
+    const el=document.getElementById('timer');
+    el.textContent=`⏱ ${m}:${s}`;
+    el.className='timer'+(timeLeft<120?' danger':timeLeft<300?' warn':'');
+    if(timeLeft<=0){clearInterval(timerInt);showResults();}
+  },1000);
+}
+</script>
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration></html>

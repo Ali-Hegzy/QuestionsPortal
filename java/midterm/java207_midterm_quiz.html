@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java 207 — Midterm Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e222d;
+    --border: #2a2f3d;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --green: #22d3a0;
+    --green-bg: #0a2e25;
+    --red: #f87171;
+    --red-bg: #2e0a0a;
+    --yellow: #fbbf24;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(34,211,160,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+  .header-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* START SCREEN */
+  #start-screen h1 {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+  }
+  #start-screen h1 span { color: var(--accent2); }
+  #start-screen p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 2rem;
+  }
+  .stat-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stat-item .num {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent2);
+    display: block;
+  }
+  .stat-item .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+    display: block;
+  }
+
+  .field-group { margin-bottom: 1.25rem; }
+  .field-group label {
+    display: block;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  select, input[type=range] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 10px 12px;
+    appearance: none;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--accent); }
+
+  input[type=range] {
+    padding: 0;
+    height: 4px;
+    cursor: pointer;
+    accent-color: var(--accent);
+    background: var(--border);
+    border: none;
+    border-radius: 2px;
+  }
+
+  .range-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .range-val {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent2);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+    outline: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-primary:hover { background: #5a52e0; transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+
+  /* QUIZ SCREEN */
+  #quiz-screen { display: none; }
+
+  .quiz-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .q-counter {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .score-live {
+    display: flex;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .score-c { color: var(--green); }
+  .score-w { color: var(--red); }
+
+  .prog-wrap {
+    background: var(--surface2);
+    height: 4px;
+    border-radius: 2px;
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .topic-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    background: rgba(108,99,255,0.15);
+    color: var(--accent2);
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .q-text {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+
+  .opt-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.08);
+  }
+  .opt-key {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--border);
+    border-radius: 5px;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .opt-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .opt-btn.correct {
+    border-color: var(--green);
+    background: var(--green-bg);
+  }
+  .opt-btn.correct .opt-key { background: var(--green); color: #000; }
+  .opt-btn.correct .opt-text { color: var(--green); }
+
+  .opt-btn.wrong {
+    border-color: var(--red);
+    background: var(--red-bg);
+  }
+  .opt-btn.wrong .opt-key { background: var(--red); color: #000; }
+  .opt-btn.wrong .opt-text { color: var(--red); }
+
+  .opt-btn.reveal {
+    border-color: var(--green);
+    background: var(--green-bg);
+  }
+  .opt-btn.reveal .opt-key { background: var(--green); color: #000; }
+  .opt-btn.reveal .opt-text { color: var(--green); }
+
+  .feedback-bar {
+    min-height: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .feedback-bar.ok { color: var(--green); }
+  .feedback-bar.err { color: var(--red); }
+
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* RESULTS */
+  #results-screen { display: none; text-align: center; }
+
+  .score-ring-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1.5rem;
+  }
+  .score-ring-wrap svg { transform: rotate(-90deg); }
+  .score-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-pct {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  #results-screen h2 {
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+  }
+  #results-screen p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 1.75rem;
+  }
+
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+  .res-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .res-stat .n { font-family: var(--mono); font-size: 22px; font-weight: 700; display: block; }
+  .res-stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-top: 3px; }
+  .res-stat.good .n { color: var(--green); }
+  .res-stat.bad .n { color: var(--red); }
+  .res-stat.neutral .n { color: var(--accent2); }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  /* TOPIC COLORS */
+  .tag-basics { background: rgba(34,211,160,0.12); color: #22d3a0; }
+  .tag-oop { background: rgba(108,99,255,0.15); color: var(--accent2); }
+  .tag-inheritance { background: rgba(251,191,36,0.12); color: var(--yellow); }
+  .tag-graphics { background: rgba(248,113,113,0.12); color: var(--red); }
+
+  @media(max-width: 480px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 1.5rem; }
+    .q-text { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">J</div>
+    <div class="header-title">Java 207 · Midterm Prep</div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div class="card" id="start-screen">
+    <h1>Quiz <span>Bank</span></h1>
+    <p>Interactive quiz covering all midterm topics — basics, OOP, inheritance, interfaces, and Java graphics.</p>
+
+    <div class="stats-grid">
+      <div class="stat-item"><span class="num">120+</span><span class="lbl">Questions</span></div>
+      <div class="stat-item"><span class="num">4</span><span class="lbl">Topics</span></div>
+      <div class="stat-item"><span class="num">MCQ</span><span class="lbl">Format</span></div>
+      <div class="stat-item"><span class="num">T/F</span><span class="lbl">Included</span></div>
+    </div>
+
+    <div class="field-group">
+      <label>Topic</label>
+      <select id="topic-select">
+        <option value="all">All topics</option>
+        <option value="basics">Basics &amp; syntax</option>
+        <option value="oop">OOP &amp; classes</option>
+        <option value="inheritance">Inheritance &amp; interfaces</option>
+        <option value="graphics">Graphics &amp; Java 2D</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label>Number of questions</label>
+      <div class="range-row">
+        <input type="range" id="count-range" min="5" max="40" step="5" value="20"
+          oninput="document.getElementById('count-out').textContent=this.value">
+        <span class="range-val" id="count-out">20</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="startQuiz()">Start Quiz →</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="card" id="quiz-screen">
+    <div class="quiz-meta">
+      <span class="q-counter" id="q-num">Question 1 of 20</span>
+      <div class="score-live">
+        <span class="score-c">✓ <span id="st-c">0</span></span>
+        <span class="score-w">✗ <span id="st-w">0</span></span>
+      </div>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div class="topic-tag" id="q-tag">basics</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="q-options"></div>
+    <div class="feedback-bar" id="feedback"></div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" id="next-btn" onclick="nextQ()" style="display:none;">Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="card" id="results-screen">
+    <div class="score-ring-wrap">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#1e222d" stroke-width="10"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#6c63ff" stroke-width="10"
+          stroke-linecap="round" id="ring-fill" stroke-dasharray="314" stroke-dashoffset="314"
+          style="transition: stroke-dashoffset 0.8s ease;"/>
+      </svg>
+      <div class="score-inner">
+        <span class="score-pct" id="res-pct">0%</span>
+        <span class="score-label">score</span>
+      </div>
+    </div>
+    <h2 id="res-title">Well done!</h2>
+    <p id="res-sub">Here's how you performed</p>
+    <div class="result-stats">
+      <div class="res-stat good"><span class="n" id="res-c">0</span><span class="l">Correct</span></div>
+      <div class="res-stat bad"><span class="n" id="res-w">0</span><span class="l">Wrong</span></div>
+      <div class="res-stat neutral"><span class="n" id="res-t">0</span><span class="l">Total</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goHome()">← New quiz</button>
+      <button class="btn btn-primary" onclick="restartSame()">Retry ↺</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QS = [
+  {q:"Which statement is used to print a line followed by a newline in Java?",o:["System.out.print()","System.out.printf()","System.out.println()","System.out.write()"],a:2,t:"basics"},
+  {q:"What operator is used for String concatenation in Java?",o:["&",".","," ,"+"],a:3,t:"basics"},
+  {q:"What field gives the number of elements in a Java array?",o:["size","count","length","capacity"],a:2,t:"basics"},
+  {q:"What is returned by args[0] in a Java main method?",o:["The program name","The second command-line argument","The first command-line argument","The number of arguments"],a:2,t:"basics"},
+  {q:"Which looping construct is best suited for iterating over every element of a collection?",o:["while loop","do-while loop","for loop","for-each loop"],a:3,t:"basics"},
+  {q:"Which loop guarantees the body executes at least once?",o:["for loop","while loop","for-each loop","do-while loop"],a:3,t:"basics"},
+  {q:"Methods that are directly called by main must use which keyword?",o:["public","final","static","void"],a:2,t:"basics"},
+  {q:"What does the == operator test when applied to two String objects?",o:["Whether they have the same characters","Whether they are the same object in memory","Whether they have the same length","Whether one contains the other"],a:1,t:"basics"},
+  {q:"What does the ! operator do in Java?",o:["Bitwise NOT","Logical negation","Not equal comparison","Division"],a:1,t:"basics"},
+  {q:"Which operators use short-circuit evaluation in Java?",o:["== and !=","& and |","&& and ||","+ and -"],a:2,t:"basics"},
+  {q:"How is a String object created using a shortcut in Java?",o:["String s = new String();","String s = String.create(\"hello\");","String s = \"hello\";","String s = String(\"hello\");"],a:2,t:"basics"},
+  {q:"Which method checks if a String starts with a given prefix?",o:["beginsWith()","startsWith()","hasPrefix()","prefixOf()"],a:1,t:"basics"},
+  {q:"What is the default value of uninitialized elements in a numeric array?",o:["null","-1","1","0"],a:3,t:"basics"},
+  {q:"How are multidimensional arrays implemented in Java?",o:["As a matrix object","As arrays of arrays","As a two-dimensional pointer","As a special type"],a:1,t:"basics"},
+  {q:"Which Math method returns a random number between 0 (inclusive) and 1 (exclusive)?",o:["Math.rand()","Math.random()","Math.getRandom()","Math.nextRandom()"],a:1,t:"basics"},
+  {q:"Which method converts a String to an integer in Java?",o:["Integer.convert()","Integer.toInt()","Integer.valueOf()","Integer.parseInt()"],a:3,t:"basics"},
+  {q:"What does Math.sqrt() compute?",o:["The square of a number","The cube root of a number","The square root of a number","The absolute value of a number"],a:2,t:"basics"},
+  {q:"Trigonometric functions in the Math class accept arguments in:",o:["Degrees","Radians","Gradians","Turns"],a:1,t:"basics"},
+  {q:"Which constant represents positive infinity in Java?",o:["Math.INFINITY","Integer.MAX_VALUE","Double.POSITIVE_INFINITY","Float.INF"],a:2,t:"basics"},
+  {q:"Which class provides unlimited precision integer arithmetic in Java?",o:["LongInteger","BigInteger","PrecisionInt","MathInteger"],a:1,t:"basics"},
+  {q:"In Eclipse, which shortcut inserts System.out.println()?",o:["Type \"print\" then hit Control-space","Type \"sysout\" then hit Control-space","Type \"println\" then hit Control-space","Type \"out\" then hit Control-space"],a:1,t:"basics"},
+  {q:"What happens if you access args[2] when only one command-line argument was supplied?",o:["Returns null","Returns an empty string","An error/exception occurs","Returns 0"],a:2,t:"basics"},
+  {q:"The main method in Java takes which parameter?",o:["String args","String[] args","int argc, String[] argv","No parameters"],a:1,t:"basics"},
+  {q:"The for-each loop can be used to modify elements of the original array directly.",o:["TRUE","FALSE"],a:1,t:"basics"},
+  {q:"In a do-while loop, a semicolon is required after the while condition.",o:["TRUE","FALSE"],a:0,t:"basics"},
+  {q:"Java packages must be declared in all lower case by convention.",o:["TRUE","FALSE"],a:0,t:"basics"},
+  {q:"Math.random() can return the value 1.0.",o:["TRUE","FALSE"],a:1,t:"basics"},
+  {q:"Which command is used to compile a .java file?",o:["javac MyFile.java","javac MyFile.Java","javac MyFile.class","java MyFile"],a:0,t:"basics"},
+  {q:"Which command is used to execute/run a Java program?",o:["javac MyFile.java","javac MyFile.Java","java MyFile.class","java MyFile"],a:3,t:"basics"},
+  {q:"The correct extension for Java files is:",o:["file.JAVA","file.Java","file.java","file.class"],a:2,t:"basics"},
+  {q:"Java is case sensitive.",o:["TRUE","FALSE"],a:0,t:"basics"},
+  {q:"String is a real class in Java, not an array of characters as in C/C++.",o:["TRUE","FALSE"],a:0,t:"basics"},
+  {q:"We should use .equals() to compare if two Strings have the same characters.",o:["TRUE","FALSE"],a:0,t:"basics"},
+  {q:"Which method should be used to compare strings for equal content?",o:["== operator","= operator","is operator",".equals() method"],a:3,t:"basics"},
+  {q:"Default value for Object arrays is:",o:["null","0","\"\"","false"],a:0,t:"basics"},
+  {q:"What is the result of: int x[]={1,5,6,8}; for(int i: x){ System.out.print(i); }",o:["1,5,6,8","1","1568","18"],a:2,t:"basics"},
+  {q:"What is the result when condition is true: (x==y)? print(\"5\") : (x==z)? print(\"2\") : print(\"3\")",o:["5","3","x","error"],a:0,t:"basics"},
+  {q:"\"continue\" statement means skip in concept.",o:["TRUE","FALSE"],a:0,t:"basics"},
+  {q:"Compiling a Java file means executing it.",o:["TRUE","FALSE"],a:1,t:"basics"},
+  {q:"In Java OOP, what is another name for instance variables?",o:["Local variables","Data members or fields","Static variables","Parameters"],a:1,t:"oop"},
+  {q:"In Java, where are all objects allocated?",o:["Stack","Static memory","Registers","Heap"],a:3,t:"oop"},
+  {q:"What does the term 'instance' mean in Java OOP?",o:["A class definition","A method inside a class","A particular object belonging to a class","A static variable"],a:2,t:"oop"},
+  {q:"How do you access an instance variable of an object in Java?",o:["objectName->fieldName","objectName::fieldName","objectName.fieldName","objectName[fieldName]"],a:2,t:"oop"},
+  {q:"What are the three characteristics of objects in OOP?",o:["Type, value, and scope","State, behavior, and identity","Class, method, and field","Public, private, and protected"],a:1,t:"oop"},
+  {q:"Which provides the 'behavior' of an object in OOP?",o:["Instance variables","Constructors","Methods","Fields"],a:2,t:"oop"},
+  {q:"Which provides the 'state' of an object in OOP?",o:["Methods","Constructors","Static variables","Instance variables"],a:3,t:"oop"},
+  {q:"According to Java naming conventions, how should method and variable names begin?",o:["With an uppercase letter","With a lowercase letter","With an underscore","With a number"],a:1,t:"oop"},
+  {q:"What is the purpose of the 'this' keyword in Java?",o:["To refer to the parent class","To refer to the current object","To create a new object","To call a static method"],a:1,t:"oop"},
+  {q:"Which is a common use of the 'this' reference in a constructor?",o:["To call the parent constructor","To resolve name conflicts between local and instance variables","To return the current object","To access static methods"],a:1,t:"oop"},
+  {q:"How do you call a static method in Java?",o:["objectName.methodName()","this.methodName()","ClassName.methodName()","super.methodName()"],a:2,t:"oop"},
+  {q:"What happens when you call a private method from outside its class?",o:["It runs but issues a warning","It returns null","It causes a compile-time error","It causes a runtime error"],a:2,t:"oop"},
+  {q:"Static methods are also known as:",o:["Instance methods","Class methods","Abstract methods","Virtual methods"],a:1,t:"oop"},
+  {q:"What is a key characteristic of static methods?",o:["They can access non-static fields freely","They require an object to be called","They do not access non-static methods or fields","They must return void"],a:2,t:"oop"},
+  {q:"What is the recommended visibility for instance variables in a class that also has methods?",o:["public","protected","package-private","private"],a:3,t:"oop"},
+  {q:"The 'this' keyword can be used inside static methods.",o:["TRUE","FALSE"],a:1,t:"oop"},
+  {q:"It is conventional and recommended to make instance variables private.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"What is method overloading in Java?",o:["Having a method with the same name in a subclass","Defining multiple methods with the same name but different argument signatures","Replacing a parent class method in a child class","Calling a method from a superclass"],a:1,t:"oop"},
+  {q:"What is the main motivation for overloading constructors?",o:["To allow building instances in different ways","To prevent inheritance","To hide instance variables","To improve performance"],a:0,t:"oop"},
+  {q:"What is the purpose of getter and setter methods?",o:["To provide public access to private instance variables","To override parent class methods","To implement interfaces","To define abstract methods"],a:0,t:"oop"},
+  {q:"JavaDoc comments use which syntax?",o:["// comment","/* comment */","/** comment */","# comment"],a:2,t:"oop"},
+  {q:"What command is used to generate JavaDoc documentation?",o:["javac *.java","java *.java","javadoc *.java","jdoc *.java"],a:2,t:"oop"},
+  {q:"Constructors must exactly match the class name.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"Constructors have a return data type.",o:["TRUE","FALSE"],a:1,t:"oop"},
+  {q:"Java automatically provides a zero-argument constructor if the class doesn't define its own.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"Classes can have more than one method with the same name.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"We can call static methods without building an object.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"The null value is a distinct type in Java and is not equal to zero.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"Object references are initially null.",o:["TRUE","FALSE"],a:0,t:"oop"},
+  {q:"All objects are allocated on the:",o:["heap memory","stack memory","code section","data section"],a:0,t:"oop"},
+  {q:"In Java inheritance, what keyword is used to create a subclass?",o:["implements","inherits","extends","super"],a:2,t:"inheritance"},
+  {q:"A child class has access to which methods of the parent class?",o:["Only public methods","All non-private methods","Only protected methods","All methods including private"],a:1,t:"inheritance"},
+  {q:"What is the primary motivation for using inheritance?",o:["To hide data from users","To enable code reuse and avoid writing the same code twice","To prevent method overriding","To allow multiple return types"],a:1,t:"inheritance"},
+  {q:"What keyword is used to call the parent class constructor from a subclass constructor?",o:["parent()","base()","this()","super()"],a:3,t:"inheritance"},
+  {q:"When using super() in a subclass constructor, it must be:",o:["The last statement","The first statement","Anywhere in the constructor","In a separate method"],a:1,t:"inheritance"},
+  {q:"What does the @Override annotation do?",o:["Forces the method to run faster","Tells the compiler the method is intended to override a parent method","Prevents the method from being inherited","Makes the method static"],a:1,t:"inheritance"},
+  {q:"What happens if you use @Override on a method that does NOT exist in the parent class?",o:["The code runs but gives a warning","Compiles and overrides Object class methods only","A compile-time error occurs","The annotation is ignored"],a:2,t:"inheritance"},
+  {q:"Which keyword declares an abstract method?",o:["final","static","abstract","virtual"],a:2,t:"inheritance"},
+  {q:"What is the key difference between an abstract class and an interface?",o:["Interfaces can have concrete methods; abstract classes cannot","A class can extend multiple abstract classes","A class can implement multiple interfaces but can only extend one class","Abstract classes cannot have constructors"],a:2,t:"inheritance"},
+  {q:"Which visibility modifier allows access only from within the same class?",o:["public","protected","default","private"],a:3,t:"inheritance"},
+  {q:"What does the final keyword mean when applied to a class?",o:["The class cannot be instantiated","The class cannot be subclassed","The class has no methods","The class is abstract"],a:1,t:"inheritance"},
+  {q:"What is method overriding?",o:["Defining a method with same name but different parameters in same class","Defining a method in a subclass with same name, return type, and arguments as superclass","Calling a private method from outside the class","Making a method abstract in a subclass"],a:1,t:"inheritance"},
+  {q:"Only which type of methods can be overridden in Java?",o:["Static methods only","Private methods only","Non-static methods","Final methods"],a:2,t:"inheritance"},
+  {q:"What does super.methodName() allow you to do?",o:["Call a method from a different package","Call the overridden version of a method from the parent class","Create a new instance of the parent class","Access private fields of the parent class"],a:1,t:"inheritance"},
+  {q:"A Java class can implement multiple interfaces simultaneously.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"The @Override annotation is mandatory when overriding a method in Java.",o:["TRUE","FALSE"],a:1,t:"inheritance"},
+  {q:"Java supports single inheritance.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"Java supports multiple inheritance (with classes).",o:["TRUE","FALSE"],a:1,t:"inheritance"},
+  {q:"Java supports multi-level inheritance.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"Java supports multiple inheritance using interfaces.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"The child class has access to all private methods of the parent class.",o:["TRUE","FALSE"],a:1,t:"inheritance"},
+  {q:"A class can only have one direct parent.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"Only non-static methods can be overridden.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"An abstract class is a class that you cannot directly instantiate.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"super.super.methodName is illegal in Java.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"An abstract class can contain both concrete methods and abstract methods.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"Polymorphism allows methods to have multiple implementations, either by overloading or overriding.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"Fields with protected modifier are accessible in the same package and subclasses.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"What is the CLASSPATH environment variable used for?",o:["Define JDK installation location","List directories where Java looks for class files","Set the default package for all classes","Configure Java memory settings"],a:1,t:"inheritance"},
+  {q:"To access private fields we use:",o:["constructors","static fields","abstract classes","setters & getters"],a:3,t:"inheritance"},
+  {q:"A final variable's value can be changed later.",o:["TRUE","FALSE"],a:1,t:"inheritance"},
+  {q:"A static variable's value can be changed later.",o:["TRUE","FALSE"],a:0,t:"inheritance"},
+  {q:"Static methods can be overridden in subclasses.",o:["TRUE","FALSE"],a:1,t:"inheritance"},
+  {q:"What is the origin point of Java's coordinate system?",o:["(1, 1)","(0, 0)","(100, 100)","(0, 1)"],a:1,t:"graphics"},
+  {q:"Which class is used to manage the graphics context in Java AWT?",o:["java.awt.Color","java.awt.Font","java.awt.Graphics","java.awt.Panel"],a:2,t:"graphics"},
+  {q:"Which method is used to draw on a component in Java AWT?",o:["draw()","render()","paint()","display()"],a:2,t:"graphics"},
+  {q:"Which method triggers a call to paint() in Java?",o:["refresh()","update()","redraw()","repaint()"],a:3,t:"graphics"},
+  {q:"Why is the Graphics class declared as abstract?",o:["To allow multiple inheritance","To contribute to Java's portability","To improve performance","To support threading"],a:1,t:"graphics"},
+  {q:"How many arguments does the Font constructor take?",o:["1","2","3","4"],a:2,t:"graphics"},
+  {q:"Which is a valid font style constant in Java?",o:["Font.UNDERLINE","Font.BOLD","Font.STRIKETHROUGH","Font.SHADOW"],a:1,t:"graphics"},
+  {q:"What unit is used to measure font size in Java?",o:["Pixels","Centimeters","Points (1/72 of an inch)","Inches"],a:2,t:"graphics"},
+  {q:"Which method sets the current drawing color in a Graphics object?",o:["setColor()","applyColor()","changeColor()","useColor()"],a:0,t:"graphics"},
+  {q:"What is the RGB value for the color blue in Java?",o:["(0, 0, 255)","(255, 0, 0)","(0, 255, 0)","(255, 255, 0)"],a:0,t:"graphics"},
+  {q:"What is the RGB value for the color black?",o:["(255, 255, 255)","(128, 128, 128)","(0, 0, 0)","(64, 64, 64)"],a:2,t:"graphics"},
+  {q:"Which method draws a filled rectangle in Java Graphics?",o:["drawRect()","clearRect()","fillRect()","paintRect()"],a:2,t:"graphics"},
+  {q:"Which method draws only the border of a rectangle (not filled)?",o:["fillRect()","drawRect()","strokeRect()","outlineRect()"],a:1,t:"graphics"},
+  {q:"What parameters does drawLine() require?",o:["x, y, width, height","x1, y1, x2, y2","x, y, length, angle","x1, y1, length"],a:1,t:"graphics"},
+  {q:"Which method draws a filled 3D rectangle that appears raised or lowered?",o:["drawRoundRect()","fillRoundRect()","fill3DRect()","draw3DRect()"],a:2,t:"graphics"},
+  {q:"Which method draws an oval outline (not filled)?",o:["fillOval()","drawOval()","strokeOval()","paintOval()"],a:1,t:"graphics"},
+  {q:"Which class extends Graphics to provide Java 2D API capabilities?",o:["Graphics3D","Graphics2D","GraphicsContext","GraphicsPlus"],a:1,t:"graphics"},
+  {q:"Which package contains Java 2D shape classes like Ellipse2D and Rectangle2D?",o:["java.awt.shapes","java.awt.draw","java.awt.geom","java.awt.2d"],a:2,t:"graphics"},
+  {q:"Which class is used to fill shapes with a gradient color effect in Java 2D?",o:["TexturePaint","GradientPaint","ColorFill","BasicStroke"],a:1,t:"graphics"},
+  {q:"Which class is used to fill a shape with a texture/image pattern in Java 2D?",o:["GradientPaint","PatternFill","TexturePaint","BufferedPaint"],a:2,t:"graphics"},
+  {q:"Which class controls the line thickness and style in Java 2D?",o:["LineWidth","StrokeWidth","BasicStroke","PenSize"],a:2,t:"graphics"},
+  {q:"Which class in Java 2D is used to build custom shapes from lines and curves?",o:["CustomShape","Polygon","GeneralPath","PathBuilder"],a:2,t:"graphics"},
+  {q:"What method is called on GeneralPath to set the starting point of a shape?",o:["startAt()","moveTo()","beginAt()","setStart()"],a:1,t:"graphics"},
+  {q:"What method is used to close a GeneralPath shape?",o:["close()","finish()","end()","closePath()"],a:3,t:"graphics"},
+  {q:"Which class is used to create an off-screen image for manipulation in Java 2D?",o:["OffscreenImage","BufferedImage","VirtualImage","CachedImage"],a:1,t:"graphics"},
+  {q:"Which method of Graphics2D is used to set the paint (color or pattern)?",o:["setColor()","setPaint()","setFill()","applyPaint()"],a:1,t:"graphics"},
+  {q:"Which method of Graphics2D draws the outline of a 2D shape?",o:["paint()","render()","draw()","stroke()"],a:2,t:"graphics"},
+  {q:"Which method of Graphics2D fills the interior of a 2D shape?",o:["fill()","paint()","fillShape()","applyFill()"],a:0,t:"graphics"},
+  {q:"How do you obtain a Graphics2D object from a Graphics object inside paint()?",o:["Call Graphics2D.getInstance()","Cast the Graphics object to Graphics2D","Use new Graphics2D()","Call g.getGraphics2D()"],a:1,t:"graphics"},
+  {q:"Which method of Graphics2D is used to rotate the coordinate system?",o:["spin()","turn()","rotate()","revolve()"],a:2,t:"graphics"},
+  {q:"Which Color constructor accepts float values for RGB components?",o:["new Color(int r, int g, int b)","new Color(float r, float g, float b)","new Color(double r, double g, double b)","new Color(byte r, byte g, byte b)"],a:1,t:"graphics"},
+  {q:"What is the valid range for integer RGB values in Java's Color class?",o:["0 to 100","0 to 512","0 to 255","1 to 256"],a:2,t:"graphics"},
+  {q:"Which method retrieves the red component value of a Color object?",o:["getR()","red()","getRed()","redValue()"],a:2,t:"graphics"},
+  {q:"Which method sets the current font in a Graphics object?",o:["applyFont()","useFont()","changeFont()","setFont()"],a:3,t:"graphics"},
+  {q:"Which method of the Font class returns true if the font style is bold?",o:["isBold()","checkBold()","hasBold()","getBold()"],a:0,t:"graphics"},
+  {q:"Which method of Graphics2D translates (moves) the origin of the coordinate system?",o:["move()","shift()","translate()","offset()"],a:2,t:"graphics"},
+  {q:"The class java.awt.Graphics is abstract and cannot be directly instantiated.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"In Java's coordinate system, the y-axis increases downward from the top-left corner.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"The method fillOval() draws only the outline of an oval shape without filling it.",o:["TRUE","FALSE"],a:1,t:"graphics"},
+  {q:"Font size in Java AWT is measured in pixels.",o:["TRUE","FALSE"],a:1,t:"graphics"},
+  {q:"The RGB value for white in Java's Color class is (255, 255, 255).",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"The class Graphics2D is a subclass (extends) of Graphics.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"GradientPaint allows a shape to be filled with a single solid color only.",o:["TRUE","FALSE"],a:1,t:"graphics"},
+  {q:"The method clearRect() fills a rectangle using the current background color.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"GeneralPath can be used to create custom shapes using a series of connected points.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"The method drawRoundRect() draws a rectangle with completely sharp corners.",o:["TRUE","FALSE"],a:1,t:"graphics"},
+  {q:"TexturePaint is used to fill shapes with a pattern derived from a BufferedImage.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"BasicStroke in Java 2D is used to control the thickness and style of drawn lines.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"The paint() method in Java AWT is called automatically when the window needs to be redrawn.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+  {q:"Java 2D shapes such as Ellipse2D and Rectangle2D are found in the java.awt.geom package.",o:["TRUE","FALSE"],a:0,t:"graphics"},
+];
+
+const TOPIC_LABELS = { basics:"Basics & syntax", oop:"OOP & classes", inheritance:"Inheritance & interfaces", graphics:"Graphics & Java 2D" };
+let questions = [], current = 0, correct = 0, wrong = 0, answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  const topic = document.getElementById('topic-select').value;
+  const count = parseInt(document.getElementById('count-range').value);
+  let pool = topic === 'all' ? ALL_QS : ALL_QS.filter(q => q.t === topic);
+  questions = shuffle(pool).slice(0, Math.min(count, pool.length));
+  current = 0; correct = 0; wrong = 0;
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  showQ();
+}
+
+function showQ() {
+  answered = false;
+  const q = questions[current];
+  const total = questions.length;
+  document.getElementById('q-num').textContent = `Question ${current + 1} of ${total}`;
+  document.getElementById('prog').style.width = ((current / total) * 100) + '%';
+  document.getElementById('st-c').textContent = correct;
+  document.getElementById('st-w').textContent = wrong;
+  const tag = document.getElementById('q-tag');
+  tag.textContent = TOPIC_LABELS[q.t] || q.t;
+  tag.className = 'topic-tag tag-' + q.t;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback-bar';
+  document.getElementById('next-btn').style.display = 'none';
+  const labels = ['A','B','C','D'];
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  q.o.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-key">${labels[i]}</span><span class="opt-text">${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    opts.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback');
+  if (idx === q.a) {
+    btns[idx].classList.add('correct');
+    correct++;
+    fb.textContent = '✓ Correct!';
+    fb.className = 'feedback-bar ok';
+  } else {
+    btns[idx].classList.add('wrong');
+    btns[q.a].classList.add('reveal');
+    wrong++;
+    fb.textContent = '✗ Incorrect — the correct answer is highlighted.';
+    fb.className = 'feedback-bar err';
+  }
+  document.getElementById('st-c').textContent = correct;
+  document.getElementById('st-w').textContent = wrong;
+  document.getElementById('next-btn').style.display = 'inline-flex';
+}
+
+function nextQ() {
+  current++;
+  if (current >= questions.length) showResults();
+  else showQ();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  const pct = Math.round((correct / questions.length) * 100);
+  const circumference = 2 * Math.PI * 50;
+  const offset = circumference - (pct / 100) * circumference;
+  const ring = document.getElementById('ring-fill');
+  ring.style.stroke = pct >= 85 ? '#22d3a0' : pct >= 65 ? '#fbbf24' : '#f87171';
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-c').textContent = correct;
+  document.getElementById('res-w').textContent = wrong;
+  document.getElementById('res-t').textContent = questions.length;
+  document.getElementById('res-title').textContent = pct >= 85 ? 'Excellent work!' : pct >= 65 ? 'Good effort!' : 'Keep practicing!';
+  document.getElementById('res-sub').textContent = `You scored ${correct} out of ${questions.length} questions`;
+}
+
+function restartSame() {
+  questions = shuffle(questions);
+  current = 0; correct = 0; wrong = 0;
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('ring-fill').style.strokeDashoffset = '314';
+  document.getElementById('quiz-screen').style.display = 'block';
+  showQ();
+}
+
+function goHome() {
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('ring-fill').style.strokeDashoffset = '314';
+  document.getElementById('start-screen').style.display = 'block';
+}
+</script>
+</body>
+</html>
