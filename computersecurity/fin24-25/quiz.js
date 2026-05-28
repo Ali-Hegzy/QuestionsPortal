@@ -287,7 +287,7 @@ const QUESTIONS = [
     {
         id: 36,
         type: "essay",
-        q: "Using PlatFair cipher, encrypt FREEDOM. Where the key is PALESTINE.",
+        q: "Using PlayFair cipher, encrypt FREEDOM. Where the key is PALESTINE.",
         ans: "<p><b>1. Build 5x5 Matrix with key PALESTINE (ignoring duplicates) and rest of alphabet (I/J combined):</b></p><pre style='background:#f4f4f4; padding:10px; border-radius:5px;'>P A L E S<br>T I N B C<br>D F G H K<br>M O Q R U<br>V W X Y Z</pre><p><b>2. Prepare text (FREEDOM):</b> Split into pairs. Insert 'X' between identical letters (EE).<br>Pairs: FR, EX, ED, OM.</p><p><b>3. Encrypt pairs:</b></p><ul><li><b>FR</b> forms rectangle with corners F(2,1) and R(3,3) &rarr; Replace with H and O &rarr; <b>HO</b></li><li><b>EX</b> forms rectangle with E(0,3) and X(4,2) &rarr; Replace with L and Y &rarr; <b>LY</b></li><li><b>ED</b> forms rectangle with E(0,3) and D(2,0) &rarr; Replace with P and H &rarr; <b>PH</b></li><li><b>OM</b> are in the same row (3,1) and (3,0). Shift right: O becomes Q, M becomes O &rarr; <b>QO</b>.</li></ul><p><b>Ciphertext:</b> HO LY PH QO</p>",
         why: "المحاضرة 2: تطبيق عملي لخوارزمية (Playfair cipher) ببناء المصفوفة وتقسيم الكلمة لأزواج مع كسر التكرار بحرف X، ثم تطبيق قواعد الاستبدال (المستطيل والصف الموحد).",
     },
