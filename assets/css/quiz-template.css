@@ -735,3 +735,154 @@
     line-height: 1.6;
     color: var(--text-muted);
 }
+
+/* ---- ESSAY & DESCRIPTIVE EXTENSIONS ---- */
+.q-type-tag.essay {
+    background: rgba(168, 85, 247, 0.15);
+    color: #a855f7;
+}
+
+.essay-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.essay-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.essay-textarea:focus {
+    border-color: var(--accent);
+}
+
+.essay-textarea:disabled {
+    opacity: 0.7;
+    background: rgba(255, 255, 255, 0.01);
+    cursor: not-allowed;
+}
+
+.btn-reveal {
+    align-self: flex-start;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reveal:hover {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+}
+
+/* لون العقدة المقالية المحلولة في خريطة التنقل */
+.map-node.essay-done {
+    border-color: #a855f7;
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.12);
+}
+
+.essay-model-ans {
+    direction: ltr;
+    text-align: left;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-top: 0.4rem;
+}
+
+/* ================================================================
+   RESPONSIBLE RENDERING FOR RICH HTML CONTENT (ESSAY UPDATES)
+   ================================================================ */
+
+/* تحسين مرونة القوائم والعناصر داخل كرت التفسير والإجابة النموذجية */
+.explanation-content ul,
+.essay-model-ans ul,
+.explanation-content ol,
+.essay-model-ans ol {
+    padding-right: 1.5rem;
+    padding-left: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.explanation-content li,
+.essay-model-ans li {
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* حل مشكلة الجداول وتمددها خارج حدود الهاتف */
+.essay-model-ans table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem; /* تصغير الخط قليلاً على الشاشات للحفاظ على الهيكل */
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid var(--border);
+}
+
+.essay-model-ans th,
+.essay-model-ans td {
+    border: 1px solid var(--border2) !important;
+    padding: 10px 8px !important;
+    color: var(--text);
+}
+
+.essay-model-ans p {
+    color: var(--text);
+}
+
+.essay-model-ans th {
+    background-color: var(--surface3) !important;
+    color: var(--accent) !important;
+    font-weight: 700;
+}
+
+/* حل مشكلة الـ pre والرموز البرمجية المفرطة */
+.essay-model-ans pre {
+    background: var(--surface3) !important;
+    border: 1px solid var(--border2);
+    padding: 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    overflow-x: auto; /* إضافة شريط تمرير أفقي إذا كان النص عريضاً على الهاتف */
+    color: var(--orange);
+    white-space: pre-wrap; /* يمنع النص من الخروج خارج الكادر ويقوم بإنزال سطر تلقائي */
+}
+
+/* تحسين السلوك لخاصية الـ column-count على الشاشات الصغيرة */
+@media (max-width: 650px) {
+    /* إلغاء نظام العمودين على الهواتف ليعرض كقائمة عمودية مريحة ومنع التداخل */
+    .essay-model-ans div[style*="column-count"] {
+        column-count: 1 !important;
+    }
+
+    /* جعل الجداول قابلة للتمرير الأفقي بدلاً من كسر صندوق الإجابة */
+    .essay-model-ans {
+        overflow-x: auto;
+    }
+}

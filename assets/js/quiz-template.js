@@ -2,36 +2,83 @@
 // UNIVERSAL QUIZ CORE ENGINE (OOP REUSABLE ARCHITECTURE)
 // ================================================================
 class QuizEngine {
-    constructor(dataset, durationInMinutes) {
+    constructor(dataset, durationInMinutes = 60) {
         if (!dataset || !Array.isArray(dataset)) {
             throw new Error(
-                "QuizEngine: Valid dataset array is required initialization.",
+                "QuizEngine: Valid dataset array is required for initialization.",
             );
         }
 
         this.dataset = dataset;
         this.totalDuration = durationInMinutes * 60;
+        this.durationInMinutes = durationInMinutes;
         this.secondsLeft = this.totalDuration;
         this.elapsedSeconds = 0;
         this.activeIndex = 0;
 
-        // تخصيص مصفوفات الحالة ديناميكياً بناءً على حجم الاختبار المستدعى
         this.userAnswers = new Array(this.dataset.length).fill(null);
         this.stateLocked = new Array(this.dataset.length).fill(false);
         this.engineTimer = null;
+
         this.setupDynamicMeta();
     }
 
-    // اختصارات داخلية للتعامل مع عناصر الـ DOM
     $(id) {
         return document.getElementById(id);
     }
 
     evaluateAnswer(i) {
+        // الأسئلة المقالية لا تملك تصحيحاً تلقائياً رقمياً
+        if (this.dataset[i].type === "essay") return null;
         return (
             this.userAnswers[i] !== null &&
             this.userAnswers[i] === this.dataset[i].ans
         );
+    }
+
+    setupDynamicMeta() {
+        const splashMaxQ = this.$("quest-num");
+        if (splashMaxQ) splashMaxQ.textContent = this.dataset.length;
+
+        const splashMaxTime = this.$("time-num");
+        if (splashMaxTime) splashMaxTime.textContent = this.durationInMinutes;
+
+        const clockView = this.$("clock");
+        if (clockView) {
+            const displayM = String(this.durationInMinutes).padStart(2, "0");
+            clockView.textContent = `${displayM}:00`;
+        }
+    }
+
+    startTimer() {
+        if (this.engineTimer) clearInterval(this.engineTimer);
+
+        this.engineTimer = setInterval(() => {
+            if (this.secondsLeft <= 0) {
+                clearInterval(this.engineTimer);
+                this.terminateSession();
+                return;
+            }
+            this.secondsLeft--;
+            this.elapsedSeconds++;
+
+            const displayM = String(Math.floor(this.secondsLeft / 60)).padStart(
+                2,
+                "0",
+            );
+            const displayS = String(this.secondsLeft % 60).padStart(2, "0");
+            const clockView = this.$("clock");
+            if (clockView) {
+                clockView.textContent = `${displayM}:${displayS}`;
+                clockView.className =
+                    "timer" +
+                    (this.secondsLeft < 120
+                        ? " danger"
+                        : this.secondsLeft < 300
+                          ? " warn"
+                          : "");
+            }
+        }, 1000);
     }
 
     initEngine() {
@@ -51,29 +98,33 @@ class QuizEngine {
             node.className = "map-node";
             node.id = `node-${i}`;
             node.textContent = i + 1;
-            // ربط الحدث بـ Arrow Function للحفاظ على مرجعية الـ `this`
             node.onclick = () => this.jumpToNode(i);
             mapGrid.appendChild(node);
         });
     }
 
     updateNodeLayout() {
-        this.dataset.forEach((_, i) => {
+        this.dataset.forEach((item, i) => {
             const node = this.$(`node-${i}`);
             if (!node) return;
             node.className = "map-node";
-            if (i === this.activeIndex) node.classList.add("active");
-            else if (this.userAnswers[i] !== null) {
-                node.classList.add(
-                    this.evaluateAnswer(i) ? "correct" : "wrong",
-                );
+            if (i === this.activeIndex) {
+                node.classList.add("active");
+            } else if (this.userAnswers[i] !== null) {
+                if (item.type === "essay") {
+                    node.classList.add("essay-done"); // لون مخصص للمقال المكتمل
+                } else {
+                    node.classList.add(
+                        this.evaluateAnswer(i) ? "correct" : "wrong",
+                    );
+                }
             }
         });
 
         let correctCount = 0,
             faultCount = 0;
         this.userAnswers.forEach((ans, i) => {
-            if (ans !== null) {
+            if (ans !== null && this.dataset[i].type !== "essay") {
                 this.evaluateAnswer(i) ? correctCount++ : faultCount++;
             }
         });
@@ -124,6 +175,8 @@ class QuizEngine {
         const currentSelection = this.userAnswers[this.activeIndex];
 
         let payloadBody = "";
+        let explanationMarkup = "";
+
         if (item.type === "tf") {
             const trueClass = this.checkOptionState(
                 currentSelection,
@@ -143,7 +196,7 @@ class QuizEngine {
         <button class="tf-button${lockedFlag} ${trueClass}" onclick="currentQuiz.commitAnswer(true)">✓ True</button>
         <button class="tf-button${lockedFlag} ${falseClass}" onclick="currentQuiz.commitAnswer(false)">✗ False</button>
       </div>`;
-        } else {
+        } else if (item.type === "mcq") {
             const letters = ["A", "B", "C", "D"];
             payloadBody = `<div class="options-stack">${item.opts
                 .map((opt, i) => {
@@ -160,15 +213,37 @@ class QuizEngine {
         </div>`;
                 })
                 .join("")}</div>`;
+        } else if (item.type === "essay") {
+            // واجهة الاسئلة المقالية
+            const savedText = currentSelection || "";
+            const disabledState = isLocked ? "disabled" : "";
+
+            payloadBody = `
+        <div class="essay-container">
+          <textarea id="essay-input" class="essay-textarea" placeholder="Write your technical analysis/explanation here..." ${disabledState}>${savedText}</textarea>
+          ${!isLocked ? `<button class="btn-reveal" onclick="currentQuiz.revealEssayAnswer()">👁 Reveal Answer & Explanation</button>` : ""}
+        </div>`;
         }
 
-        // إضافة صندوق التفسير في نهاية الكارت إذا كان هناك نص في "why"
-        let explanationMarkup = "";
-        if (item.why) {
+        // بناء حاوية التفسير (تظهر لو السؤال locked)
+        if (item.why || item.type === "essay") {
+            const titleText =
+                item.type === "essay"
+                    ? "📘 Model Answer Blueprint:"
+                    : "💡 تحليل هندسي وتفسير علمي:";
+            const mainContent =
+                item.type === "essay"
+                    ? `<div class="essay-model-ans">${item.ans}</div>`
+                    : "";
+            const subContent = item.why
+                ? `<div class="explanation-content" style="margin-top:0.6rem; border-top:1px dashed var(--border2); padding-top:0.4rem;">${item.why}</div>`
+                : "";
+
             explanationMarkup = `
         <div id="q-explanation" class="explanation-box" style="display: ${isLocked ? "block" : "none"};">
-          <div class="explanation-title">تحليل:</div>
-          <div class="explanation-content">${item.why}</div>
+          <div class="explanation-title">${titleText}</div>
+          ${mainContent}
+          ${subContent}
         </div>`;
         }
 
@@ -176,7 +251,7 @@ class QuizEngine {
             this.$("question-payload").innerHTML = `
         <div class="q-card">
           <div class="q-card-header">
-            <span class="q-type-tag ${item.type === "tf" ? "tf" : "mcq"}">${item.type === "tf" ? "True / False" : "Multiple Choice"}</span>
+            <span class="q-type-tag ${item.type}">${item.type === "tf" ? "True / False" : item.type === "mcq" ? "Multiple Choice" : "Essay / Descriptive"}</span>
           </div>
           <div class="q-text">${item.q}</div>
           ${payloadBody}
@@ -201,7 +276,29 @@ class QuizEngine {
         this.refreshProgressMetrics();
         this.updateNodeLayout();
 
-        // إظهار التفسير فوراً وبحركة ناعمة
+        const expBox = this.$("q-explanation");
+        if (expBox) {
+            expBox.style.display = "block";
+            expBox.style.animation = "fadeInUp 0.4s ease-out";
+        }
+
+        setTimeout(() => {
+            if (this.activeIndex < this.dataset.length - 1) this.navigate(1);
+        }, 4000);
+    }
+
+    revealEssayAnswer() {
+        const txtArea = this.$("essay-input");
+        const textValue = txtArea ? txtArea.value.trim() : "";
+
+        // حفظ نص الطالب حتى لو فارغ ليعلم السؤال كمحلول
+        this.userAnswers[this.activeIndex] = textValue || "Answer Revealed";
+        this.stateLocked[this.activeIndex] = true;
+
+        this.renderActivePayload();
+        this.refreshProgressMetrics();
+        this.updateNodeLayout();
+
         const expBox = this.$("q-explanation");
         if (expBox) {
             expBox.style.display = "block";
@@ -220,10 +317,18 @@ class QuizEngine {
             mcqTotal = 0,
             mcqCorrect = 0,
             tfTotal = 0,
-            tfCorrect = 0;
+            tfCorrect = 0,
+            essayTotal = 0;
 
         this.dataset.forEach((item, i) => {
             const allocation = this.userAnswers[i];
+
+            if (item.type === "essay") {
+                essayTotal++;
+                if (allocation === null) bypassed++;
+                return; // الخروج تماماً من حسابات النسب المئوية الرقمية للتصحيح
+            }
+
             const match = allocation !== null && allocation === item.ans;
             if (allocation === null) bypassed++;
             if (match) correct++;
@@ -231,20 +336,29 @@ class QuizEngine {
             if (item.type === "mcq") {
                 mcqTotal++;
                 if (match) mcqCorrect++;
-            } else {
+            } else if (item.type === "tf") {
                 tfTotal++;
                 if (match) tfCorrect++;
             }
         });
 
-        const computationalFaults = this.dataset.length - correct - bypassed;
-        const generalEfficiency = Math.round(
-            (correct / this.dataset.length) * 100,
-        );
+        const objectiveTotal = this.dataset.length - essayTotal;
+        const computationalFaults =
+            objectiveTotal -
+            correct -
+            (bypassed -
+                this.userAnswers.filter(
+                    (a, idx) =>
+                        a === null && this.dataset[idx].type === "essay",
+                ).length);
+        const generalEfficiency =
+            objectiveTotal > 0
+                ? Math.round((correct / objectiveTotal) * 100)
+                : 100;
 
         this.$("metrics-pct").textContent = generalEfficiency + "%";
         this.$("metrics-c").textContent = correct;
-        this.$("metrics-w").textContent = computationalFaults;
+        this.$("metrics-w").textContent = Math.max(0, computationalFaults);
         this.$("metrics-s").textContent = bypassed;
 
         const usedM = String(Math.floor(this.elapsedSeconds / 60)).padStart(
@@ -256,7 +370,7 @@ class QuizEngine {
 
         let reportTitle = "Processor Integrity Cleared";
         let reportMsg =
-            "The analytical model indicates optimal structure mapping retention.";
+            "Objective metrics evaluate core alignment accurately. Review descriptive fields manually.";
         if (generalEfficiency < 85) {
             reportTitle = "Structural Optimization Suggested";
             reportMsg =
@@ -292,9 +406,17 @@ class QuizEngine {
             logView.innerHTML = this.dataset
                 .map((item, i) => {
                     const allocation = this.userAnswers[i];
+
+                    if (item.type === "essay") {
+                        return `<div class="review-item" style="border-right: 4px solid var(--accent);">
+            <div class="review-question">Block ${i + 1} [ESSAY]. ${item.q}</div>
+            <div class="review-answer ok" style="direction:ltr; text-align:left; white-space:pre-wrap;">Your input log: ${allocation || "No Entry Saved"}</div>
+            <div class="review-answer ok" style="margin-top:0.5rem; direction:ltr; text-align:left; background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:4px;">Expected Blueprint: ${item.ans}</div>
+          </div>`;
+                    }
+
                     const match =
                         allocation !== null && allocation === item.ans;
-
                     const parsedUser =
                         allocation === null
                             ? "Bypassed Node"
@@ -340,54 +462,5 @@ class QuizEngine {
         this.generateNodeMap();
         this.jumpToNode(0);
         this.startTimer();
-    }
-    startTimer() {
-        // التأكد من عدم وجود مؤقت يعمل في الخلفية قبل البدء
-        if (this.engineTimer) clearInterval(this.engineTimer);
-
-        this.engineTimer = setInterval(() => {
-            if (this.secondsLeft <= 0) {
-                clearInterval(this.engineTimer);
-                this.terminateSession();
-                return;
-            }
-            this.secondsLeft--;
-            this.elapsedSeconds++;
-
-            const displayM = String(Math.floor(this.secondsLeft / 60)).padStart(
-                2,
-                "0",
-            );
-            const displayS = String(this.secondsLeft % 60).padStart(2, "0");
-            const clockView = this.$("clock");
-            if (clockView) {
-                clockView.textContent = `${displayM}:${displayS}`;
-                clockView.className =
-                    "timer" +
-                    (this.secondsLeft < 120
-                        ? " danger"
-                        : this.secondsLeft < 300
-                          ? " warn"
-                          : "");
-            }
-        }, 1000);
-    }
-
-    setupDynamicMeta() {
-        const durationInMinutes = this.totalDuration / 60;
-        // تحديث إجمالي الأسئلة ديناميكياً
-        const splashMaxQ = this.$("quest-num");
-        if (splashMaxQ) splashMaxQ.textContent = this.dataset.length;
-
-        // تحديث الوقت الإجمالي بالدقائق ديناميكياً
-        const splashMaxTime = this.$("time-num");
-        if (splashMaxTime) splashMaxTime.textContent = durationInMinutes;
-
-        // اختياري: تحديث نص المؤقت الأولي في واجهة الاختبار قبل الضغط على Start
-        // const clockView = this.$("clock");
-        // if (clockView) {
-        //     const displayM = String(durationInMinutes).padStart(2, "0");
-        //     clockView.textContent = `${displayM}:00`;
-        // }
     }
 }
