@@ -688,8 +688,13 @@
     font-size: 0.78rem;
     line-height: 1.4;
 }
-.review-answer.ok {
+.review-answer.ok,
+.review-answer > p {
     color: var(--green);
+}
+.review-answer ol,
+.review-answer ul {
+    padding-left: 1rem;
 }
 .review-answer.ng {
     color: var(--red);
