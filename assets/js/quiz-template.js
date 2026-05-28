@@ -230,7 +230,7 @@ class QuizEngine {
             const titleText =
                 item.type === "essay"
                     ? "📘 Model Answer Blueprint:"
-                    : "💡 تحليل هندسي وتفسير علمي:";
+                    : "💡 تحليل:";
             const mainContent =
                 item.type === "essay"
                     ? `<div class="essay-model-ans">${item.ans}</div>`
@@ -281,10 +281,6 @@ class QuizEngine {
             expBox.style.display = "block";
             expBox.style.animation = "fadeInUp 0.4s ease-out";
         }
-
-        setTimeout(() => {
-            if (this.activeIndex < this.dataset.length - 1) this.navigate(1);
-        }, 4000);
     }
 
     revealEssayAnswer() {
