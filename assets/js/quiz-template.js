@@ -9,7 +9,10 @@ class QuizEngine {
             );
         }
 
-        this.dataset = dataset;
+        // أخذ نسخة عميقة وفصلها عن المصفوفة الأصلية لتجنب تدمير الترتيب الأصلي
+        // ثم خلط الأسئلة تلقائياً عند توليد الكائن
+        this.dataset = this.shuffleDataset([...dataset]);
+
         this.totalDuration = durationInMinutes * 60;
         this.durationInMinutes = durationInMinutes;
         this.secondsLeft = this.totalDuration;
@@ -25,6 +28,15 @@ class QuizEngine {
 
     $(id) {
         return document.getElementById(id);
+    }
+
+    // خوارزمية Fisher-Yates لخلط كتل المصفوفة الرياضية بشكل عادل
+    shuffleDataset(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
     evaluateAnswer(i) {
@@ -214,7 +226,6 @@ class QuizEngine {
                 })
                 .join("")}</div>`;
         } else if (item.type === "essay") {
-            // واجهة الاسئلة المقالية
             const savedText = currentSelection || "";
             const disabledState = isLocked ? "disabled" : "";
 
@@ -225,7 +236,6 @@ class QuizEngine {
         </div>`;
         }
 
-        // بناء حاوية التفسير (تظهر لو السؤال locked)
         if (item.why || item.type === "essay") {
             const titleText =
                 item.type === "essay"
@@ -287,7 +297,6 @@ class QuizEngine {
         const txtArea = this.$("essay-input");
         const textValue = txtArea ? txtArea.value.trim() : "";
 
-        // حفظ نص الطالب حتى لو فارغ ليعلم السؤال كمحلول
         this.userAnswers[this.activeIndex] = textValue || "Answer Revealed";
         this.stateLocked[this.activeIndex] = true;
 
@@ -322,7 +331,7 @@ class QuizEngine {
             if (item.type === "essay") {
                 essayTotal++;
                 if (allocation === null) bypassed++;
-                return; // الخروج تماماً من حسابات النسب المئوية الرقمية للتصحيح
+                return;
             }
 
             const match = allocation !== null && allocation === item.ans;
@@ -406,7 +415,7 @@ class QuizEngine {
                     if (item.type === "essay") {
                         return `<div class="review-item" style="border-right: 4px solid var(--accent);">
             <div class="review-question">Block ${i + 1} [ESSAY]. ${item.q}</div>
-            <div class="review-answer ok" style="direction:ltr; text-align:left; white-space:pre-wrap;">Your input log: ${allocation || "No Entry Saved"}</div>
+            <div class="review-answer ok" style="direction:ltr; text-align:left; white-wrap:pre-wrap;">Your input log: ${allocation || "No Entry Saved"}</div>
             <div class="review-answer ok" style="margin-top:0.5rem; direction:ltr; text-align:left; background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:4px;">Expected Blueprint: ${item.ans}</div>
           </div>`;
                     }
@@ -452,6 +461,9 @@ class QuizEngine {
         this.activeIndex = 0;
         this.secondsLeft = this.totalDuration;
         this.elapsedSeconds = 0;
+
+        // إعادة خلط الأسئلة عند إعادة المحاولة لتوفير تجربة جديدة تماماً
+        this.dataset = this.shuffleDataset([...this.dataset]);
 
         this.$("results").style.display = "none";
         this.$("app").style.display = "block";
