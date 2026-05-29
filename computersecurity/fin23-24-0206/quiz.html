@@ -9,7 +9,14 @@
             rel="stylesheet" />
         <link rel="stylesheet" href="/assets/css/quiz-template.css" />
         <link rel="stylesheet" href="/assets/css/global.css" />
-    </head>
+    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; ">
+<script>
+    if (window.top !== window.self) {
+      window.top.location = window.self.location; // كسر أي إطار خبيث يحاول احتواء موقعك
+    }
+  </script>
+  </head>
     <body>
         <main class="container">
             <nav class="nav-actions">
