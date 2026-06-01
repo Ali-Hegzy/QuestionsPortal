@@ -9,10 +9,7 @@ class QuizEngine {
             );
         }
 
-        // أخذ نسخة عميقة وفصلها عن المصفوفة الأصلية لتجنب تدمير الترتيب الأصلي
-        // ثم خلط الأسئلة تلقائياً عند توليد الكائن
-        this.dataset = this.shuffleDataset([...dataset]);
-
+        this.dataset = dataset;
         this.totalDuration = durationInMinutes * 60;
         this.durationInMinutes = durationInMinutes;
         this.secondsLeft = this.totalDuration;
@@ -30,17 +27,7 @@ class QuizEngine {
         return document.getElementById(id);
     }
 
-    // خوارزمية Fisher-Yates لخلط كتل المصفوفة الرياضية بشكل عادل
-    shuffleDataset(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
     evaluateAnswer(i) {
-        // الأسئلة المقالية لا تملك تصحيحاً تلقائياً رقمياً
         if (this.dataset[i].type === "essay") return null;
         return (
             this.userAnswers[i] !== null &&
@@ -124,7 +111,7 @@ class QuizEngine {
                 node.classList.add("active");
             } else if (this.userAnswers[i] !== null) {
                 if (item.type === "essay") {
-                    node.classList.add("essay-done"); // لون مخصص للمقال المكتمل
+                    node.classList.add("essay-done");
                 } else {
                     node.classList.add(
                         this.evaluateAnswer(i) ? "correct" : "wrong",
@@ -153,6 +140,24 @@ class QuizEngine {
         this.updateNodeLayout();
         this.refreshProgressMetrics();
         this.renderActivePayload();
+
+        // ========================================================
+        // DYNAMIC ALERT TRIGGER SYSTEM (مستشعر الأكشن والرسائل)
+        // ========================================================
+        const currentQuestion = this.dataset[this.activeIndex];
+
+        // إذا كان السؤال يحتوى على رسالة أكشن، يتم تمريرها وعرضها فوراً
+        if (currentQuestion.action) {
+            this.executeSecureAction(currentQuestion.action);
+        }
+    }
+
+    // الدالة المسؤولة عن تشغيل التنبيه بالرسالة المحددة لكل سؤال بأمان
+    executeSecureAction(alertMessage) {
+        if (alertMessage && alertMessage.trim() !== "") {
+            // استخدام setTimeout لضمان ظهور الـ alert بعد اكتمال رندرة السؤال على الشاشة
+            alert(alertMessage);
+        }
     }
 
     refreshProgressMetrics() {
@@ -461,9 +466,6 @@ class QuizEngine {
         this.activeIndex = 0;
         this.secondsLeft = this.totalDuration;
         this.elapsedSeconds = 0;
-
-        // إعادة خلط الأسئلة عند إعادة المحاولة لتوفير تجربة جديدة تماماً
-        this.dataset = this.shuffleDataset([...this.dataset]);
 
         this.$("results").style.display = "none";
         this.$("app").style.display = "block";

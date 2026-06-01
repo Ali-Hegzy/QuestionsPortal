@@ -82,6 +82,7 @@ const QUESTIONS = [
         opts: ["Block", "Round", "Message"],
         ans: 0,
         why: "المحاضرة 3 و 6: خوارزمية S-DES (وكذلك DES) هي خوارزمية تشفير كتلي (Block Cipher)، بالتالي يتم تهيئة المفتاح الأساسي ليُطبق على كل كتلة (Block) من البيانات.",
+        action: "تنبيه هام: السؤال التالي اجابته تختلف عن الاجابة في جروب السيريال, اجابة جروب السيريال هى [Round]. و التحليل الظاهر هو تحليل لاجابة الموقع",
     },
     {
         id: 9,
@@ -181,6 +182,7 @@ const QUESTIONS = [
         q: "Avalanche Effect means a small change in the input should result in a significantly different hash value.",
         ans: false,
         why: "العبارة الصحيحة: Avalanche Effect means a small change in the plaintext or key should result in a significantly different ciphertext.\nالمحاضرة 3 والمحاضرة 4: تأثير الانهيار (Avalanche Effect) قُدم كخاصية أساسية لخوارزميات التشفير الكتلي (مثل DES و AES)، حيث أن تغيير بت واحد في النص الأصلي أو المفتاح يُحدث تغييراً كبيراً وعشوائياً في كتل النص المشفر.",
+        action: "تنبيه هام: السؤال التالي اجابته تختلف عن الاجابة في جروب السيريال, اجابة جروب السيريال هى [true]. و التحليل الظاهر هو تحليل لاجابة الموقع",
     },
     {
         id: 22,
