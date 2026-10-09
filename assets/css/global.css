@@ -8,8 +8,8 @@
     --drive-color: #22d3a0;
     --text: #e8eaf0;
     --muted: #9ca3af;
-    --mono: "Space Mono", monospace;
-    --sans: "DM Sans", sans-serif;
+    --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {
@@ -257,4 +257,40 @@ footer {
 .drive-section .card:hover {
     background: rgba(34, 211, 160, 0.08);
     border-style: solid;
+}
+
+/* Shared, dependency-free usability layer for every subject and exam index. */
+:root {
+    color-scheme: dark;
+    --bg: #10131a;
+    --surface: #191e28;
+    --surface2: #222938;
+    --border: #343d4e;
+    --accent: #aaa5ff;
+    --accent2: #b9b5ff;
+    --text: #f2f4f8;
+    --muted: #b0b8c6;
+}
+
+body { line-height: 1.55; }
+.container { max-width: 1040px; }
+a:focus-visible, button:focus-visible, textarea:focus-visible {
+    outline: 3px solid #f5c96a;
+    outline-offset: 3px;
+}
+.btn-nav, .card { transition: border-color .18s ease, background-color .18s ease; }
+.card:hover { transform: translateY(-2px); }
+.card p { font-size: .95rem; }
+.nav-actions { flex-direction: row; }
+.nav-actions button, .nav-actions a { min-height: 44px; }
+
+@media (max-width: 768px) {
+    body { padding: 1rem 1rem 2rem; }
+    h1 { font-size: clamp(1.7rem, 8vw, 2.2rem); }
+    .quiz-grid { grid-template-columns: 1fr; gap: .9rem; }
+    .card { padding: 1.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

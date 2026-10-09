@@ -15,7 +15,7 @@
   </script>
   </head>
     <body>
-        <noscript><p class="warning-note" role="alert" dir="rtl">JavaScript is required to run this quiz. Enable it and reload the page.</p></noscript>
+        <noscript><p class="warning-note" role="alert">JavaScript is required to run this quiz. Enable it and reload the page.</p></noscript>
         <main class="container">
             <nav class="nav-actions">
                 <button class="btn-nav" onclick="window.history.back()">
@@ -28,14 +28,14 @@
             <div id="splash">
                 <div class="badge">
                     <div class="badge-dot"></div>
-                    <span>Computer Security Quiz</span>
+                    <span>Operating system Quiz</span>
                 </div>
-                <h1 class="hero-title">Computer Security</h1>
+                <h1 class="hero-title">Operating system</h1>
                 <p class="hero-sub">
-                    Final 2023/2024 [17/1]
+                    CH1 - QB
                 </p>
 
-                <p class="warning-note" role="note">الاجابات و تحليلها تمت كتابتهم بواسطة notebooklm,لذا من الممكن ان يكون هناك اخطاء.</p>
+                <p class="warning-note" role="note" dir="rtl">تم استخدام Gemini لاخذ الاسئلة و الاجابات و الشرح من المصدر لذلك يمكن ان يكون هناك خطأ.</p>
 
                 <div class="stats-banner">
                     <div class="stat-box">
@@ -55,7 +55,7 @@
 
             <div id="app">
                 <div class="top-panel">
-                    <div class="panel-left">// Computer Security 23-24 [17/1]</div>
+                    <div class="panel-left">// Operating system CH1 - QB</div>
                     <div class="panel-center">
                         <div class="timer" id="clock">--:--</div>
                     </div>
@@ -201,7 +201,7 @@
         <script src="/assets/js/quiz-template.js"></script>
         <script src="./quiz.js"></script>
         <script>
-            const currentQuiz = new QuizEngine(typeof QUESTIONS === "undefined" ? null : QUESTIONS, 60);
+            const currentQuiz = new QuizEngine(typeof QUESTIONS === "undefined" ? null : QUESTIONS, 70);
 
             // ربط الدوال العامة في الـ HTML بالـ Instance الحالية للمحرك
             function initEngine() {

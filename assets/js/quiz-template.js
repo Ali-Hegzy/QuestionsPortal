@@ -3,13 +3,17 @@
 // ================================================================
 class QuizEngine {
     constructor(dataset, durationInMinutes = 60) {
-        if (!dataset || !Array.isArray(dataset)) {
-            throw new Error(
-                "QuizEngine: Valid dataset array is required for initialization.",
-            );
+        this.dataset = Array.isArray(dataset) ? dataset : [];
+        this.validationError = Array.isArray(dataset)
+            ? null
+            : new Error("Quiz data is missing or is not an array.");
+        if (!this.validationError) {
+            try {
+                this.validateDataset();
+            } catch (error) {
+                this.validationError = error;
+            }
         }
-
-        this.dataset = dataset;
         this.totalDuration = durationInMinutes * 60;
         this.durationInMinutes = durationInMinutes;
         this.secondsLeft = this.totalDuration;
@@ -17,10 +21,52 @@ class QuizEngine {
         this.activeIndex = 0;
 
         this.userAnswers = new Array(this.dataset.length).fill(null);
+        this.essayDrafts = new Array(this.dataset.length).fill("");
+        this.essayRevealed = new Array(this.dataset.length).fill(false);
         this.stateLocked = new Array(this.dataset.length).fill(false);
         this.engineTimer = null;
 
         this.setupDynamicMeta();
+    }
+
+    validateDataset() {
+        const ids = new Set();
+        this.dataset.forEach((item, index) => {
+            const fail = (message) => { throw new Error(`Quiz question ${index + 1}: ${message}`); };
+            if (!item || typeof item !== "object" || !["mcq", "tf", "essay"].includes(item.type)) fail("unsupported or missing question type.");
+            if (typeof item.q !== "string" || !item.q.trim()) fail("question text is required.");
+            if (item.why != null && typeof item.why !== "string") fail("explanation must be text.");
+            if (item.action != null && typeof item.action !== "string") fail("warning note must be text.");
+            if (item.id != null) {
+                if (ids.has(String(item.id))) fail(`duplicate id ${item.id}.`);
+                ids.add(String(item.id));
+            }
+            if (item.type === "mcq" && (!Array.isArray(item.opts) || item.opts.length < 2 || item.opts.some((option) => typeof option !== "string") || !Number.isInteger(item.ans) || item.ans < 0 || item.ans >= item.opts.length)) fail("MCQ needs at least two text options and a valid zero-based answer index.");
+            if (item.type === "tf" && typeof item.ans !== "boolean") fail("true/false answer must be a boolean.");
+            if (item.type === "essay" && typeof item.ans !== "string") fail("essay reference answer must be text.");
+        });
+        if (!this.dataset.length) throw new Error("QuizEngine: at least one valid question is required.");
+    }
+
+    escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+    }
+
+    safeReferenceHTML(value) {
+        const template = document.createElement("template");
+        template.innerHTML = String(value ?? "");
+        const allowed = new Set(["P", "B", "STRONG", "I", "EM", "UL", "OL", "LI", "BR", "PRE", "CODE", "TABLE", "THEAD", "TBODY", "TR", "TH", "TD", "SUB", "SUP"]);
+        const clean = (node) => {
+            [...node.childNodes].forEach((child) => {
+                if (child.nodeType === Node.ELEMENT_NODE) {
+                    if (!allowed.has(child.tagName)) { child.replaceWith(document.createTextNode(child.textContent)); return; }
+                    [...child.attributes].forEach((attribute) => child.removeAttribute(attribute.name));
+                    clean(child);
+                } else if (child.nodeType !== Node.TEXT_NODE) child.remove();
+            });
+        };
+        clean(template.content);
+        return template.innerHTML;
     }
 
     $(id) {
@@ -33,6 +79,13 @@ class QuizEngine {
             this.userAnswers[i] !== null &&
             this.userAnswers[i] === this.dataset[i].ans
         );
+    }
+
+    hasAnswer(i) {
+        return this.dataset[i].type === "essay"
+            ? (typeof this.userAnswers[i] === "string" && this.userAnswers[i].trim().length > 0)
+                || this.essayDrafts[i].trim().length > 0
+            : this.userAnswers[i] !== null;
     }
 
     setupDynamicMeta() {
@@ -81,6 +134,14 @@ class QuizEngine {
     }
 
     initEngine() {
+        if (this.validationError) {
+            const message = document.createElement("p");
+            message.className = "warning-note";
+            message.setAttribute("role", "alert");
+            message.textContent = `This quiz cannot start: ${this.validationError.message}`;
+            this.$("splash").appendChild(message);
+            return;
+        }
         this.$("splash").style.display = "none";
         this.$("app").style.display = "block";
         this.generateNodeMap();
@@ -93,11 +154,13 @@ class QuizEngine {
         if (!mapGrid) return;
         mapGrid.innerHTML = "";
         this.dataset.forEach((_, i) => {
-            const node = document.createElement("div");
+            const node = document.createElement("button");
+            node.type = "button";
             node.className = "map-node";
+            node.setAttribute("aria-label", `Go to question ${i + 1}`);
             node.id = `node-${i}`;
             node.textContent = i + 1;
-            node.onclick = () => this.jumpToNode(i);
+            node.addEventListener("click", () => this.jumpToNode(i));
             mapGrid.appendChild(node);
         });
     }
@@ -109,7 +172,7 @@ class QuizEngine {
             node.className = "map-node";
             if (i === this.activeIndex) {
                 node.classList.add("active");
-            } else if (this.userAnswers[i] !== null) {
+            } else if (this.hasAnswer(i)) {
                 if (item.type === "essay") {
                     node.classList.add("essay-done");
                 } else {
@@ -141,27 +204,11 @@ class QuizEngine {
         this.refreshProgressMetrics();
         this.renderActivePayload();
 
-        // ========================================================
-        // DYNAMIC ALERT TRIGGER SYSTEM (مستشعر الأكشن والرسائل)
-        // ========================================================
-        const currentQuestion = this.dataset[this.activeIndex];
-
-        // إذا كان السؤال يحتوى على رسالة أكشن، يتم تمريرها وعرضها فوراً
-        if (currentQuestion.action) {
-            this.executeSecureAction(currentQuestion.action);
-        }
-    }
-
-    // الدالة المسؤولة عن تشغيل التنبيه بالرسالة المحددة لكل سؤال بأمان
-    executeSecureAction(alertMessage) {
-        if (alertMessage && alertMessage.trim() !== "") {
-            // استخدام setTimeout لضمان ظهور الـ alert بعد اكتمال رندرة السؤال على الشاشة
-            alert(alertMessage);
-        }
+        // Warnings are rendered with the question instead of interrupting study with alerts.
     }
 
     refreshProgressMetrics() {
-        const answeredCount = this.userAnswers.filter((a) => a !== null).length;
+        const answeredCount = this.userAnswers.filter((_, i) => this.hasAnswer(i)).length;
         if (this.$("ratio-view"))
             this.$("ratio-view").textContent =
                 `${answeredCount} / ${this.dataset.length}`;
@@ -175,9 +222,7 @@ class QuizEngine {
             this.$("ctrl-next").disabled =
                 this.activeIndex === this.dataset.length - 1;
         if (this.$("ctrl-fin"))
-            this.$("ctrl-fin").style.display = this.userAnswers.every(
-                (a) => a !== null,
-            )
+            this.$("ctrl-fin").style.display = this.userAnswers.every((_, i) => this.hasAnswer(i))
                 ? "inline-block"
                 : "none";
     }
@@ -193,6 +238,7 @@ class QuizEngine {
 
         let payloadBody = "";
         let explanationMarkup = "";
+        let feedbackMarkup = "";
 
         if (item.type === "tf") {
             const trueClass = this.checkOptionState(
@@ -209,10 +255,11 @@ class QuizEngine {
             );
             const lockedFlag = isLocked ? " locked" : "";
 
-            payloadBody = `<div class="tf-container">
-        <button class="tf-button${lockedFlag} ${trueClass}" onclick="currentQuiz.commitAnswer(true)">✓ True</button>
-        <button class="tf-button${lockedFlag} ${falseClass}" onclick="currentQuiz.commitAnswer(false)">✗ False</button>
+            payloadBody = `<div class="tf-container" role="group" aria-label="Choose true or false">
+        <button type="button" class="tf-button${lockedFlag} ${trueClass}" onclick="currentQuiz.commitAnswer(true)" aria-pressed="${currentSelection === true}" ${isLocked ? "disabled" : ""}>✓ True</button>
+        <button type="button" class="tf-button${lockedFlag} ${falseClass}" onclick="currentQuiz.commitAnswer(false)" aria-pressed="${currentSelection === false}" ${isLocked ? "disabled" : ""}>✗ False</button>
       </div>`;
+            if (isLocked) feedbackMarkup = `<p class="answer-feedback" role="status">${currentSelection === item.ans ? "Correct." : `Incorrect. Correct answer: ${item.ans ? "True" : "False"}.`}</p>`;
         } else if (item.type === "mcq") {
             const letters = ["A", "B", "C", "D"];
             payloadBody = `<div class="options-stack">${item.opts
@@ -224,41 +271,46 @@ class QuizEngine {
                         isLocked,
                     );
                     const lockedFlag = isLocked ? " locked" : "";
-                    return `<div class="option-item${lockedFlag} ${optionClass}" onclick="currentQuiz.commitAnswer(${i})">
+                    return `<button type="button" class="option-item${lockedFlag} ${optionClass}" onclick="currentQuiz.commitAnswer(${i})" ${isLocked ? "disabled" : ""} aria-pressed="${currentSelection === i}">
           <div class="option-index">${letters[i]}</div>
-          <div class="option-title">${opt}</div>
-        </div>`;
+          <span class="option-title">${this.escapeHTML(opt)}</span>
+        </button>`;
                 })
                 .join("")}</div>`;
+            if (isLocked) feedbackMarkup = `<p class="answer-feedback" role="status">${currentSelection === item.ans ? "Correct." : `Incorrect. Correct answer: ${this.escapeHTML(item.opts[item.ans])}.`}</p>`;
         } else if (item.type === "essay") {
-            const savedText = currentSelection || "";
+            const savedText = isLocked ? currentSelection || "" : this.essayDrafts[this.activeIndex];
             const disabledState = isLocked ? "disabled" : "";
 
             payloadBody = `
         <div class="essay-container">
-          <textarea id="essay-input" class="essay-textarea" placeholder="Write your technical analysis/explanation here..." ${disabledState}>${savedText}</textarea>
+          <label class="sr-only" for="essay-input">Your written answer</label><textarea id="essay-input" class="essay-textarea" placeholder="Write your technical analysis/explanation here..." ${disabledState}>${this.escapeHTML(savedText)}</textarea>
           ${!isLocked ? `<button class="btn-reveal" onclick="currentQuiz.revealEssayAnswer()">👁 Reveal Answer & Explanation</button>` : ""}
         </div>`;
         }
 
-        if (item.why || item.type === "essay") {
+        if (item.why || item.type === "essay" || item.action) {
             const titleText =
                 item.type === "essay"
                     ? "📘 Model Answer Blueprint:"
                     : "💡 تحليل:";
             const mainContent =
                 item.type === "essay"
-                    ? `<div class="essay-model-ans">${item.ans}</div>`
+                    ? `<div class="essay-model-ans">${this.safeReferenceHTML(item.ans)}</div>`
                     : "";
             const subContent = item.why
-                ? `<div class="explanation-content" style="margin-top:0.6rem; border-top:1px dashed var(--border2); padding-top:0.4rem;">${item.why}</div>`
+                ? `<div class="explanation-content" style="margin-top:0.6rem; border-top:1px dashed var(--border2); padding-top:0.4rem;">${this.escapeHTML(item.why)}</div>`
+                : "";
+            const warning = item.action
+                ? `<aside class="warning-note" role="note"><strong>Review note:</strong> ${this.escapeHTML(item.action)}</aside>`
                 : "";
 
             explanationMarkup = `
-        <div id="q-explanation" class="explanation-box" style="display: ${isLocked ? "block" : "none"};">
-          <div class="explanation-title">${titleText}</div>
+        <div id="q-explanation" class="explanation-box" role="region" aria-label="Answer explanation" style="display: ${isLocked || item.action || (item.type === "essay" && this.essayRevealed[this.activeIndex]) ? "block" : "none"};">
+          ${item.type === "essay" || item.why ? `<div class="explanation-title">${titleText}</div>` : ""}
           ${mainContent}
           ${subContent}
+          ${warning}
         </div>`;
         }
 
@@ -268,10 +320,17 @@ class QuizEngine {
           <div class="q-card-header">
             <span class="q-type-tag ${item.type}">${item.type === "tf" ? "True / False" : item.type === "mcq" ? "Multiple Choice" : "Essay / Descriptive"}</span>
           </div>
-          <div class="q-text">${item.q}</div>
+          <div class="q-text">${this.escapeHTML(item.q)}</div>
           ${payloadBody}
+          ${feedbackMarkup}
           ${explanationMarkup}
         </div>`;
+            const essayInput = this.$("essay-input");
+            if (essayInput && !isLocked) {
+                essayInput.addEventListener("input", () => {
+                    this.essayDrafts[this.activeIndex] = essayInput.value;
+                });
+            }
         }
     }
 
@@ -302,8 +361,10 @@ class QuizEngine {
         const txtArea = this.$("essay-input");
         const textValue = txtArea ? txtArea.value.trim() : "";
 
-        this.userAnswers[this.activeIndex] = textValue || "Answer Revealed";
-        this.stateLocked[this.activeIndex] = true;
+        this.essayDrafts[this.activeIndex] = txtArea ? txtArea.value : "";
+        this.userAnswers[this.activeIndex] = textValue || null;
+        this.stateLocked[this.activeIndex] = Boolean(textValue);
+        this.essayRevealed[this.activeIndex] = true;
 
         this.renderActivePayload();
         this.refreshProgressMetrics();
@@ -331,7 +392,7 @@ class QuizEngine {
             essayTotal = 0;
 
         this.dataset.forEach((item, i) => {
-            const allocation = this.userAnswers[i];
+            const allocation = this.userAnswers[i] ?? (item.type === "essay" && this.essayDrafts[i].trim() ? this.essayDrafts[i] : null);
 
             if (item.type === "essay") {
                 essayTotal++;
@@ -415,13 +476,13 @@ class QuizEngine {
         if (logView) {
             logView.innerHTML = this.dataset
                 .map((item, i) => {
-                    const allocation = this.userAnswers[i];
+                    const allocation = this.userAnswers[i] ?? (item.type === "essay" && this.essayDrafts[i].trim() ? this.essayDrafts[i] : null);
 
                     if (item.type === "essay") {
                         return `<div class="review-item" style="border-right: 4px solid var(--accent);">
-            <div class="review-question">Block ${i + 1} [ESSAY]. ${item.q}</div>
-            <div class="review-answer ok" style="direction:ltr; text-align:left; white-wrap:pre-wrap;">Your input log: ${allocation || "No Entry Saved"}</div>
-            <div class="review-answer ok" style="margin-top:0.5rem; direction:ltr; text-align:left; background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:4px;">Expected Blueprint: ${item.ans}</div>
+            <div class="review-question">Block ${i + 1} [ESSAY]. ${this.escapeHTML(item.q)}</div>
+            <div class="review-answer ok" style="direction:ltr; text-align:left; white-space:pre-wrap;">Your input log: ${this.escapeHTML(allocation || "No Entry Saved")}</div>
+            <div class="review-answer ok" style="margin-top:0.5rem; direction:ltr; text-align:left; background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:4px;">Expected Blueprint: ${this.safeReferenceHTML(item.ans)}</div>
           </div>`;
                     }
 
@@ -443,9 +504,9 @@ class QuizEngine {
                             : `${letters[item.ans]}) ${item.opts[item.ans]}`;
 
                     return `<div class="review-item">
-          <div class="review-question">Block ${i + 1}. ${item.q}</div>
-          <div class="review-answer ${match ? "ok" : "ng"}">Vector Allocated: ${parsedUser}</div>
-          ${!match ? `<div class="review-answer ok">Model Blueprint: ${parsedRight}</div>` : ""}
+          <div class="review-question">Block ${i + 1}. ${this.escapeHTML(item.q)}</div>
+          <div class="review-answer ${match ? "ok" : "ng"}">Vector Allocated: ${this.escapeHTML(parsedUser)}</div>
+          ${!match ? `<div class="review-answer ok">Model Blueprint: ${this.escapeHTML(parsedRight)}</div>` : ""}
         </div>`;
                 })
                 .join("");
@@ -462,6 +523,8 @@ class QuizEngine {
 
     resetSimulator() {
         this.userAnswers = new Array(this.dataset.length).fill(null);
+        this.essayDrafts = new Array(this.dataset.length).fill("");
+        this.essayRevealed = new Array(this.dataset.length).fill(false);
         this.stateLocked = new Array(this.dataset.length).fill(false);
         this.activeIndex = 0;
         this.secondsLeft = this.totalDuration;
