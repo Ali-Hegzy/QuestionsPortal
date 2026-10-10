@@ -511,7 +511,6 @@
 }
 .btn-secondary:hover:not(:disabled) {
     border-color: var(--accent);
-    color: var(--accent);
 }
 .btn-secondary:disabled {
     opacity: 0.35;
