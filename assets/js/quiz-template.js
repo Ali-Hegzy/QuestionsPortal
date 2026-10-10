@@ -3,8 +3,8 @@
 // ================================================================
 class QuizEngine {
     constructor(dataset, durationInMinutes = 60) {
-        this.dataset = Array.isArray(dataset) ? dataset : [];
-        this.validationError = Array.isArray(dataset)
+        this.rawDataset = Array.isArray(dataset) ? dataset : null;
+        this.validationError = this.rawDataset
             ? null
             : new Error("Quiz data is missing or is not an array.");
         if (!this.validationError) {
@@ -14,6 +14,9 @@ class QuizEngine {
                 this.validationError = error;
             }
         }
+
+        this.dataset = this.rawDataset ? this.shuffle(this.rawDataset) : [];
+
         this.totalDuration = durationInMinutes * 60;
         this.durationInMinutes = durationInMinutes;
         this.secondsLeft = this.totalDuration;
@@ -29,9 +32,18 @@ class QuizEngine {
         this.setupDynamicMeta();
     }
 
+    shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
     validateDataset() {
         const ids = new Set();
-        this.dataset.forEach((item, index) => {
+        this.rawDataset.forEach((item, index) => {
             const fail = (message) => { throw new Error(`Quiz question ${index + 1}: ${message}`); };
             if (!item || typeof item !== "object" || !["mcq", "tf", "essay"].includes(item.type)) fail("unsupported or missing question type.");
             if (typeof item.q !== "string" || !item.q.trim()) fail("question text is required.");
@@ -45,7 +57,7 @@ class QuizEngine {
             if (item.type === "tf" && typeof item.ans !== "boolean") fail("true/false answer must be a boolean.");
             if (item.type === "essay" && typeof item.ans !== "string") fail("essay reference answer must be text.");
         });
-        if (!this.dataset.length) throw new Error("QuizEngine: at least one valid question is required.");
+        if (!this.rawDataset.length) throw new Error("QuizEngine: at least one valid question is required.");
     }
 
     escapeHTML(value) {
@@ -363,7 +375,7 @@ class QuizEngine {
 
         this.essayDrafts[this.activeIndex] = txtArea ? txtArea.value : "";
         this.userAnswers[this.activeIndex] = textValue || null;
-        this.stateLocked[this.activeIndex] = Boolean(textValue);
+        this.stateLocked[this.activeIndex] = true;
         this.essayRevealed[this.activeIndex] = true;
 
         this.renderActivePayload();
@@ -522,6 +534,8 @@ class QuizEngine {
     }
 
     resetSimulator() {
+        this.dataset = this.shuffle(this.rawDataset);
+
         this.userAnswers = new Array(this.dataset.length).fill(null);
         this.essayDrafts = new Array(this.dataset.length).fill("");
         this.essayRevealed = new Array(this.dataset.length).fill(false);
