@@ -44,35 +44,98 @@ class QuizEngine {
     validateDataset() {
         const ids = new Set();
         this.rawDataset.forEach((item, index) => {
-            const fail = (message) => { throw new Error(`Quiz question ${index + 1}: ${message}`); };
-            if (!item || typeof item !== "object" || !["mcq", "tf", "essay"].includes(item.type)) fail("unsupported or missing question type.");
-            if (typeof item.q !== "string" || !item.q.trim()) fail("question text is required.");
-            if (item.why != null && typeof item.why !== "string") fail("explanation must be text.");
-            if (item.action != null && typeof item.action !== "string") fail("warning note must be text.");
+            const fail = (message) => {
+                throw new Error(`Quiz question ${index + 1}: ${message}`);
+            };
+            if (
+                !item ||
+                typeof item !== "object" ||
+                !["mcq", "tf", "essay"].includes(item.type)
+            )
+                fail("unsupported or missing question type.");
+            if (typeof item.q !== "string" || !item.q.trim())
+                fail("question text is required.");
+            if (item.why != null && typeof item.why !== "string")
+                fail("explanation must be text.");
+            if (item.action != null && typeof item.action !== "string")
+                fail("warning note must be text.");
             if (item.id != null) {
                 if (ids.has(String(item.id))) fail(`duplicate id ${item.id}.`);
                 ids.add(String(item.id));
             }
-            if (item.type === "mcq" && (!Array.isArray(item.opts) || item.opts.length < 2 || item.opts.some((option) => typeof option !== "string") || !Number.isInteger(item.ans) || item.ans < 0 || item.ans >= item.opts.length)) fail("MCQ needs at least two text options and a valid zero-based answer index.");
-            if (item.type === "tf" && typeof item.ans !== "boolean") fail("true/false answer must be a boolean.");
-            if (item.type === "essay" && typeof item.ans !== "string") fail("essay reference answer must be text.");
+            if (
+                item.type === "mcq" &&
+                (!Array.isArray(item.opts) ||
+                    item.opts.length < 2 ||
+                    item.opts.some((option) => typeof option !== "string") ||
+                    !Number.isInteger(item.ans) ||
+                    item.ans < 0 ||
+                    item.ans >= item.opts.length)
+            )
+                fail(
+                    "MCQ needs at least two text options and a valid zero-based answer index.",
+                );
+            if (item.type === "tf" && typeof item.ans !== "boolean")
+                fail("true/false answer must be a boolean.");
+            if (item.type === "essay" && typeof item.ans !== "string")
+                fail("essay reference answer must be text.");
         });
-        if (!this.rawDataset.length) throw new Error("QuizEngine: at least one valid question is required.");
+        if (!this.rawDataset.length)
+            throw new Error(
+                "QuizEngine: at least one valid question is required.",
+            );
     }
 
     escapeHTML(value) {
-        return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+        return String(value ?? "").replace(
+            /[&<>"']/g,
+            (char) =>
+                ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;",
+                })[char],
+        );
     }
 
     safeReferenceHTML(value) {
         const template = document.createElement("template");
         template.innerHTML = String(value ?? "");
-        const allowed = new Set(["P", "B", "STRONG", "I", "EM", "UL", "OL", "LI", "BR", "PRE", "CODE", "TABLE", "THEAD", "TBODY", "TR", "TH", "TD", "SUB", "SUP"]);
+        const allowed = new Set([
+            "P",
+            "B",
+            "STRONG",
+            "I",
+            "EM",
+            "UL",
+            "OL",
+            "LI",
+            "BR",
+            "PRE",
+            "CODE",
+            "TABLE",
+            "THEAD",
+            "TBODY",
+            "TR",
+            "TH",
+            "TD",
+            "SUB",
+            "SUP",
+        ]);
         const clean = (node) => {
             [...node.childNodes].forEach((child) => {
                 if (child.nodeType === Node.ELEMENT_NODE) {
-                    if (!allowed.has(child.tagName)) { child.replaceWith(document.createTextNode(child.textContent)); return; }
-                    [...child.attributes].forEach((attribute) => child.removeAttribute(attribute.name));
+                    if (!allowed.has(child.tagName)) {
+                        child.replaceWith(
+                            document.createTextNode(child.textContent),
+                        );
+                        return;
+                    }
+                    [...child.attributes].forEach((attribute) =>
+                        child.removeAttribute(attribute.name),
+                    );
                     clean(child);
                 } else if (child.nodeType !== Node.TEXT_NODE) child.remove();
             });
@@ -95,8 +158,9 @@ class QuizEngine {
 
     hasAnswer(i) {
         return this.dataset[i].type === "essay"
-            ? (typeof this.userAnswers[i] === "string" && this.userAnswers[i].trim().length > 0)
-                || this.essayDrafts[i].trim().length > 0
+            ? (typeof this.userAnswers[i] === "string" &&
+                  this.userAnswers[i].trim().length > 0) ||
+                  this.essayDrafts[i].trim().length > 0
             : this.userAnswers[i] !== null;
     }
 
@@ -220,7 +284,9 @@ class QuizEngine {
     }
 
     refreshProgressMetrics() {
-        const answeredCount = this.userAnswers.filter((_, i) => this.hasAnswer(i)).length;
+        const answeredCount = this.userAnswers.filter((_, i) =>
+            this.hasAnswer(i),
+        ).length;
         if (this.$("ratio-view"))
             this.$("ratio-view").textContent =
                 `${answeredCount} / ${this.dataset.length}`;
@@ -234,7 +300,9 @@ class QuizEngine {
             this.$("ctrl-next").disabled =
                 this.activeIndex === this.dataset.length - 1;
         if (this.$("ctrl-fin"))
-            this.$("ctrl-fin").style.display = this.userAnswers.every((_, i) => this.hasAnswer(i))
+            this.$("ctrl-fin").style.display = this.userAnswers.every((_, i) =>
+                this.hasAnswer(i),
+            )
                 ? "inline-block"
                 : "none";
     }
@@ -271,7 +339,8 @@ class QuizEngine {
         <button type="button" class="tf-button${lockedFlag} ${trueClass}" onclick="currentQuiz.commitAnswer(true)" aria-pressed="${currentSelection === true}" ${isLocked ? "disabled" : ""}>✓ True</button>
         <button type="button" class="tf-button${lockedFlag} ${falseClass}" onclick="currentQuiz.commitAnswer(false)" aria-pressed="${currentSelection === false}" ${isLocked ? "disabled" : ""}>✗ False</button>
       </div>`;
-            if (isLocked) feedbackMarkup = `<p class="answer-feedback" role="status">${currentSelection === item.ans ? "Correct." : `Incorrect. Correct answer: ${item.ans ? "True" : "False"}.`}</p>`;
+            if (isLocked)
+                feedbackMarkup = `<p class="answer-feedback" role="status">${currentSelection === item.ans ? "Correct." : `Incorrect. Correct answer: ${item.ans ? "True" : "False"}.`}</p>`;
         } else if (item.type === "mcq") {
             const letters = ["A", "B", "C", "D"];
             payloadBody = `<div class="options-stack">${item.opts
@@ -289,9 +358,12 @@ class QuizEngine {
         </button>`;
                 })
                 .join("")}</div>`;
-            if (isLocked) feedbackMarkup = `<p class="answer-feedback" role="status">${currentSelection === item.ans ? "Correct." : `Incorrect. Correct answer: ${this.escapeHTML(item.opts[item.ans])}.`}</p>`;
+            if (isLocked)
+                feedbackMarkup = `<p class="answer-feedback" role="status">${currentSelection === item.ans ? "Correct." : `Incorrect. Correct answer: ${this.escapeHTML(item.opts[item.ans])}.`}</p>`;
         } else if (item.type === "essay") {
-            const savedText = isLocked ? currentSelection || "" : this.essayDrafts[this.activeIndex];
+            const savedText = isLocked
+                ? currentSelection || ""
+                : this.essayDrafts[this.activeIndex];
             const disabledState = isLocked ? "disabled" : "";
 
             payloadBody = `
@@ -404,7 +476,11 @@ class QuizEngine {
             essayTotal = 0;
 
         this.dataset.forEach((item, i) => {
-            const allocation = this.userAnswers[i] ?? (item.type === "essay" && this.essayDrafts[i].trim() ? this.essayDrafts[i] : null);
+            const allocation =
+                this.userAnswers[i] ??
+                (item.type === "essay" && this.essayDrafts[i].trim()
+                    ? this.essayDrafts[i]
+                    : null);
 
             if (item.type === "essay") {
                 essayTotal++;
@@ -488,7 +564,11 @@ class QuizEngine {
         if (logView) {
             logView.innerHTML = this.dataset
                 .map((item, i) => {
-                    const allocation = this.userAnswers[i] ?? (item.type === "essay" && this.essayDrafts[i].trim() ? this.essayDrafts[i] : null);
+                    const allocation =
+                        this.userAnswers[i] ??
+                        (item.type === "essay" && this.essayDrafts[i].trim()
+                            ? this.essayDrafts[i]
+                            : null);
 
                     if (item.type === "essay") {
                         return `<div class="review-item" style="border-right: 4px solid var(--accent);">
