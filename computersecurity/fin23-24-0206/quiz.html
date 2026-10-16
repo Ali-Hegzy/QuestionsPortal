@@ -3,19 +3,26 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Computer Architecture - Exam</title>
-<link rel="stylesheet" href="/assets/css/quiz-template.css" />
+        <title>Computer Security - Exam</title>
+        <link rel="stylesheet" href="/assets/css/quiz-template.css" />
         <link rel="stylesheet" href="/assets/css/global.css" />
-    
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; ">
-<script>
-    if (window.top !== window.self) {
-      window.top.location = window.self.location; // كسر أي إطار خبيث يحاول احتواء موقعك
-    }
-  </script>
-  </head>
+
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; " />
+        <script>
+            if (window.top !== window.self) {
+                window.top.location = window.self.location; // كسر أي إطار خبيث يحاول احتواء موقعك
+            }
+        </script>
+    </head>
     <body>
-        <noscript><p class="warning-note" role="alert">JavaScript is required to run this quiz. Enable it and reload the page.</p></noscript>
+        <noscript
+            ><p class="warning-note" role="alert">
+                JavaScript is required to run this quiz. Enable it and reload
+                the page.
+            </p></noscript
+        >
         <main class="container">
             <nav class="nav-actions">
                 <button class="btn-nav" onclick="window.history.back()">
@@ -31,11 +38,12 @@
                     <span>Computer Security Quiz</span>
                 </div>
                 <h1 class="hero-title">Computer Security</h1>
-                <p class="hero-sub">
-                    Final 2023/2024
-                </p>
+                <p class="hero-sub">Final 2023/2024</p>
 
-                <p class="warning-note" role="note" dir="rtl">الاجابات و تحليلها تمت كتابتهم بواسطة notebooklm,لذا من الممكن ان يكون هناك اخطاء.</p>
+                <p class="warning-note" role="note" dir="rtl">
+                    الاجابات و تحليلها تمت كتابتهم بواسطة notebooklm,لذا من
+                    الممكن ان يكون هناك اخطاء.
+                </p>
 
                 <div class="stats-banner">
                     <div class="stat-box">
@@ -55,7 +63,9 @@
 
             <div id="app">
                 <div class="top-panel">
-                    <div class="panel-left">// Computer Security 23-24 [02/06]</div>
+                    <div class="panel-left">
+                        // Computer Security 23-24 [02/06]
+                    </div>
                     <div class="panel-center">
                         <div class="timer" id="clock">--:--</div>
                     </div>
@@ -201,7 +211,10 @@
         <script src="/assets/js/quiz-template.js"></script>
         <script src="./quiz.js"></script>
         <script>
-            const currentQuiz = new QuizEngine(typeof QUESTIONS === "undefined" ? null : QUESTIONS, 60);
+            const currentQuiz = new QuizEngine(
+                typeof QUESTIONS === "undefined" ? null : QUESTIONS,
+                60,
+            );
 
             // ربط الدوال العامة في الـ HTML بالـ Instance الحالية للمحرك
             function initEngine() {
